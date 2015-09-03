@@ -8,11 +8,13 @@ following pages, for examples of what Near & Far diagrams look like.
 To run this:
 
 * Clone the repo under a directory that is served by a web server.
-* Run `./setup` to fetch some dependencies
+* Run `./setup` to fetch some dependencies (this is really only needed if
+  you are using IE)
 * Bring up examples/index.html in a browser.
 
 
-To generate JSON versions of DTDs, install 
+To generate JSON versions of DTDs, you will need to run `./setup.sh`,
+if you haven't already.  Then, install 
 [DtdAnalyzer](http://dtd.nlm.nih.gov/ncbi/dtdanalyzer/). Then, for
 example:
 
@@ -48,9 +50,6 @@ cause documentation hyperlinks to go to the right place
 
 # To do
 
-* Make setup easier for "getting started" (above)
-    * Add a simple sample dtd to the examples, and make the defaults use that.
-
 * Add attributes
 * Work on the sample DTD to make sure it covers all cases
 * Auto-adjust column widths, based on the rightmost edge of any node in that column
@@ -63,9 +62,6 @@ cause documentation hyperlinks to go to the right place
     - How about a diamond shape for choice (reminiscent of flowcharts) and 
       a horizontal ellipsis for sequence?
     - Tweak how the `q` symbols look, esp. on the compound nodes
-
-* Enhancment: Can we hook it into xmllint, so that it can actually read the DTD, 
-  rather than a jsonized version?
 
 * Add "fork me on github" banner, page titles, etc.
 * Deploy it somewhere -- gh-pages? That would mean using CDNs for the dependencies.
