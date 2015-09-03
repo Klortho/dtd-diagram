@@ -1,21 +1,36 @@
-/*
-  By default, this will trigger on document ready, and will start a 
-  tag diagram on a div with @id == "tag-diagram".
-  To cause it to wait to be manually started, set TagDiagrammer.auto_start
-  to false before that happens.
-*/
-
 if (typeof jQuery !== "undefined" &&
     typeof d3 !== "undefined")
 {
-    TagDiagrammer = function($) {
+    DtdDiagram = function($) {
+        var document_ready = new Promise(function(resolve) {
+            $(document).ready(resolve);
+        });
 
-        // Here we specify the default values for all the options you can
-        // set. There are various ways to set the options; in order of 
+        var DtdDiagram = function(opts) {
+            var self = this;
+            DtdDiagram.diagrams.push(self);
+            var tag_options = $('#tag-diagram').data("options") || {};
+            $.extend(true, self, defaults, tag_options, opts);
+
+            document_ready.then(function() {
+                self.draw();
+            });
+        };
+
+        DtdDiagram.diagrams = [];
+        DtdDiagram.auto_start = true;
+
+        // By default, if the user hasn't instantiated an object, then
+        // we'll make one for him at document.ready.        
+        document_ready.then(function() {
+            if (DtdDiagram.auto_start && DtdDiagram.diagrams.length == 0) 
+                new DtdDiagram();
+        });
+
+        // Default values for all the options. 
+        // There are various ways to set the options; in order of 
         // higher-to-lower precedence:
-        // - Pass them as an object to the TagDiagrammer.draw() function. To
-        //   do this, you'll first have to set TagDiagrammer.auto_start to
-        //   false, otherwise it will be called automatically at document ready.
+        // - Pass them as an object to the DtdDiagram constructor function.
         // - Set them on the @data-options attribute of the <div id='tag-diagram'>
         //   element. Make sure they are in strictly valid JSON format.
         // - Use the defaults
@@ -56,10 +71,6 @@ if (typeof jQuery !== "undefined" &&
             // Duration of the animation, in milliseconds.
             duration: 500,
         };
-        var options;
-
-        // This will hold the DTD, as read from the JSON file
-        var dtd_json;
 
         //--------------------------------------------------------------------
         // Box class
@@ -105,8 +116,9 @@ if (typeof jQuery !== "undefined" &&
         // everything except `children`. 
         // Nodes start life "uninitialized", meaning the children have not yet
         // been instantiated.
-        var Node = function(spec) {
+        var Node = function(diagram, spec) {
             this.initialized = false;
+            this.diagram = diagram;
             for (var k in spec) {
                 if (k != "children") {
                     this[k] = spec[k];
@@ -142,8 +154,8 @@ if (typeof jQuery !== "undefined" &&
                 return;
             }
 
-            var main_children = this._children = [];
-            this.cm_children = [];
+            var main_children = self._children = [];
+            self.cm_children = [];
 
             // This recursive function looks at one spec in the content-model of the
             // dtd, and creates a node for it.
@@ -152,7 +164,7 @@ if (typeof jQuery !== "undefined" &&
             // it is a simple node. 
             // If this creates a new compound node, then it recurses.
             function make_kid(kid_spec, cm_parent) {
-                var kid = new Node(kid_spec);
+                var kid = new Node(self.diagram, kid_spec);
                 cm_parent.cm_children.push(kid);
 
                 if (kid.is_simple()) {
@@ -173,11 +185,12 @@ if (typeof jQuery !== "undefined" &&
         }
 
         Node.prototype.extents = function() {
+            var opts = this.diagram;
             return new Box(
-                this.x - options.node_box_height / 2,
+                this.x - opts.node_box_height / 2,
                 this.y,
-                this.x + options.node_box_height / 2,
-                this.y + options.node_width
+                this.x + opts.node_box_height / 2,
+                this.y + opts.node_width
             );
         }
 
@@ -251,26 +264,25 @@ if (typeof jQuery !== "undefined" &&
         //--------------------------------------------------------------------
         // Main drawing routine
 
-        function draw(opts) {
-            var tag_options = $('#tag-diagram').data("options") || {};
-            options = $.extend(true, {}, defaults, tag_options, opts);
+        DtdDiagram.prototype.draw = function() {
+            var diagram = this;
 
-            var dtd_json_file = options.dtd_json_file;
-            var root_element = options.root_element;
-            var tag_doc_url = options.tag_doc_url;
+            var dtd_json_file = this.dtd_json_file;
+            var root_element = this.root_element;
+            var tag_doc_url = this.tag_doc_url;
 
-            var node_width = options.node_width;
-            var node_height = options.node_height;
-            var compound_node_width = options.compound_node_width;
-            var q_width = options.q_width;
-            var min_num_columns = options.min_num_columns;
-            var min_num_rows = options.min_num_rows;
-            var node_box_height = options.node_box_height;
-            var node_expander_width = options.node_expander_width;
-            var scrollbar_margin = options.scrollbar_margin;
-            var dropshadow_margin = options.dropshadow_margin;
-            var group_separation = options.group_separation;
-            var duration = options.duration;
+            var node_width = this.node_width;
+            var node_height = this.node_height;
+            var compound_node_width = this.compound_node_width;
+            var q_width = this.q_width;
+            var min_num_columns = this.min_num_columns;
+            var min_num_rows = this.min_num_rows;
+            var node_box_height = this.node_box_height;
+            var node_expander_width = this.node_expander_width;
+            var scrollbar_margin = this.scrollbar_margin;
+            var dropshadow_margin = this.dropshadow_margin;
+            var group_separation = this.group_separation;
+            var duration = this.duration;
 
             // Computed values
             var min_canvas_width = node_width * min_num_columns;
@@ -357,7 +369,7 @@ if (typeof jQuery !== "undefined" &&
 
             d3.json(dtd_json_file, function(error, _dtd_json) {
                 dtd_json = _dtd_json;
-                root = new Node({
+                root = new Node(diagram, {
                     name: root_element || dtd_json.root,
                 });
                 root.initialize();
@@ -846,14 +858,7 @@ if (typeof jQuery !== "undefined" &&
             }
         }
 
-        return {
-            auto_start: true,
-            draw: draw,
-        };
+        return DtdDiagram;
     }(jQuery);
-
-    $(document).ready(function() {
-        if (TagDiagrammer.auto_start) TagDiagrammer.draw();
-    });
 
 }

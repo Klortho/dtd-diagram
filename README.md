@@ -1,10 +1,18 @@
-# D3 animated XML schema diagrams
-
+# Interactive, animated DTD schema diagrams
 
 This is a D3 implementation of the old XML
 Near & Far diagrams. See this [Key to the Near & Far 
 Diagrams](http://jatspan.org/niso/publishing-1.1d3/#p=nfd) and the
-following pages, for examples of what they look like.
+following pages, for examples of what Near & Far diagrams look like.
+
+To run this:
+
+* clone the repo
+* run `./setup` to fetch some dependencies
+* install DtdAnalyzer
+* `xsltproc daz2json.xsl JATS-journalpublishing1.daz.xml>JATS-journalpublishing1.json`
+* Bring up index.html, served through a web server, in a browser
+
 
 # Credits
 
@@ -14,15 +22,29 @@ following pages, for examples of what they look like.
 
 # To do
 
-* Let's create a new github repo
+* ✓Let's create a new github repo: https://github.com/Klortho/dtd-diagram
 
-* Redo the API:
+* ✓Redo the API:
     * Class, not module
     * By default, after you instantiate it, it starts on document-ready.
       (calls `draw`)
     * Allow multiple drawings on the same page.
 
+* ✓Get rid of `options`
+
+
+
+
+* Move index.html into an examples folder, and add a couple of others, showing
+  how it can be used.
+    * Per the README examples
+    * Multiple drawings, with different options, on the same page
+
+
+
 * parameterize the class name of the main div -- allow multiple 
+
+* Make setup easier for "getting started" (above)
 
 * Add attributes
 * Auto-adjust column widths, based on the rightmost edge of any node in that column
@@ -49,6 +71,79 @@ following pages, for examples of what they look like.
       way would be to have all animations be promises, and then do a 
       Promise.all() at the end.
 
+
+# API
+
+The simplest way to use this is to load the code in a page that has a 
+pre-existing `<div>` element with `id` value "dtd-diagram". For example:
+
+```html
+<head>
+  ...
+  <link rel="stylesheet" type="text/css" href="tag-diagram.css">
+  <script type='text/javascript' src='es6-promise.js'></script>
+  <script type='text/javascript' src='jquery.min.js'></script>
+  <script type="text/javascript" src="d3.min.js"></script>
+  <script type="text/javascript" src="tag-diagram.js"></script>
+  ...
+</head>
+<body>
+  ...
+  <div id='dtd-diagram' />
+  ...
+</body>
+```
+
+By default, if you include the JavaScript in your HTML page, then a DtdDiagram
+will be instantiated at document ready, using all the default options.
+If you want to prevent this behavior, then set auto_start to false, before
+document ready. This will let you control when a diagram is created, based on, 
+for example, user events. For example:
+
+```html
+<head>
+  ...
+  <script type="text/javascript" src="tag-diagram.js"></script>
+  ...
+</head>
+<body>
+  ...
+  <div id='dtd-diagram' />
+  <input id='button' type='button' />
+  ...
+  <script type="text/javascript">
+    DtdDiagram.auto_start = false;
+    ...
+    $('#button').on("click", function() {
+      new DtdDiagram();
+    };
+  </script>
+</body>
+```
+
+If you create your own diagram object before 
+document ready, that will also suppress the auto-creation. This allows you
+to easily override default options. For example,
+
+```html
+<script type="text/javascript" src="tag-diagram.js"></script>
+<script type="text/javascript">
+  new DtdDiagram({
+    duration: 5000,
+  });
+</script>
+```
+
+Set options on the `<div>` element, in the `data-options` attribute, in
+valid JSON format.
+
+```html
+<div id='tag-diagram'
+     data-options='{"root_element": "back"}'>
+</div>
+```
+
+You can get a list of all of the diagrams on a page from `DtdDiagram.diagrams`.
 
 
 # Generating the JSON
