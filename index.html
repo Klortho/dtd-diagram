@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  	<title>d3 near-far diagram</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="tag-diagram.css">
+    <script type='text/javascript' src='lib/es6-promise.js'></script>
+    <script type='text/javascript' src='lib/jquery.min.js'></script>
+    <script type="text/javascript" src="lib/d3.js"></script>
+    <script type="text/javascript" src="tag-diagram.js"></script>
+    
+    <!-- Set auto_start to false if you want to prevent it from auto-drawing
+      <script type="text/javascript">
+        TagDiagrammer.auto_start = false;
+        console.log(window.location.hash);
+      </script>
+    -->
+  </head>
+
+  <body>
+    <!-- Set options on the <div> element, in the @data-options attribute, in
+      valid JSON format. -->
+    <div id='tag-diagram'
+         data-options='{"root_element": "back"}'>
+    </div>
+  </body>
+</html>

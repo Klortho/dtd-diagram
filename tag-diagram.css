@@ -1,0 +1,48 @@
+body {
+  color: black;
+  background-color: white;
+}
+
+#tag-diagram {
+  overflow: auto;
+  border: 1px solid #333;
+  resize: both;
+}
+svg {
+  /* for debugging:
+  background: #EEE;  */
+}
+
+rect, circle {
+  fill: #EEF;
+  stroke: black;
+}
+.has_children {
+  /* should we use a different color? */
+  fill: #FEE;
+}
+circle.choice {
+}
+rect.expander {
+  cursor: pointer;
+}
+.node path {
+  stroke: black;
+}
+
+
+
+.node {
+  font: 14pt "PT Sans Narrow"; 
+  line-height: 22pt;
+}
+text.q {
+  font: 12pt "courier";
+}
+
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1.5pt;
+}
+
