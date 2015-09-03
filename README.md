@@ -52,6 +52,7 @@ cause documentation hyperlinks to go to the right place
     * Add a simple sample dtd to the examples, and make the defaults use that.
 
 * Add attributes
+* Work on the sample DTD to make sure it covers all cases
 * Auto-adjust column widths, based on the rightmost edge of any node in that column
 * Corollary: expand the compound node's width proportionally to its height.
 * Add a "re-root" link somewhere on each node. Clicking that causes the whole
@@ -65,6 +66,9 @@ cause documentation hyperlinks to go to the right place
 
 * Enhancment: Can we hook it into xmllint, so that it can actually read the DTD, 
   rather than a jsonized version?
+
+* Add "fork me on github" banner, page titles, etc.
+* Deploy it somewhere -- gh-pages? That would mean using CDNs for the dependencies.
 
 * Tiny bug: when shrinking, sometimes the scroll value
   will not change. Right now, this means the canvas will get resized right
@@ -263,7 +267,7 @@ We maintain two separate trees at the same time:
 
 # License
 
-<a href='http://www.wtfpl.net/'><img src='https://github.com/Klortho/gene-protein-tool/raw/master/wtfpl-badge-1.png'/></a>
+<a href='http://www.wtfpl.net/'><img src='https://raw.githubusercontent.com/Klortho/dtd-diagram/28476aa90574bbedef999d8f88b0ead9dac2a819/wtfpl-badge-1.png'/></a>
 
 See [LICENSE.txt](LICENSE.txt).
 
