@@ -5,7 +5,9 @@ Near & Far diagrams. See this [Key to the Near & Far
 Diagrams](http://jatspan.org/niso/publishing-1.1d3/#p=nfd) and the
 following pages, for examples of what Near & Far diagrams look like.
 
-To run this:
+See a demo [here](http://klortho.github.io/dtd-diagram/examples/).
+
+To run from your own machine:
 
 * Clone the repo under a directory that is served by a web server.
 * Run `./setup` to fetch some dependencies (this is really only needed if
@@ -13,16 +15,19 @@ To run this:
 * Bring up examples/index.html in a browser.
 
 
-To generate JSON versions of DTDs, you will need to run `./setup.sh`,
-if you haven't already.  Then, install 
-[DtdAnalyzer](http://dtd.nlm.nih.gov/ncbi/dtdanalyzer/). Then, for
-example:
+To generate JSON versions of DTDs:
 
-```
-cd examples
-dtdanalyzer --xslt ../daz2json.xsl dtd.dtd > dtd.json
-dtddocumentor dtd.dtd
-```
+* Run `./setup.sh`, if you haven't already,
+* Install 
+  [DtdAnalyzer](http://dtd.nlm.nih.gov/ncbi/dtdanalyzer/)
+* Generate the JSON. For
+  example:
+
+    ```
+    cd examples
+    dtdanalyzer --xslt ../daz2json.xsl dtd.dtd > dtd.json
+    dtddocumentor dtd.dtd
+    ```
 
 To configure this to work with one of the JATS DTDs, you could do this:
 
@@ -33,9 +38,9 @@ dtdanalyzer --xslt ../daz2json.xsl \
   > JATS-archivearticle1.json
 ```
 
-And then, in the HTML file that invokes the diagram, set options to 
+Then, in the HTML file that invokes the diagram, set options to 
 load the correct DTD JSON file, and to
-cause documentation hyperlinks to go to the right place
+cause documentation hyperlinks to go to the right place.
 (see *examples/jats-1.1d3.html*):
 
 ```
@@ -64,7 +69,11 @@ cause documentation hyperlinks to go to the right place
     - Tweak how the `q` symbols look, esp. on the compound nodes
 
 * Add "fork me on github" banner, page titles, etc.
-* Deploy it somewhere -- gh-pages? That would mean using CDNs for the dependencies.
+
+* Create an index.html page that links to the various examples.
+
+* Why didn't I get my error message from 
+  http://klortho.github.io/dtd-diagram/examples/jats-1.1d3.html?
 
 * Tiny bug: when shrinking, sometimes the scroll value
   will not change. Right now, this means the canvas will get resized right
