@@ -6,14 +6,16 @@ if (typeof jQuery !== "undefined" &&
             $(document).ready(resolve);
         });
 
+        // Class definition, constructor.
         var DtdDiagram = function(opts) {
-            var self = this;
-            DtdDiagram.diagrams.push(self);
-            var tag_options = $('#tag-diagram').data("options") || {};
-            $.extend(true, self, defaults, tag_options, opts);
+            var diagram = this;
+            DtdDiagram.diagrams.push(diagram);
+            diagram.opts = opts || {};
 
+            // Defer everything else, including options handling, until document
+            // ready.
             document_ready.then(function() {
-                self.draw();
+                diagram.draw();
             });
         };
 
@@ -31,7 +33,7 @@ if (typeof jQuery !== "undefined" &&
         // There are various ways to set the options; in order of 
         // higher-to-lower precedence:
         // - Pass them as an object to the DtdDiagram constructor function.
-        // - Set them on the @data-options attribute of the <div id='tag-diagram'>
+        // - Set them on the @data-options attribute of the <div>
         //   element. Make sure they are in strictly valid JSON format.
         // - Use the defaults
 
@@ -266,32 +268,49 @@ if (typeof jQuery !== "undefined" &&
 
         DtdDiagram.prototype.draw = function() {
             var diagram = this;
+            var opts = diagram.opts;
 
-            var dtd_json_file = this.dtd_json_file;
-            var root_element = this.root_element;
-            var tag_doc_url = this.tag_doc_url;
+            // User can pass in a specifier for the div either as an
+            // id string, a DOM Element, or a jQuery object.
+            var container = opts.container || 'dtd-diagram';
+            var container_jq = diagram.container_jq =
+                typeof container == "string" ? $('#' + container) :
+                container instanceof Element ? $(container) :
+                container;
 
-            var node_width = this.node_width;
-            var node_height = this.node_height;
-            var compound_node_width = this.compound_node_width;
-            var q_width = this.q_width;
-            var min_num_columns = this.min_num_columns;
-            var min_num_rows = this.min_num_rows;
-            var node_box_height = this.node_box_height;
-            var node_expander_width = this.node_expander_width;
-            var scrollbar_margin = this.scrollbar_margin;
-            var dropshadow_margin = this.dropshadow_margin;
-            var group_separation = this.group_separation;
-            var duration = this.duration;
+            // If the expected div is not found, or if the selection somehow
+            // matches more than one, then get out now.
+            if (container_jq.length != 1) return;
+
+            var tag_options = container_jq.data("options") || {};
+            $.extend(true, diagram, defaults, tag_options, opts);
+
+            var container_dom = diagram.container_dom = container_jq[0];
+            var container_d3 = diagram.container_d3 = d3.select(container_dom);
+
+            var dtd_json_file = diagram.dtd_json_file;
+            var root_element = diagram.root_element;
+            var tag_doc_url = diagram.tag_doc_url;
+
+            var node_width = diagram.node_width;
+            var node_height = diagram.node_height;
+            var compound_node_width = diagram.compound_node_width;
+            var q_width = diagram.q_width;
+            var min_num_columns = diagram.min_num_columns;
+            var min_num_rows = diagram.min_num_rows;
+            var node_box_height = diagram.node_box_height;
+            var node_expander_width = diagram.node_expander_width;
+            var scrollbar_margin = diagram.scrollbar_margin;
+            var dropshadow_margin = diagram.dropshadow_margin;
+            var group_separation = diagram.group_separation;
+            var duration = diagram.duration;
 
             // Computed values
             var min_canvas_width = node_width * min_num_columns;
             var min_canvas_height = node_height * min_num_rows;
 
-            var container_dom = document.getElementById("tag-diagram");
-            var container = d3.select('#tag-diagram');
 
-            $('div#tag-diagram').append(
+            container_jq.append(
                 "<svg>\n" +
                 "  <defs>\n" +
                 "    <filter id=\"dropshadow\" height=\"130%\">\n" +
@@ -308,12 +327,13 @@ if (typeof jQuery !== "undefined" &&
                 "  </defs>\n" +
                 "</svg>\n"
             );
+            var svg = container_d3.select("svg");
 
 
             // scrollbar margin - if this is big enough, it ensures we'll never get
             // spurious scrollbars when the drawing is at the minimum size. But if it's
             // too big, it messes up the centering. 22 gives plenty of room
-            container.style({
+            container_d3.style({
                 'width': (min_canvas_width + scrollbar_margin) + 'px',
                 'height': (min_canvas_height + scrollbar_margin) + 'px'
             });
@@ -353,8 +373,7 @@ if (typeof jQuery !== "undefined" &&
                 min_canvas_width
             );
 
-            var svg = d3.select("svg")
-                .attr({
+            svg.attr({
                     xmlns: "http://www.w3.org/2000/svg",
                     xlink: "http://www.w3.org/1999/xlink",
                     "width": canvas.width(),
@@ -417,8 +436,8 @@ if (typeof jQuery !== "undefined" &&
             // Main function to update the rendering. `source` is the node that was 
             // clicked.
             function update(source) {
-                var min_canvas_width = $('#tag-diagram').width() - scrollbar_margin,
-                    min_canvas_height = $('#tag-diagram').height() - scrollbar_margin;
+                var min_canvas_width = container_jq.width() - scrollbar_margin,
+                    min_canvas_height = container_jq.height() - scrollbar_margin;
 
                 var myID = 0;
 
@@ -600,7 +619,7 @@ if (typeof jQuery !== "undefined" &&
                     return function() {
                         return new Promise(function(resolve, reject) {
                             if (st != nst || sl != nsl) {
-                                container.transition()
+                                container_d3.transition()
                                     .duration(duration)
                                     .tween("uniquetweenname1", tweener(nst, nsl))
                                     .each("end", function() {

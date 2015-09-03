@@ -33,12 +33,15 @@ To run this:
 * ✓Get rid of `options`
 
 
+* Multiple drawings, with different options, on the same page
+    * Change from using id to class.
+
+
 
 
 * Move index.html into an examples folder, and add a couple of others, showing
   how it can be used.
     * Per the README examples
-    * Multiple drawings, with different options, on the same page
 
 
 
@@ -80,16 +83,16 @@ pre-existing `<div>` element with `id` value "dtd-diagram". For example:
 ```html
 <head>
   ...
-  <link rel="stylesheet" type="text/css" href="tag-diagram.css">
+  <link rel="stylesheet" type="text/css" href="dtd-diagram.css">
   <script type='text/javascript' src='es6-promise.js'></script>
   <script type='text/javascript' src='jquery.min.js'></script>
   <script type="text/javascript" src="d3.min.js"></script>
-  <script type="text/javascript" src="tag-diagram.js"></script>
+  <script type="text/javascript" src="dtd-diagram.js"></script>
   ...
 </head>
 <body>
   ...
-  <div id='dtd-diagram' />
+  <div id='dtd-diagram'></div>
   ...
 </body>
 ```
@@ -103,12 +106,12 @@ for example, user events. For example:
 ```html
 <head>
   ...
-  <script type="text/javascript" src="tag-diagram.js"></script>
+  <script type="text/javascript" src="dtd-diagram.js"></script>
   ...
 </head>
 <body>
   ...
-  <div id='dtd-diagram' />
+  <div id='dtd-diagram'></div>
   <input id='button' type='button' />
   ...
   <script type="text/javascript">
@@ -126,7 +129,7 @@ document ready, that will also suppress the auto-creation. This allows you
 to easily override default options. For example,
 
 ```html
-<script type="text/javascript" src="tag-diagram.js"></script>
+<script type="text/javascript" src="dtd-diagram.js"></script>
 <script type="text/javascript">
   new DtdDiagram({
     duration: 5000,
@@ -138,7 +141,7 @@ Set options on the `<div>` element, in the `data-options` attribute, in
 valid JSON format.
 
 ```html
-<div id='tag-diagram'
+<div id='dtd-diagram'
      data-options='{"root_element": "back"}'>
 </div>
 ```

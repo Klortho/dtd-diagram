@@ -3,7 +3,8 @@ body {
   background-color: white;
 }
 
-#tag-diagram {
+#dtd-diagram, .dtd-diagram {
+  display: block;
   overflow: auto;
   border: 1px solid #333;
   resize: both;

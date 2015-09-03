@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<!--
+  Illustrate how to instantiate your own diagram using options from
+  the location hash.
+-->
+<html>
+  <head>
+  	<title>d3 near-far diagram</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="../dtd-diagram.css">
+    <script type='text/javascript' src='../lib/es6-promise.js'></script>
+    <script type='text/javascript' src='../lib/jquery.min.js'></script>
+    <script type="text/javascript" src="../lib/d3.js"></script>
+    <script type="text/javascript" src="../dtd-diagram.js"></script>
+    <script type="text/javascript">
+      var hash = window.location.hash;
+      new DtdDiagram({
+          root_element: hash ? hash.substring(1) : "bio",
+      });
+    </script>
+  </head>
+  <body>
+    <div id='dtd-diagram'></div>
+  </body>
+</html>

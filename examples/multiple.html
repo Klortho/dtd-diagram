@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<!--
+  Multiple diagrams on the page.
+-->
+<html>
+  <head>
+  	<title>d3 near-far diagram</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="../dtd-diagram.css">
+    <script type='text/javascript' src='../lib/es6-promise.js'></script>
+    <script type='text/javascript' src='../lib/jquery.min.js'></script>
+    <script type="text/javascript" src="../lib/d3.js"></script>
+    <script type="text/javascript" src="../dtd-diagram.js"></script>
+  </head>
+
+  <body>
+    <p>front:</p>
+    <div id='front' class='dtd-diagram'
+         data-options='{"root_element": "front"}'>
+    </div>
+    <p>body:</p>
+    <div id='body' class='dtd-diagram'></div>
+    <p>back:</p>
+    <div id='back' class='dtd-diagram'
+         data-options='{"root_element": "back"}'>
+    </div>
+
+    <script type='text/javascript'>
+      new DtdDiagram({
+          container: "front",
+      });
+      new DtdDiagram({
+          container: $('#body'),
+          root_element: "body",
+      });
+      new DtdDiagram({
+          container: document.getElementById("back"),
+      });
+    </script>
+  </body>
+</html>
