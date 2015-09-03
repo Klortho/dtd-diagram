@@ -1,0 +1,12 @@
+<!ELEMENT article (front,body?,back?,floats-group?,(sub-article*|response*)) >
+<!ATTLIST article
+        article-type        CDATA       #IMPLIED
+        xml:lang        NMTOKEN         'en'
+        xmlns:xsi       CDATA       #FIXED  'http://www.w3.org/2001/XMLSchema-instance'
+        xmlns:mml       CDATA       #FIXED  'http://www.w3.org/1998/Math/MathML'
+        specific-use        CDATA       #IMPLIED
+        xmlns:xlink     CDATA       #FIXED  'http://www.w3.org/1999/xlink'
+        id      ID      #IMPLIED
+        dtd-version     CDATA       #FIXED  '1.1d3'
+        xml:base        CDATA       #IMPLIED
+        xmlns:ali       CDATA       #FIXED  'http://www.niso.org/schemas/ali/1.0' >

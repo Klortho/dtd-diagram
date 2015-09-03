@@ -7,54 +7,55 @@ following pages, for examples of what Near & Far diagrams look like.
 
 To run this:
 
-* clone the repo
-* run `./setup` to fetch some dependencies
-* install DtdAnalyzer
-* `xsltproc daz2json.xsl JATS-journalpublishing1.daz.xml>JATS-journalpublishing1.json`
-* Bring up index.html, served through a web server, in a browser
+* Clone the repo under a directory that is served by a web server.
+* Run `./setup` to fetch some dependencies
+* Bring up examples/index.html in a browser.
 
 
-# Credits
+To generate JSON versions of DTDs, install 
+[DtdAnalyzer](http://dtd.nlm.nih.gov/ncbi/dtdanalyzer/). Then, for
+example:
 
-* Liam Quinn, W3C.
-* Looks like he derived his example from http://bl.ocks.org/mbostock/4339083
+```
+cd examples
+dtdanalyzer --xslt ../daz2json.xsl dtd.dtd > dtd.json
+dtddocumentor dtd.dtd
+```
+
+To configure this to work with one of the JATS DTDs, you could do this:
+
+```
+cd examples
+dtdanalyzer --xslt ../daz2json.xsl \
+  http://jats.nlm.nih.gov/archiving/1.0/JATS-archivearticle1.dtd \
+  > JATS-archivearticle1.json
+```
+
+And then, in the HTML file that invokes the diagram, set options to 
+load the correct DTD JSON file, and to
+cause documentation hyperlinks to go to the right place
+(see *examples/jats-1.1d3.html*):
+
+```
+<div id='dtd-diagram'
+     data-options='{
+         "dtd_json_file": "JATS-journalpublishing1.json",
+         "tag_doc_url": "http://jatspan.org/niso/publishing-1.1d3/#p="
+     }'></div>
+```
+
 
 
 # To do
 
-* ✓Let's create a new github repo: https://github.com/Klortho/dtd-diagram
-
-* ✓Redo the API:
-    * Class, not module
-    * By default, after you instantiate it, it starts on document-ready.
-      (calls `draw`)
-    * Allow multiple drawings on the same page.
-
-* ✓Get rid of `options`
-
-
-* Multiple drawings, with different options, on the same page
-    * Change from using id to class.
-
-
-
-
-* Move index.html into an examples folder, and add a couple of others, showing
-  how it can be used.
-    * Per the README examples
-
-
-
-* parameterize the class name of the main div -- allow multiple 
-
 * Make setup easier for "getting started" (above)
+    * Add a simple sample dtd to the examples, and make the defaults use that.
 
 * Add attributes
 * Auto-adjust column widths, based on the rightmost edge of any node in that column
 * Corollary: expand the compound node's width proportionally to its height.
-* Add a "recenter" link somewhere on each node. Clicking that causes the whole
+* Add a "re-root" link somewhere on each node. Clicking that causes the whole
   tree to be redrawn, with that node now at the root.
-
 * More cowbell.
     - Colors
     - Maybe use a greek cross for the expander, rather than a rectangle
@@ -62,6 +63,8 @@ To run this:
       a horizontal ellipsis for sequence?
     - Tweak how the `q` symbols look, esp. on the compound nodes
 
+* Enhancment: Can we hook it into xmllint, so that it can actually read the DTD, 
+  rather than a jsonized version?
 
 * Tiny bug: when shrinking, sometimes the scroll value
   will not change. Right now, this means the canvas will get resized right
@@ -248,4 +251,19 @@ We maintain two separate trees at the same time:
 
 
 
+# Credits / references
+
+* Liam Quinn, W3C. See his paper, [Diagramming XML:
+  Exploring Concepts, Constraints and 
+  Affordances](http://www.balisage.net/Proceedings/vol15/html/Quin01/BalisageVol15-Quin01.html), 2015.
+* D3, see [this example](http://bl.ocks.org/mbostock/4339083).
+
+
+
+
+# License
+
+<a href='http://www.wtfpl.net/'><img src='https://github.com/Klortho/gene-protein-tool/raw/master/wtfpl-badge-1.png'/></a>
+
+See [LICENSE.txt](LICENSE.txt).
 

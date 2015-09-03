@@ -39,13 +39,13 @@ if (typeof jQuery !== "undefined" &&
 
         var defaults = {
             // DTD JSON file
-            dtd_json_file: "JATS-journalpublishing1.json",
+            dtd_json_file: "dtd.json",
 
             // The root element, by default, is read from the DTD file, but can
             // be overridden
             root_element: null,
 
-            tag_doc_url: "http://jatspan.org/niso/publishing-1.1d3/#p=",
+            tag_doc_url: "doc/#p=",
 
             // Some dimensions
             node_width: 210,  // nominal width of a column
@@ -269,6 +269,7 @@ if (typeof jQuery !== "undefined" &&
         DtdDiagram.prototype.draw = function() {
             var diagram = this;
             var opts = diagram.opts;
+            diagram.error = false;
 
             // User can pass in a specifier for the div either as an
             // id string, a DOM Element, or a jQuery object.
@@ -387,20 +388,28 @@ if (typeof jQuery !== "undefined" &&
             var root;
 
             d3.json(dtd_json_file, function(error, _dtd_json) {
-                dtd_json = _dtd_json;
-                root = new Node(diagram, {
-                    name: root_element || dtd_json.root,
-                });
-                root.initialize();
-                root.expand();
+                if (error) {
+                    var msg = "Error reading DTD file '" + dtd_json_file + 
+                        "': " + error.statusText;
+                    console.error(msg);
+                    diagram.error = msg;
+                }
+                else {
+                    dtd_json = _dtd_json;
+                    root = new Node(diagram, {
+                        name: root_element || dtd_json.root,
+                    });
+                    root.initialize();
+                    root.expand();
 
-                // x is the vertical, and y the horizontal, coordinate
-                root.x0 = 0;
-                root.y0 = 0;
+                    // x is the vertical, and y the horizontal, coordinate
+                    root.x0 = 0;
+                    root.y0 = 0;
 
-                // Starting state is to have the root and its kids expanded, but all
-                // the deeper descendents collapsed.
-                update(root);
+                    // Starting state is to have the root and its kids expanded, but all
+                    // the deeper descendents collapsed.
+                    update(root);
+                }
             });
 
             function cm_mung(self, all_nodes) {

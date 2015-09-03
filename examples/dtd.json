@@ -1,0 +1,43 @@
+{
+    "root": "article",
+    "elements": {
+        "article": {
+            "content-model": [
+                {
+                    "type": "seq",
+                    "children": [
+                        {
+                            "name": "front",
+                            "q": ""
+                        },
+                        {
+                            "name": "body",
+                            "q": "?"
+                        },
+                        {
+                            "name": "back",
+                            "q": "?"
+                        },
+                        {
+                            "name": "floats-group",
+                            "q": "?"
+                        },
+                        {
+                            "type": "choice",
+                            "children": [
+                                {
+                                    "name": "sub-article",
+                                    "q": "*"
+                                },
+                                {
+                                    "name": "response",
+                                    "q": "*"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

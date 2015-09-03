@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<!--
+  This example assumes that you've converted the JATS DTD into
+  JSON; see the README file.
+-->
+<html>
+  <head>
+  	<title>dtd-diagram</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="../dtd-diagram.css">
+    <script type='text/javascript' src='../lib/es6-promise.js'></script>
+    <script type='text/javascript' src='../lib/jquery.min.js'></script>
+    <script type="text/javascript" src="../lib/d3.js"></script>
+    <script type="text/javascript" src="../dtd-diagram.js"></script>
+  </head>
+  <body>
+    <div id='dtd-diagram'
+         data-options='{
+             "dtd_json_file": "JATS-journalpublishing1.json",
+             "tag_doc_url": "http://jatspan.org/niso/publishing-1.1d3/#p="
+         }'></div>
+
+    <script>
+      function check_drawing() {
+        if (DtdDiagram && 
+            DtdDiagram.diagrams &&
+            DtdDiagram.diagrams.length > 0) 
+        {
+          var msg = DtdDiagram.diagrams[0].error;
+          if (msg) {
+            alert("Did you remember to generate the DTD JSON file? See " +
+                  "the README for instructions.\n\n" +
+                  "Error encountered: " + msg);
+          }
+        }
+        else {
+          setTimeout(check_drawing, 50);
+        }
+      }
+      $(document).ready(function() {
+        check_drawing();
+      })
+    </script>
+  </body>
+</html>
