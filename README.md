@@ -55,6 +55,11 @@ cause documentation hyperlinks to go to the right place.
 
 # To do
 
+* Use flextree!
+
+* Change the style of the nodes to look pretty
+
+
 * Add attributes
 * Work on the sample DTD to make sure it covers all cases
 * Auto-adjust column widths, based on the rightmost edge of any node in that column

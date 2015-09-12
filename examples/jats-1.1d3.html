@@ -1,21 +1,16 @@
 <!DOCTYPE html>
-<!--
-  This example assumes that you've converted the JATS DTD into
-  JSON; see the README file.
--->
 <html>
   <head>
   	<title>dtd-diagram</title>
     <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="../dtd-diagram.css">
 
+    <link rel="stylesheet" type="text/css" href="../dtd-diagram.css">
     <!-- As of 9/3/2015, this promise polyfill is still needed for IE 11 -->
     <script type='text/javascript' src='../lib/es6-promise.js'></script>
-    <script type='text/javascript' 
-      src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js'></script>
-    <script type="text/javascript" 
-      src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
-
+    <script type='text/javascript' src='../lib/jquery.min.js'></script>
+    <!-- FIXME: for now, this is using my dev version of d3; but when everything
+      settles, it should be switched to the flextree plugin. -->
+    <script type="text/javascript" src="../../d3/d3.min.js"></script>
     <script type="text/javascript" src="../dtd-diagram.js"></script>
   </head>
   <body>
@@ -23,28 +18,8 @@
          data-options='{
              "dtd_json_file": "JATS-journalpublishing1.json",
              "tag_doc_url": "http://jatspan.org/niso/publishing-1.1d3/#p="
-         }'></div>
+         }'>
+    </div>
 
-    <script>
-      function check_drawing() {
-        if (DtdDiagram && 
-            DtdDiagram.diagrams &&
-            DtdDiagram.diagrams.length > 0) 
-        {
-          var msg = DtdDiagram.diagrams[0].error;
-          if (msg) {
-            alert("Did you remember to generate the DTD JSON file? See " +
-                  "the README for instructions.\n\n" +
-                  "Error encountered: " + msg);
-          }
-        }
-        else {
-          setTimeout(check_drawing, 50);
-        }
-      }
-      $(document).ready(function() {
-        check_drawing();
-      })
-    </script>
   </body>
 </html>
