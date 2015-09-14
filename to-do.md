@@ -10,4 +10,12 @@
         - This will get rid of the concept of "cm_children"
     * Get rid of cm_mung
 
-* What is the real width function?
+
+* What does the top-level tree data look like, now, before tree.nodes() is
+  called? And, what do I want it to look like?
+
+
+
+
+
+

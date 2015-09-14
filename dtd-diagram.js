@@ -157,8 +157,7 @@ if (typeof jQuery !== "undefined" &&
             return;
           }
 
-          var main_children = self._children = [];
-          self.cm_children = [];
+          self._children = [];
 
           // This recursive function looks at one spec in the content-model of the
           // dtd, and creates a node for it.
@@ -167,18 +166,14 @@ if (typeof jQuery !== "undefined" &&
           // The _children array of the "main" parent will get this new node iff
           // it is a simple node. 
           // If this creates a new compound node, then it recurses.
-          function make_kid(kid_spec, cm_parent) {
+          function make_kid(kid_spec, parent_array) {
             var kid = new Node(self.diagram, kid_spec);
-            cm_parent.cm_children.push(kid);
+            parent_array.push(kid);
 
-            if (kid.is_simple()) {
-              main_children.push(kid);
-            }
-            else {
-              kid.initialized = true;
-              kid.cm_children = [];
+            if (!kid.is_simple()) {
+              kid.children = [];
               kid_spec.children.forEach(function(desc_spec) {
-                make_kid(desc_spec, kid);
+                make_kid(desc_spec, kid.children);
               });
             }
           }
@@ -190,7 +185,7 @@ if (typeof jQuery !== "undefined" &&
             kid_specs = kid_specs[0].children;
 
           kid_specs.forEach(function(kid_spec) {
-            make_kid(kid_spec, self);
+            make_kid(kid_spec, self._children);
           });
         }
 
@@ -259,7 +254,16 @@ if (typeof jQuery !== "undefined" &&
           // Initialize each of the kids
           if (this.children != null) {
             this.children.forEach(function(k) {
-              if (!k.initialized) k.initialize();
+              init_kids(k);
+            });
+          }
+
+          function init_kids(k) {
+            if (k.initialized) return;
+            k.initialize();
+            if (k.is_simple()) return;
+            k.children.forEach(function(gk) {
+              init_kids(gk)
             });
           }
         }
