@@ -56,6 +56,10 @@ cause documentation hyperlinks to go to the right place.
 # To do
 
 * Use flextree!
+    * Work on the nodeSize() function for regular element nodes: width
+      based on the text
+    * Refactor such that the real tree structure, including "compound nodes",
+      is generated originally, instead of the current hack.
 
 * Change the style of the nodes to look pretty
 

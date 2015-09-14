@@ -137,8 +137,8 @@ if (typeof jQuery !== "undefined" &&
         }
 
         // This is only called on simple nodes. 
-        // This creates new child nodes from the content-model, as needed, filling in both
-        // the _children and cm_children arrays.
+        // This creates new child nodes from the content-model, as needed, filling
+        // in both the _children and cm_children arrays.
         // When this returns, the node is in the collapsed state.
 
         Node.prototype.initialize = function() {
@@ -161,7 +161,8 @@ if (typeof jQuery !== "undefined" &&
 
             // This recursive function looks at one spec in the content-model of the
             // dtd, and creates a node for it.
-            // The cm_children array of the current cm_parent will always get this new node.
+            // The cm_children array of the current cm_parent will always get this 
+            // new node.
             // The _children array of the "main" parent will get this new node iff
             // it is a simple node. 
             // If this creates a new compound node, then it recurses.
@@ -245,21 +246,21 @@ if (typeof jQuery !== "undefined" &&
         // kids. We have to call initialize() on each of the *child* nodes,
         // so that we can render them correctly.
         Node.prototype.expand = function() {
-            if (this.children == null) {
-                this.children = this._children;
-                this._children = null;
-            }
-            // Initialize each of the kids
-            if (this.children != null) {
-                this.children.forEach(function(k) {
-                    if (!k.initialized) k.initialize();
-                });
-            }
+          if (this.children == null) {
+            this.children = this._children;
+            this._children = null;
+          }
+          // Initialize each of the kids
+          if (this.children != null) {
+            this.children.forEach(function(k) {
+              if (!k.initialized) k.initialize();
+            });
+          }
         }
 
         Node.prototype.collapse = function() {
-            this._children = this.children;
-            this.children = null;
+          this._children = this.children;
+          this.children = null;
         }
 
 
@@ -310,7 +311,6 @@ if (typeof jQuery !== "undefined" &&
             var min_canvas_width = node_width * min_num_columns;
             var min_canvas_height = node_height * min_num_rows;
 
-
             container_jq.append(
                 "<svg>\n" +
                 "  <defs>\n" +
@@ -330,7 +330,6 @@ if (typeof jQuery !== "undefined" &&
             );
             var svg = container_d3.select("svg");
 
-
             // scrollbar margin - if this is big enough, it ensures we'll never get
             // spurious scrollbars when the drawing is at the minimum size. But if it's
             // too big, it messes up the centering. 22 gives plenty of room
@@ -344,7 +343,9 @@ if (typeof jQuery !== "undefined" &&
             // Create the tree layout 
             // (https://github.com/mbostock/d3/wiki/Tree-Layout#tree)
             var tree = d3.layout.tree()
-                .nodeSize([node_height, node_width])
+                .nodeSize(function(n) { 
+                    return [node_height, node_width];
+                })
                 .separation(function(a, b) {
                   return a.parent == b.parent ? 1 : group_separation
                 })
@@ -710,6 +711,8 @@ if (typeof jQuery !== "undefined" &&
                         width: 0,
                         height: node_box_height,
                         y: - node_box_height / 2,
+                        rx: 6,
+                        ry: 6,
                     })
                 ;
 

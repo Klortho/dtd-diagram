@@ -12,15 +12,15 @@ body {
 svg {
   /* for debugging:
   background: #EEE;  */
+  font: 12px sans-serif;
 }
 
 rect, circle {
-  fill: #EEF;
-  stroke: black;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+  fill: white;
 }
 .has_children {
-  /* should we use a different color? */
-  fill: #FEE;
 }
 circle.choice {
 }
@@ -34,8 +34,6 @@ rect.expander {
 
 
 .node {
-  font: 14pt "PT Sans Narrow"; 
-  line-height: 22pt;
 }
 text.q {
   font: 12pt "courier";
