@@ -126,10 +126,11 @@ if (typeof jQuery !== "undefined" &&
               this[k] = spec[k];
             }
           }
+          if (!this["type"]) this["type"] = "element";
         }
 
         Node.prototype.is_simple = function() {
-          return typeof this.name !== "undefined";
+          return this.type == "element" || this.type == "attribute";
         }
 
         Node.prototype.has_children = function() {
@@ -182,7 +183,13 @@ if (typeof jQuery !== "undefined" &&
             }
           }
 
-          spec["content-model"].forEach(function(kid_spec) {
+          // Flatten out the top-level - if the only child of a `content-model` is
+          // a single `seq`, then those will be the direct children.
+          var kid_specs = spec["content-model"];
+          if (kid_specs.length == 1 && kid_specs[0]["type"] == "seq") 
+            kid_specs = kid_specs[0].children;
+
+          kid_specs.forEach(function(kid_spec) {
             make_kid(kid_spec, self);
           });
         }
@@ -413,6 +420,7 @@ if (typeof jQuery !== "undefined" &&
               }
             });
 
+            // This function re-computes all of the nodes' y coordinates.
             function cm_mung(self, all_nodes) {
               all_nodes.push(self);
 
