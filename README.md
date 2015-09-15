@@ -55,11 +55,33 @@ cause documentation hyperlinks to go to the right place.
 
 # To do
 
-* Use flextree!
-    * Work on the nodeSize() function for regular element nodes: width
-      based on the text
-    * Refactor such that the real tree structure, including "compound nodes",
-      is generated originally, instead of the current hack.
+## Use flextree!
+
+* Morph whenever possible: small changes, and keep everything working.
+
+
+* Work on the nodeSize() function for regular element nodes: width
+  based on the text
+    * I do a post-processing step to re-set the y coords. Get rid of that.
+
+
+
+
+
+
+
+* Refactor such that the real tree structure, including "compound nodes",
+  is generated originally, instead of the current hack.
+
+
+
+
+
+
+## Other
+
+
+
 
 * Change the style of the nodes to look pretty
 
@@ -209,7 +231,7 @@ See for example:
 * [<name>](http://jatspan.org/niso/publishing-1.1d3/#p=nfd-name) - note
   the sub-hierarchy with surname and given-names
 
-A "compound node" is defined as on of the `choice` or `seq` nodes within the
+A "compound node" is defined as one of the `choice` or `seq` nodes within the
 complex content model of an element.
 
 From the perspective of the D3 tree layout engine, however, a compound node is 

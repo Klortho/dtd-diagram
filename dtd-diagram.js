@@ -50,7 +50,7 @@ if (typeof jQuery !== "undefined" &&
             // Some dimensions
             node_width: 210,  // nominal width of a column
             node_height: 32,
-            compound_node_width: 18,
+            choice_seq_node_width: 18,
             q_width: 15,
 
             // Minimum size of the drawing in terms of tree-node rows and
@@ -113,9 +113,10 @@ if (typeof jQuery !== "undefined" &&
         //--------------------------------------------------------------------
         // Node class
 
-        // Construct a Node, either simple or compound, from the specification 
-        // within a content-model of some element within the DTD. This copies 
-        // everything except `children`. 
+        // Construct a Node from the specification within a content-model of some 
+        // element within the DTD. For `choice` and `seq` nodes, the type gets
+        // copied from the spec. For `element` nodes, we add the type. 
+        // This copies everything except `children`. 
         // Nodes start life "uninitialized", meaning the children have not yet
         // been instantiated.
         var Node = function(diagram, spec) {
@@ -129,18 +130,15 @@ if (typeof jQuery !== "undefined" &&
           if (!this["type"]) this["type"] = "element";
         }
 
-        Node.prototype.is_simple = function() {
-          return this.type == "element" || this.type == "attribute";
-        }
-
         Node.prototype.has_children = function() {
           return this.children || this._children;
         }
 
-        // This is only called on simple nodes. 
-        // This creates new child nodes from the content-model, as needed, filling
-        // in both the _children and cm_children arrays.
-        // When this returns, the node is in the collapsed state.
+        // For element nodes, this creates new child nodes from the content-model, as 
+        // needed, filling in the _children array. When this returns, the (element) node 
+        // is in the collapsed state.
+        // For choice and seq nodes, this recurses, eventually initializing all of the
+        // nodes up to the first elements or attributes that it sees.
 
         Node.prototype.initialize = function() {
           var self = this;
@@ -149,6 +147,15 @@ if (typeof jQuery !== "undefined" &&
           if (self.initialized) return;
           self.initialized = true;
 
+          if (self.type == "attribute") return;
+          if (self.type == "choice" || self.type == "seq") {
+            self.children.forEach(function(k) {
+              k.initialize();
+            });
+            return;
+          }
+
+          // type is "element"
           var spec = dtd_json.elements[this.name];
           if (typeof spec != "object" || 
               typeof spec["content-model"] == "undefined" ||
@@ -160,20 +167,15 @@ if (typeof jQuery !== "undefined" &&
           self._children = [];
 
           // This recursive function looks at one spec in the content-model of the
-          // dtd, and creates a node for it.
-          // The cm_children array of the current cm_parent will always get this 
-          // new node.
-          // The _children array of the "main" parent will get this new node iff
-          // it is a simple node. 
-          // If this creates a new compound node, then it recurses.
+          // dtd, and creates Nodes for it.
           function make_kid(kid_spec, parent_array) {
             var kid = new Node(self.diagram, kid_spec);
             parent_array.push(kid);
 
-            if (!kid.is_simple()) {
+            if (kid.type == "choice" || kid.type == "seq") {
               kid.children = [];
-              kid_spec.children.forEach(function(desc_spec) {
-                make_kid(desc_spec, kid.children);
+              kid_spec.children.forEach(function(gk_spec) {
+                make_kid(gk_spec, kid.children);
               });
             }
           }
@@ -223,26 +225,6 @@ if (typeof jQuery !== "undefined" &&
             .reduce(_tree_reduce, this.extents());
         }
 
-        // Similarly, compute the compound node's upper and lower bounds.
-        // This walks the tree as far as the simple node descendants.
-        Node.prototype.cm_vertical_average = function() {
-          var upper = lower = null;
-          var nodes_to_visit = [this];
-          var n;
-          while ((n = nodes_to_visit.pop()) != null) {
-            if (n.is_simple()) {
-              upper = d3.min([upper, n.x]);
-              lower = d3.max([lower, n.x]);
-            }
-            else {
-              var cmkids = n.cm_children,
-                  i = cmkids.length;
-              while (--i >= 0) nodes_to_visit.push(cmkids[i]);
-            }
-          }
-          return (upper + lower) / 2;
-        }
-
         // This is called when the user clicks on a node in the tree that has
         // kids. We have to call initialize() on each of the *child* nodes,
         // so that we can render them correctly.
@@ -254,16 +236,7 @@ if (typeof jQuery !== "undefined" &&
           // Initialize each of the kids
           if (this.children != null) {
             this.children.forEach(function(k) {
-              init_kids(k);
-            });
-          }
-
-          function init_kids(k) {
-            if (k.initialized) return;
-            k.initialize();
-            if (k.is_simple()) return;
-            k.children.forEach(function(gk) {
-              init_kids(gk)
+              k.initialize();
             });
           }
         }
@@ -306,7 +279,7 @@ if (typeof jQuery !== "undefined" &&
 
           var node_width = diagram.node_width;
           var node_height = diagram.node_height;
-          var compound_node_width = diagram.compound_node_width;
+          var choice_seq_node_width = diagram.choice_seq_node_width;
           var q_width = diagram.q_width;
           var min_num_columns = diagram.min_num_columns;
           var min_num_rows = diagram.min_num_rows;
@@ -370,7 +343,7 @@ if (typeof jQuery !== "undefined" &&
                   return {
                       x: s.x, 
                       y: s.y + (s.width ? s.width : 0) + 
-                        (s instanceof Node && s.is_simple() ? 
+                        (s instanceof Node && s.type == "element" ? 
                           node_expander_width : 0),
                   };
               })
@@ -424,37 +397,6 @@ if (typeof jQuery !== "undefined" &&
               }
             });
 
-            // This function re-computes all of the nodes' y coordinates.
-            function cm_mung(self, all_nodes) {
-              all_nodes.push(self);
-
-              var p;
-              if (p = self.cm_parent) {
-                if (self.is_simple()) {
-                  if (!p.is_simple()) {
-                    self.y = p.y + compound_node_width;
-                  }
-                }
-                else {
-                  if (p.is_simple()) {
-                    self.y = p.y + node_width;
-                  }
-                  else {
-                    self.y = p.y + compound_node_width;
-                  }
-                  self.x = self.cm_vertical_average();
-                }
-              }
-              if (!self.is_simple() || self.children) {
-                var kids = self.cm_children || [];
-                kids.forEach(function(k) {
-                  k.cm_parent = self;
-                  cm_mung(k, all_nodes);
-                });
-              }
-            }
-
-
             // Main function to update the rendering. `source` is the node that was 
             // clicked.
             function update(source) {
@@ -465,26 +407,7 @@ if (typeof jQuery !== "undefined" &&
 
               // Compute the new tree layout.
               var nodes = tree.nodes(root);
-
-
-              // Now that the D3 tree layout has computed the x-y coordinates of 
-              // everything, based on simple nodes, we need to use those to compute
-              // the coordinates of the compound nodes.
-              var cm_nodes = [];
-              cm_mung(root, cm_nodes);
-
-              // Replaced tree.links with this adaptation of
-              // https://github.com/mbostock/d3/blob/master/src/layout/hierarchy.js#L129
-              var links = d3.merge(
-                cm_nodes.map(function(parent) {
-                  var kids = !parent.is_simple() || parent.children
-                    ? parent.cm_children || [] : [];
-                  return (kids).map(function(child) {
-                    return {source: parent, target: child};
-                  });
-                })
-              );
-
+              var links = tree.links(nodes);
 
               // To do auto-resizing of the drawing, and auto-scrolling, here is the
               // algorithm:
@@ -696,7 +619,7 @@ if (typeof jQuery !== "undefined" &&
               // to ensure that the same data value is bound to the same node every
               // time.
               var node = svg_g.selectAll("g.node")
-                .data(cm_nodes, function(d) { 
+                .data(nodes, function(d) { 
                   return d.id || (d.id = ++last_id); 
                 })
               ;
@@ -713,7 +636,7 @@ if (typeof jQuery !== "undefined" &&
               ;
 
               var simple_nodes = nodeEnter.filter(function(d) {
-                return d.is_simple();
+                return d.type == "element" || d.type == "attribute";
               });
               simple_nodes.append("rect")
                 .attr({
@@ -768,25 +691,25 @@ if (typeof jQuery !== "undefined" &&
 
 
               var choice_nodes = nodeEnter.filter(function(d) {
-                return !d.is_simple() && d.type == "choice";
+                return d.type == "choice";
               });
               choice_nodes.append("circle")
                 .attr({
                   'class': 'choice',
-                  r: compound_node_width/2,
+                  r: choice_seq_node_width/2,
                 })
               ;
 
               var seq_nodes = nodeEnter.filter(function(d) {
-                return !d.is_simple() && d.type == "seq";
+                return d.type == "seq";
               })
               seq_nodes.append("rect")
                 .attr({
                   'class': 'seq',
-                  width: compound_node_width * 0.8,
-                  height: compound_node_width * 0.8,
-                  x: -compound_node_width * 0.4,
-                  y: -compound_node_width * 0.4,
+                  width: choice_seq_node_width * 0.8,
+                  height: choice_seq_node_width * 0.8,
+                  x: -choice_seq_node_width * 0.4,
+                  y: -choice_seq_node_width * 0.4,
                 })
               ;
 
@@ -796,9 +719,13 @@ if (typeof jQuery !== "undefined" &&
                 .append("text")
                   .attr({
                     "class": "q",
-                    x: function(d) {return d.is_simple() ? q_width/2 : 0;},
+                    x: function(d) {
+                      return d.type == "element" ? q_width/2 : 0;
+                    },
                     y: 0,
-                    "text-anchor": function(d) {return d.is_simple() ? "start" : "middle";},
+                    "text-anchor": function(d) {
+                      return d.type == "element" ? "start" : "middle";
+                    },
                     "alignment-baseline": "middle",
                   })
                   .text(function(d) {return d.q;})
