@@ -1,14 +1,15 @@
-* [c] Change it so that every node has a `type`, which is either "element", "attribute",
-  "seq" or "choice"
-* [c] Flatten the top-level sequence node of a content model.
+* front-stub has a problem (article/sub-article/front-stub)
+
+* Fix the nodeSize function so that it returns the real sizes
+    * First for choice/seq nodes
+        * [c] Fix the separation - it should be according to elem_parent, not
+          parent.
 
 
-* Strategy: 
-    * Turn existing "compound nodes" into real tree nodes, and compute the
-      layout tree with those. cm_mung will now cause a lot of overlapping
-      problems, presumably.
-        - This will get rid of the concept of "cm_children"
-    * Get rid of cm_mung
+
+    * then for element/attribute nodes
+
+
 
 
 * What does the top-level tree data look like, now, before tree.nodes() is

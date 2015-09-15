@@ -52,6 +52,7 @@ if (typeof jQuery !== "undefined" &&
             node_height: 32,
             choice_seq_node_width: 18,
             q_width: 15,
+            diagonal_width: 20,
 
             // Minimum size of the drawing in terms of tree-node rows and
             // columns. "rows" is a nominal concept. The actual # of nodes 
@@ -114,19 +115,21 @@ if (typeof jQuery !== "undefined" &&
         // Node class
 
         // Construct a Node from the specification within a content-model of some 
-        // element within the DTD. For `choice` and `seq` nodes, the type gets
-        // copied from the spec. For `element` nodes, we add the type. 
+        // element within the DTD.  
         // This copies everything except `children`. 
         // Nodes start life "uninitialized", meaning the children have not yet
         // been instantiated.
-        var Node = function(diagram, spec) {
+        var Node = function(diagram, spec, elem_parent) {
           this.initialized = false;
           this.diagram = diagram;
+          this.elem_parent = elem_parent;
           for (var k in spec) {
             if (k != "children") {
               this[k] = spec[k];
             }
           }
+          // For `choice` and `seq` nodes, the type gets
+          // copied from the spec. For `element` nodes, we add the type.
           if (!this["type"]) this["type"] = "element";
         }
 
@@ -168,14 +171,14 @@ if (typeof jQuery !== "undefined" &&
 
           // This recursive function looks at one spec in the content-model of the
           // dtd, and creates Nodes for it.
-          function make_kid(kid_spec, parent_array) {
-            var kid = new Node(self.diagram, kid_spec);
+          function make_kid(kid_spec, parent_array, elem_parent) {
+            var kid = new Node(self.diagram, kid_spec, elem_parent);
             parent_array.push(kid);
 
             if (kid.type == "choice" || kid.type == "seq") {
               kid.children = [];
               kid_spec.children.forEach(function(gk_spec) {
-                make_kid(gk_spec, kid.children);
+                make_kid(gk_spec, kid.children, elem_parent);
               });
             }
           }
@@ -187,7 +190,7 @@ if (typeof jQuery !== "undefined" &&
             kid_specs = kid_specs[0].children;
 
           kid_specs.forEach(function(kid_spec) {
-            make_kid(kid_spec, self._children);
+            make_kid(kid_spec, self._children, self);
           });
         }
 
@@ -327,10 +330,11 @@ if (typeof jQuery !== "undefined" &&
           // (https://github.com/mbostock/d3/wiki/Tree-Layout#tree)
           var tree = d3.layout.tree()
               .nodeSize(function(n) { 
-                  return [node_height, node_width];
+                  return [node_height, 
+                    n.type == "element" ? node_width : choice_seq_node_width];
               })
               .separation(function(a, b) {
-                return a.parent == b.parent ? 1 : group_separation
+                return a.elem_parent == b.elem_parent ? 1 : group_separation
               })
           ;
 
@@ -383,7 +387,7 @@ if (typeof jQuery !== "undefined" &&
                 dtd_json = _dtd_json;
                 root = new Node(diagram, {
                   name: root_element || dtd_json.root,
-                });
+                }, null);
                 root.initialize();
                 root.expand();
 
