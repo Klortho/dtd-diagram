@@ -1,4 +1,6 @@
 * front-stub has a problem (article/sub-article/front-stub)
+    * For testing, is there any way to inject a fixed tree, rather than creating 
+      it from the DTD specs?
 
 * Fix the nodeSize function so that it returns the real sizes
     * First for choice/seq nodes

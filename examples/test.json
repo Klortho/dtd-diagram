@@ -1,0 +1,258 @@
+{
+    "name": "article",
+    "type": "element",
+    "children": [
+        {
+            "name": "front",
+            "type": "element"
+        },
+        {
+            "name": "body",
+            "type": "element"
+        },
+        {
+            "name": "back",
+            "type": "element"
+        },
+        {
+            "name": "floats-group",
+            "type": "element"
+        },
+        {
+            "type": "choice",
+            "children": [
+                {
+                    "name": "sub-article",
+                    "type": "element",
+                    "children": [
+                        {
+                            "type": "choice",
+                            "children": [
+                                {
+                                    "name": "front",
+                                    "type": "element"
+                                },
+                                {
+                                    "name": "front-stub",
+                                    "type": "element",
+                                    "children": [
+                                        {
+                                            "name": "article-id",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "name": "article-categories",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "name": "title-group",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "type": "choice",
+                                            "children": [
+                                                {
+                                                    "name": "contrib-group",
+                                                    "type": "element"
+                                                },
+                                                {
+                                                    "name": "aff",
+                                                    "type": "element"
+                                                },
+                                                {
+                                                    "name": "aff-alternatives",
+                                                    "type": "element"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "author-notes",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "name": "pub-date",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "name": "volume",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "name": "volume-id",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "name": "volume-series",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "name": "issue",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "name": "issue-id",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "name": "issue-title",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "name": "issue-sponsor",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "name": "issue-part",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "name": "isbn",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "name": "supplement",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "type": "choice",
+                                            "children": [
+                                                {
+                                                    "type": "seq",
+                                                    "children": [
+                                                        {
+                                                            "name": "fpage",
+                                                            "type": "element"
+                                                        },
+                                                        {
+                                                            "name": "lpage",
+                                                            "type": "element"
+                                                        },
+                                                        {
+                                                            "name": "page-range",
+                                                            "type": "element"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "elocation-id",
+                                                    "type": "element"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "type": "choice",
+                                            "children": [
+                                                {
+                                                    "name": "email",
+                                                    "type": "element"
+                                                },
+                                                {
+                                                    "name": "ext-link",
+                                                    "type": "element"
+                                                },
+                                                {
+                                                    "name": "uri",
+                                                    "type": "element"
+                                                },
+                                                {
+                                                    "name": "product",
+                                                    "type": "element"
+                                                },
+                                                {
+                                                    "name": "supplementary-material",
+                                                    "type": "element"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "history",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "name": "permissions",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "name": "self-uri",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "type": "choice",
+                                            "children": [
+                                                {
+                                                    "name": "related-article",
+                                                    "type": "element"
+                                                },
+                                                {
+                                                    "name": "related-object",
+                                                    "type": "element"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "abstract",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "name": "trans-abstract",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "name": "kwd-group",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "name": "funding-group",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "name": "conference",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "name": "counts",
+                                            "type": "element"
+                                        },
+                                        {
+                                            "name": "custom-meta-group",
+                                            "type": "element"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "body",
+                            "type": "element"
+                        },
+                        {
+                            "name": "back",
+                            "type": "element"
+                        },
+                        {
+                            "name": "floats-group",
+                            "type": "element"
+                        },
+                        {
+                            "type": "choice",
+                            "children": [
+                                {
+                                    "name": "sub-article",
+                                    "type": "element"
+                                },
+                                {
+                                    "name": "response",
+                                    "type": "element"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "response",
+                    "type": "element"
+                }
+            ]
+        }
+    ]
+}
