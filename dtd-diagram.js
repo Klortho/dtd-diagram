@@ -338,7 +338,11 @@ if (typeof jQuery !== "undefined" &&
             n.type == "element" ? node_width : choice_seq_node_width];
         })
         .separation(function(a, b) {
-          return a.elem_parent == b.elem_parent ? 1 : group_separation
+          var sep = a.elem_parent == b.elem_parent ? 1 : group_separation;
+          var alabel = a.name ? a.name : a.type;
+          var blabel = b.name ? b.name : b.type;
+          console.log("separation: " + alabel + " <=> " + blabel + ": " + sep);
+          return sep;
         })
       ;
 
