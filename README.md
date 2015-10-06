@@ -57,35 +57,16 @@ cause documentation hyperlinks to go to the right place.
 
 ## Use flextree!
 
-* Morph whenever possible: small changes, and keep everything working.
-
-
 * Work on the nodeSize() function for regular element nodes: width
   based on the text
     * I do a post-processing step to re-set the y coords. Get rid of that.
-
-
-
-
-
-
-
 * Refactor such that the real tree structure, including "compound nodes",
   is generated originally, instead of the current hack.
 
 
-
-
-
-
 ## Other
 
-
-
-
 * Change the style of the nodes to look pretty
-
-
 * Add attributes
 * Work on the sample DTD to make sure it covers all cases
 * Auto-adjust column widths, based on the rightmost edge of any node in that column
@@ -98,14 +79,8 @@ cause documentation hyperlinks to go to the right place.
     - How about a diamond shape for choice (reminiscent of flowcharts) and 
       a horizontal ellipsis for sequence?
     - Tweak how the `q` symbols look, esp. on the compound nodes
-
 * Add "fork me on github" banner, page titles, etc.
-
 * Create an index.html page that links to the various examples.
-
-* Why didn't I get my error message from 
-  http://klortho.github.io/dtd-diagram/examples/jats-1.1d3.html?
-
 * Tiny bug: when shrinking, sometimes the scroll value
   will not change. Right now, this means the canvas will get resized right
   away. (It waits until scrolling is done, but not until the end of the 
@@ -127,10 +102,11 @@ pre-existing `<div>` element with `id` value "dtd-diagram". For example:
 <head>
   ...
   <link rel="stylesheet" type="text/css" href="dtd-diagram.css">
-  <script type='text/javascript' src='es6-promise.js'></script>
-  <script type='text/javascript' src='jquery.min.js'></script>
-  <script type="text/javascript" src="d3.min.js"></script>
-  <script type="text/javascript" src="dtd-diagram.js"></script>
+  <script src='es6-promise.js'></script>
+  <script src='jquery.min.js'></script>
+  <script src="d3.min.js"></script>
+  <script src="d3-flextree.js"></script>
+  <script src="dtd-diagram.js"></script>
   ...
 </head>
 <body>
@@ -191,13 +167,95 @@ valid JSON format.
 
 You can get a list of all of the diagrams on a page from `DtdDiagram.diagrams`.
 
+## Options
+
+There are various ways to set the options; in order of 
+higher-to-lower precedence:
+
+- Pass them as an object to the DtdDiagram constructor function.
+- Set them on the @data-options attribute of the &lt;div>
+  element. Make sure they are in strictly valid JSON format.
+- Use the defaults
+
+
+**dtd_json_file**
+
+The DTD JSON file; default is "dtd.json".
+
+
+**root_element**
+
+The root element, by default, is read from the DTD file, but can
+be overridden. Default is null.
+
+**tag_doc_url**
+
+Default is "doc/#p=".
+
+**node_width**
+
+FIXME: this will change to font-size and left- and right- padding.
+Or -- can these all be css settings?
+
+Nominal width of a node. Default is 210.
+
+**node_height**
+
+FIXME: same as above.
+
+Default is 32.
+
+**choice_seq_node_width**
+
+FIXME: same as above.
+
+Default is 18.
+
+**diagonal_width**
+
+FIXME: same as above.
+
+Default is 20.
+
+
+```
+      // Minimum size of the drawing in terms of tree-node rows and
+      // columns. "rows" is a nominal concept. The actual # of nodes 
+      // you see vertically depends on spacing between 
+      // non-sibs, etc.
+      min_num_columns: 4,
+      min_num_rows: 10,
+
+      // Dimensions of the rectangles used to draw the nodes
+      node_box_height: 25,
+      node_expander_width: 10,
+
+      scrollbar_margin: 20,
+      dropshadow_margin: 5,
+
+      // Ratio of the separation between groups to the separation between sibling nodes
+      group_separation: 1.4,
+
+      // Duration of the animation, in milliseconds.
+      duration: 500,
+    };
+```
+
+**test_file**
+
+Use a pre-layed-out test file, for testing. Default is *null*.
+This is exclusive with **dtd_json_file**.
+
+
 
 # Generating the JSON
 
-Use dtdanalyzer,
+Use dtdanalyzer ....
 
 
-# Managing geometry
+# Implementation
+
+## Managing geometry
 
 The geometry of the display is captured by several separate Box objects, 
 with each box recording top, bottom, left, and right in the SVG
@@ -215,7 +273,7 @@ state after the click. Here they are:
   around.
 
 
-# Data models
+## Data models
 
 The DTD data and the display tree data are held in a separate data structures. 
 This is necessary, because a given element might appear in several places in the
@@ -226,9 +284,9 @@ a hierarchy itself (a sub-tree of the main tree).
 
 See for example:
 
-* [<journal-meta>](http://jatspan.org/niso/publishing-1.1d3/#p=nfd-journal-meta) -
+* [&lt;journal-meta>](http://jatspan.org/niso/publishing-1.1d3/#p=nfd-journal-meta) -
   note the sub-sequence starting with contrib-group
-* [<name>](http://jatspan.org/niso/publishing-1.1d3/#p=nfd-name) - note
+* [&lt;name>](http://jatspan.org/niso/publishing-1.1d3/#p=nfd-name) - note
   the sub-hierarchy with surname and given-names
 
 A "compound node" is defined as one of the `choice` or `seq` nodes within the
@@ -244,7 +302,7 @@ Horizontally, a compound node still must fit into a single column. This might
 be a problem for very complex content models.
 
 
-## Complex content models
+### Complex content models
 
 There are two types of nodes. Use node.is_simple() to determine the type
 of any given node. The types are:
@@ -260,7 +318,7 @@ We maintain two separate trees at the same time:
 2. cm_children - this tree includes all compound and simple nodes
 
 
-## Simple nodes data members
+### Simple nodes data members
 
 - Data that we create/maintain:
     * name
@@ -282,7 +340,7 @@ We maintain two separate trees at the same time:
     * x, y
     * parent
 
-## Compound nodes data members
+### Compound nodes data members
 
 * type - one of "choice", "seq", etc.
 * q

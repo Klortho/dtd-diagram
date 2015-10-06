@@ -117,9 +117,9 @@ if (typeof jQuery !== "undefined" &&
     //--------------------------------------------------------------------
     // Node class
 
-    // Construct a Node from the specification within a content-model of some 
-    // element within the DTD.  
-    // This copies everything except `children`. 
+    // Construct a Node from a specification (of any type) within a content-model 
+    // of some element within the DTD.  
+    // This copies everything except `children` (name, type, q).
     // Nodes start life "uninitialized", meaning the children have not yet
     // been instantiated.
     var Node = function(diagram, spec, elem_parent) {
@@ -163,9 +163,7 @@ if (typeof jQuery !== "undefined" &&
 
       // type is "element"
       var spec = dtd_json.elements[this.name];
-      if (typeof spec != "object" || 
-          typeof spec["content-model"] == "undefined" ||
-          spec["content-model"].length == 0)
+      if (typeof spec != "object" || !spec["children"])
       {
         return;
       }
@@ -186,13 +184,7 @@ if (typeof jQuery !== "undefined" &&
         }
       }
 
-      // Flatten out the top-level - if the only child of a `content-model` is
-      // a single `seq`, then those will be the direct children.
-      var kid_specs = spec["content-model"];
-      if (kid_specs.length == 1 && kid_specs[0]["type"] == "seq") 
-        kid_specs = kid_specs[0].children;
-
-      kid_specs.forEach(function(kid_spec) {
+      spec["children"].forEach(function(kid_spec) {
         make_kid(kid_spec, self._children, self);
       });
     }
@@ -216,11 +208,10 @@ if (typeof jQuery !== "undefined" &&
         .reduce(_tree_reduce, acc);  
       var ne = n.extents();
 
-      var b = d3.max([ke.bottom, ne.bottom]);
       return new Box(
         d3.min([ke.top,    ne.top]),
         d3.min([ke.left,   ne.left]),
-        b,
+        d3.max([ke.bottom, ne.bottom]),
         d3.max([ke.right,  ne.right])
       );
     }
@@ -332,7 +323,7 @@ if (typeof jQuery !== "undefined" &&
 
       // Create the tree layout 
       // (https://github.com/mbostock/d3/wiki/Tree-Layout#tree)
-      var tree = d3.layout.tree()
+      var tree = d3.layout.flextree()
         .nodeSize(function(n) { 
           return [node_height, 
             n.type == "element" ? node_width : choice_seq_node_width];
