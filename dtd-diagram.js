@@ -163,7 +163,7 @@ if (typeof jQuery !== "undefined" &&
 
       // type is "element"
       var spec = dtd_json.elements[this.name];
-      if (typeof spec != "object" || !spec["children"])
+      if (typeof spec != "object" || !spec["content-model"])
       {
         return;
       }
@@ -184,9 +184,9 @@ if (typeof jQuery !== "undefined" &&
         }
       }
 
-      spec["children"].forEach(function(kid_spec) {
-        make_kid(kid_spec, self._children, self);
-      });
+      //spec["content-model"].forEach(function(kid_spec) {
+        make_kid(spec["content-model"], self._children, self);
+      //});
     }
 
     Node.prototype.extents = function() {
@@ -323,7 +323,7 @@ if (typeof jQuery !== "undefined" &&
 
       // Create the tree layout 
       // (https://github.com/mbostock/d3/wiki/Tree-Layout#tree)
-      var tree = d3.layout.flextree()
+      var engine = d3.layout.flextree()
         .nodeSize(function(n) { 
           return [node_height, 
             n.type == "element" ? node_width : choice_seq_node_width];
@@ -385,9 +385,16 @@ if (typeof jQuery !== "undefined" &&
           }
           else {
             dtd_json = _dtd_json;
+
+            // Create the new tree. Unlike any subsequent element nodes, the root Node 
+            // is from a hand-crafted object, rather than being copied from an element 
+            // spec in the DTD
             root = new Node(diagram, {
               name: root_element || dtd_json.root,
             }, null);
+
+            // Next, we initialize the root node, which causes all of its children to
+            // be expanded
             root.initialize();
             root.expand();
 
@@ -452,8 +459,8 @@ if (typeof jQuery !== "undefined" &&
         var myID = 0;
 
         // Compute the new tree layout.
-        var nodes = tree.nodes(root);
-        var links = tree.links(nodes);
+        var nodes = engine.nodes(root);
+        var links = engine.links(nodes);
 
         // To do auto-resizing of the drawing, and auto-scrolling, here is the
         // algorithm:

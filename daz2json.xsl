@@ -26,7 +26,7 @@
   </xsl:template>
   
   <xsl:template match='content-model[@spec="element"]'>
-    <a k='children'>
+    <a k='content-model'>
       <xsl:apply-templates/>
     </a>
   </xsl:template>
