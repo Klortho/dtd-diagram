@@ -324,6 +324,7 @@ if (typeof jQuery !== "undefined" &&
       // Create the tree layout 
       // (https://github.com/mbostock/d3/wiki/Tree-Layout#tree)
       var engine = d3.layout.flextree()
+        .setNodeSizes(true)
         .nodeSize(function(n) { 
           return [node_height, 
             n.type == "element" ? node_width : choice_seq_node_width];
@@ -457,6 +458,59 @@ if (typeof jQuery !== "undefined" &&
             min_canvas_height = container_jq.height() - scrollbar_margin;
 
         var myID = 0;
+
+        // First get the bag of nodes in the right order
+        var nodes = d3.layout.hierarchy()(root);
+
+        // We should bind the data, and create the text here, since the test is
+        // used to compute the node sizes
+
+        // Bind the node data. The second argument to .data() provides the key,
+        // to ensure that the same data value is bound to the same node every
+        // time.
+        var node = svg_g.selectAll("g.node")
+          .data(nodes, function(d) { 
+            return d.id || (d.id = ++last_id); 
+          })
+        ;
+
+        var node_enter = node.enter().append("g")
+          .attr({
+            "class": "node",
+            filter: "url(#dropshadow)",
+          })
+        ;
+
+        var elem_attr_nodes = node_enter.filter(function(d) {
+          return d.type == "element" || d.type == "attribute";
+        });
+
+        // Text label for simple nodes
+        // Implement links to documentation here
+        elem_attr_nodes.append("a")
+          .attr("xlink:href", function(d) {
+            return tag_doc_url + "elem-" + d.name;
+          })
+          .append("text")
+            .attr({
+              id: function(d) { return d.id; },
+              x: function(d) {return 5 + (d.q ? q_width : 0)},
+              y: 0,
+              "text-anchor": "baseline",
+              "alignment-baseline": "middle",
+            })
+            .text(function(d) { 
+              return d.name; 
+            })
+            .style("fill-opacity", 0)
+        ;
+        engine.nodeSize(function(d) {
+          var w = d.type == 'element' || d.type == 'attribute' 
+            ? document.getElementById(d.id).getBBox()["width"] + 30
+            : choice_seq_node_width;
+          return [25, w];
+        });
+
 
         // Compute the new tree layout.
         var nodes = engine.nodes(root);
@@ -666,30 +720,16 @@ if (typeof jQuery !== "undefined" &&
 
         canvas = new_canvas.copy();
 
-        // Bind the node data. The second argument to .data() provides the key,
-        // to ensure that the same data value is bound to the same node every
-        // time.
-        var node = svg_g.selectAll("g.node")
-          .data(nodes, function(d) { 
-            return d.id || (d.id = ++last_id); 
-          })
-        ;
-
-        // Enter any new nodes at the parent's previous position.
-        var nodeEnter = node.enter().append("g")
+        // Now set the position of the new nodes at the parent's previous position.
+        node_enter.append("g")
           .attr({
-            "class": "node",
             transform: function(d) { 
               return "translate(" + source.y0 + "," + source.x0 + ")"; 
             },
-            filter: "url(#dropshadow)",
           })
         ;
 
-        var simple_nodes = nodeEnter.filter(function(d) {
-          return d.type == "element" || d.type == "attribute";
-        });
-        simple_nodes.append("rect")
+        elem_attr_nodes.append("rect")
           .attr({
             "class": function(d) {
               return "simple" + (d.has_children() ? " has_children" : "");
@@ -703,28 +743,9 @@ if (typeof jQuery !== "undefined" &&
           })
         ;
 
-        // Text label for simple nodes
-        // Implement links to documentation here
-        simple_nodes.append("a")
-          .attr("xlink:href", function(d) {
-            return tag_doc_url + "elem-" + d.name;
-          })
-          .append("text")
-            .attr({
-              id: function(d) { return d.id; },
-              x: function(d) {return 5 + (d.q ? q_width : 0)},
-              y: 0,
-              "text-anchor": "baseline",
-              "alignment-baseline": "middle",
-            })
-            .text(function(d) { 
-              return d.name; 
-            })
-            .style("fill-opacity", 0)
-        ;
 
         // Expander box for simple nodes that have kids
-        simple_nodes.filter(function(d) {
+        elem_attr_nodes.filter(function(d) {
             return d.has_children();
           })
           .append("rect")
@@ -739,7 +760,7 @@ if (typeof jQuery !== "undefined" &&
             .on("click", click)
         ;
 
-        var choice_nodes = nodeEnter.filter(function(d) {
+        var choice_nodes = node_enter.filter(function(d) {
           return d.type == "choice";
         });
         choice_nodes.append("circle")
@@ -749,7 +770,7 @@ if (typeof jQuery !== "undefined" &&
           })
         ;
 
-        var seq_nodes = nodeEnter.filter(function(d) {
+        var seq_nodes = node_enter.filter(function(d) {
           return d.type == "seq";
         })
         seq_nodes.append("rect")
@@ -763,7 +784,7 @@ if (typeof jQuery !== "undefined" &&
         ;
 
         // Text label for `q`
-        nodeEnter.filter(function(d) {return !!d.q;})
+        node_enter.filter(function(d) {return !!d.q;})
           .append("text")
             .attr({
               "class": "q",
