@@ -2,12 +2,9 @@ if (typeof jQuery !== "undefined" &&
     typeof d3 !== "undefined")
 {
   DtdDiagram = function($) {
-    var document_ready = new Promise(function(resolve) {
-      $(document).ready(resolve);
-    });
 
     // Class definition, constructor.
-    var DtdDiagram = function(opts) {
+    var _DtdDiagram = function(opts) {
       var diagram = this;
       DtdDiagram.diagrams.push(diagram);
       diagram.opts = opts || {};
@@ -19,15 +16,9 @@ if (typeof jQuery !== "undefined" &&
       });
     };
 
-    DtdDiagram.diagrams = [];
-    DtdDiagram.auto_start = true;
+    _DtdDiagram.diagrams = [];
+    _DtdDiagram.auto_start = true;
 
-    // By default, if the user hasn't instantiated an object, then
-    // we'll make one for him at document.ready.        
-    document_ready.then(function() {
-      if (DtdDiagram.auto_start && DtdDiagram.diagrams.length == 0) 
-        new DtdDiagram();
-    });
 
     // Default values for all the options. 
     // There are various ways to set the options; in order of 
@@ -78,176 +69,16 @@ if (typeof jQuery !== "undefined" &&
       duration: 500,
     };
 
-    //--------------------------------------------------------------------
-    // Box class
 
-    var Box = function(top, left, bottom, right) {
-      this.top = top;
-      this.left = left;
-      this.bottom = bottom;
-      this.right = right;
-    }
-    Box.prototype.log = function(name) {
-      console.log(name + ": {top: " + this.top + ", left: " + this.left + 
-        ", bottom: " + this.bottom + ", right: " + this.right + "}");
-    }
-    Box.prototype.copy = function() {
-      return new Box(this.top, this.left, this.bottom, this.right);
-    }
-    Box.prototype.width = function() {
-      return this.right - this.left;
-    }
-    Box.prototype.height = function() {
-      return this.bottom - this.top;
-    }
-    Box.prototype.vcenter = function() {
-      return (this.top + this.bottom) / 2;
-    }
-    Box.prototype.vmove = function(d) {
-      this.top += d;
-      this.bottom += d;
-      return this;
-    }
-    Box.prototype.hmove = function(d) {
-      this.left += d;
-      this.right += d;
-      return this;
-    }
-
-    //--------------------------------------------------------------------
-    // Node class
-
-    // Construct a Node from a specification (of any type) within a content-model 
-    // of some element within the DTD.  
-    // This copies everything except `children` (name, type, q).
-    // Nodes start life "uninitialized", meaning the children have not yet
-    // been instantiated.
-    var Node = function(diagram, spec, elem_parent) {
-      this.initialized = false;
-      this.diagram = diagram;
-      this.elem_parent = elem_parent;
-      for (var k in spec) {
-        if (k != "children") {
-          this[k] = spec[k];
-        }
-      }
-      // For `choice` and `seq` nodes, the type gets
-      // copied from the spec. For `element` nodes, we add the type.
-      if (!this["type"]) this["type"] = "element";
-    }
-
-    Node.prototype.has_children = function() {
-      return this.children || this._children;
-    }
-
-    // For element nodes, this creates new child nodes from the content-model, as 
-    // needed, filling in the _children array. When this returns, the (element) node 
-    // is in the collapsed state.
-    // For choice and seq nodes, this recurses, eventually initializing all of the
-    // nodes up to the first elements or attributes that it sees.
-
-    Node.prototype.initialize = function() {
-      var self = this;
-
-      // Make sure this is only called once
-      if (self.initialized) return;
-      self.initialized = true;
-
-      if (self.type == "attribute") return;
-      if (self.type == "choice" || self.type == "seq") {
-        self.children.forEach(function(k) {
-          k.initialize();
-        });
-        return;
-      }
-
-      // type is "element"
-      var spec = dtd_json.elements[this.name];
-      if (typeof spec != "object" || !spec["content-model"])
-      {
-        return;
-      }
-
-      self._children = [];
-
-      // This recursive function looks at one spec in the content-model of the
-      // dtd, and creates Nodes for it.
-      function make_kid(kid_spec, parent_array, elem_parent) {
-        var kid = new Node(self.diagram, kid_spec, elem_parent);
-        parent_array.push(kid);
-
-        if (kid.type == "choice" || kid.type == "seq") {
-          kid.children = [];
-          kid_spec.children.forEach(function(gk_spec) {
-            make_kid(gk_spec, kid.children, elem_parent);
-          });
-        }
-      }
-
-      //spec["content-model"].forEach(function(kid_spec) {
-        make_kid(spec["content-model"], self._children, self);
-      //});
-    }
-
-    Node.prototype.extents = function() {
-      var opts = this.diagram;
-      return new Box(
-        this.x - opts.node_box_height / 2,
-        this.y,
-        this.x + opts.node_box_height / 2,
-        this.y + opts.node_width
-      );
-    }
-
-    // Tree-reduce function: returns the min/max extents
-    // of an accumulator (previous extents), a given node (n) and all
-    // of that node's kids.
-    function _tree_reduce(acc, n) {
-      //acc.log("_tree_reduce:acc");
-      var ke = (n.children || [])   // kids extents
-        .reduce(_tree_reduce, acc);  
-      var ne = n.extents();
-
-      return new Box(
-        d3.min([ke.top,    ne.top]),
-        d3.min([ke.left,   ne.left]),
-        d3.max([ke.bottom, ne.bottom]),
-        d3.max([ke.right,  ne.right])
-      );
-    }
-
-    // Determine the extents of a (sub)tree, returning a Box.
-    Node.prototype.tree_extents = function() {
-      return (this.children || [])
-        .reduce(_tree_reduce, this.extents());
-    }
-
-    // This is called when the user clicks on a node in the tree that has
-    // kids. We have to call initialize() on each of the *child* nodes,
-    // so that we can render them correctly.
-    Node.prototype.expand = function() {
-      if (this.children == null) {
-        this.children = this._children;
-        this._children = null;
-      }
-      // Initialize each of the kids
-      if (this.children != null) {
-        this.children.forEach(function(k) {
-          k.initialize();
-        });
-      }
-    }
-
-    Node.prototype.collapse = function() {
-      this._children = this.children;
-      this.children = null;
-    }
 
 
     //--------------------------------------------------------------------
     // Main drawing routine
 
-    DtdDiagram.prototype.draw = function() {
+    _DtdDiagram.prototype.draw = function() {
+      var Box = DtdDiagram.Box;
+      var Node = DtdDiagram.Node;
+
       var diagram = this;
       var opts = diagram.opts;
       diagram.error = false;
@@ -321,8 +152,7 @@ if (typeof jQuery !== "undefined" &&
 
       var last_id = 0;
 
-      // Create the tree layout 
-      // (https://github.com/mbostock/d3/wiki/Tree-Layout#tree)
+      // Create the flextree layout and set options
       var engine = d3.layout.flextree()
         .setNodeSizes(true)
         .nodeSize(function(n) { 
@@ -333,7 +163,7 @@ if (typeof jQuery !== "undefined" &&
           var sep = a.elem_parent == b.elem_parent ? 1 : group_separation;
           var alabel = a.name ? a.name : a.type;
           var blabel = b.name ? b.name : b.type;
-          console.log("separation: " + alabel + " <=> " + blabel + ": " + sep);
+          //console.log("separation: " + alabel + " <=> " + blabel + ": " + sep);
           return sep;
         })
       ;
@@ -356,6 +186,7 @@ if (typeof jQuery !== "undefined" &&
         })
       ;
 
+      // Initialize the SVG
       var canvas = new Box(
         -min_canvas_height / 2, 
         0, 
@@ -395,8 +226,10 @@ if (typeof jQuery !== "undefined" &&
             }, null);
 
             // Next, we initialize the root node, which causes all of its children to
-            // be expanded
+            // be instantiated from the DTD
             root.initialize();
+
+            // Expand those children
             root.expand();
 
             // x is the vertical, and y the horizontal, coordinate
@@ -409,47 +242,31 @@ if (typeof jQuery !== "undefined" &&
           }
         });
       }
+
       else {
+        // The test file is an already-expanded tree, not from the DTD
         d3.json(test_file, function(error, _test_json) {
           root = bless(_test_json, null);
           root.x0 = 0;
           root.y0 = 0;
           update(root);
         });
+
+        // Used for testing only - this takes the objects from the test json, and
+        // converts them into Node objects.
+        function bless(s, elem_parent) {
+          var n = new Node(diagram, s, elem_parent);
+          if (s.children) {
+            n.children = [];
+            var new_elem_parent = n.type == "element" ? n : elem_parent;
+            s.children.forEach(function(ks) {
+              n.children.push(bless(ks, new_elem_parent));
+            });
+          }
+          return n;
+        }
       }
 
-      // Used for testing only
-      function bless(s, elem_parent) {
-        var n = new Node(diagram, s, elem_parent);
-        if (s.children) {
-          n.children = [];
-          var new_elem_parent = n.type == "element" ? n : elem_parent;
-          s.children.forEach(function(ks) {
-            n.children.push(bless(ks, new_elem_parent));
-          });
-        }
-        return n;
-      }
-      $("#capture").on("click", function(e) {
-        var msg = json_out(root);
-        $('#msg').text(msg);
-      });
-      function json_out(n) {
-        var msg = "{"
-        if (n.name) msg += '"name": "' + n.name + '",\n';
-        msg += '"type": "' + n.type + '"';
-        if (n.children) {
-          msg += ',\n';
-          msg += '"children": [';
-          for (var i = 0; i < n.children.length; ++i) {
-            msg += json_out(n.children[i]);
-            if (i < n.children.length - 1) msg += ",";
-          }
-          msg += "]\n";
-        }
-        msg += "}\n";
-        return msg;
-      }
 
       // Main function to update the rendering. `source` is the node that was 
       // clicked.
@@ -516,6 +333,11 @@ if (typeof jQuery !== "undefined" &&
         var nodes = engine.nodes(root);
         var links = engine.links(nodes);
 
+        //--------------------------------------------------------------------
+        // FIXME: is there any way to snip out everything here between these
+        // lines, and put it into its own module?
+
+        
         // To do auto-resizing of the drawing, and auto-scrolling, here is the
         // algorithm:
         // - find the new drawing size
@@ -526,10 +348,10 @@ if (typeof jQuery !== "undefined" &&
         // - figure where to move the viewport to -- the smallest amount that will
         //   cause it to be over the cover box.
 
-        // Determine the new extents of the whole drawing
+        // Determine the new extents of the whole drawing -- this is a Box object.
         var new_drawing = root.tree_extents();
         new_drawing.bottom += dropshadow_margin;
-        new_drawing.log("new_drawing");
+        //new_drawing.log("new_drawing");
 
         // From that, determine the new dimensions of the svg canvas
         var nc_top = new_drawing.height() >= min_canvas_height ?
@@ -546,13 +368,13 @@ if (typeof jQuery !== "undefined" &&
               new_drawing.right :
               new_drawing.left + min_canvas_width
         );
-        new_canvas.log("new_canvas");
+        //new_canvas.log("new_canvas");
 
         // Get the extents of the source (the node the user clicked on) 
         // and its subtree.
         var source_extents = source.extents();
         var stree_extents = source.tree_extents();
-        stree_extents.log("stree_extents");
+        //stree_extents.log("stree_extents");
 
         // Compute the box that the viewport needs to cover. This is guaranteed to:
         // - fit entirely inside the viewport
@@ -581,7 +403,7 @@ if (typeof jQuery !== "undefined" &&
           cover_box.top = want_top + nudge;
           cover_box.bottom = want_bottom + nudge;
         }
-        cover_box.log("cover_box");
+        //cover_box.log("cover_box");
 
         // Where is the viewport now? We can't rely on the old value, because the
         // user might have been mucking with the scroll bars.
@@ -594,7 +416,7 @@ if (typeof jQuery !== "undefined" &&
             scroll_top + canvas.top + min_canvas_height,
             scroll_left + min_canvas_width
         );
-        viewport.log("viewport");
+        //viewport.log("viewport");
 
         // Compute where the new viewport will be. First move it to cover the
         // cover box, then make sure it is within the canvas
@@ -627,7 +449,7 @@ if (typeof jQuery !== "undefined" &&
             new_canvas.right - new_viewport.right :
           0
         );
-        new_viewport.log("new_viewport");
+        //new_viewport.log("new_viewport");
 
         new_scroll_top = new_viewport.top - new_canvas.top;
         new_scroll_left = new_viewport.left;
@@ -687,6 +509,7 @@ if (typeof jQuery !== "undefined" &&
           };
         }(scroll_top, new_scroll_top, scroll_left, new_scroll_left);
 
+        //----------------------------------------------------------
 
         // Finally ready!
         // If the canvas is getting larger, first change the size abruptly,
@@ -897,7 +720,16 @@ if (typeof jQuery !== "undefined" &&
       }
     }
 
-    return DtdDiagram;
+    return _DtdDiagram;
   }(jQuery);
 
+  // By default, if the user hasn't instantiated an object, then
+  // we'll make one for him at document.ready.        
+  var document_ready = new Promise(function(resolve) {
+    $(document).ready(resolve);
+  });
+  document_ready.then(function() {
+    if (DtdDiagram.auto_start && DtdDiagram.diagrams.length == 0) 
+      new DtdDiagram();
+  });
 }
