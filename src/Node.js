@@ -1,8 +1,7 @@
+// DtdDiagram.Node class
+
 if (DtdDiagram) {
   DtdDiagram.Node = function() {
-
-    //--------------------------------------------------------------------
-    // Node class
 
     // Construct a Node from a specification (of any type) within a content-model 
     // of some element within the DTD.  
@@ -103,7 +102,7 @@ if (DtdDiagram) {
       );
     }
 
-    // Determine the extents of a (sub)tree, returning a Box.
+    // Determine the extents of a (sub)tree, returning a Box object.
     Node.prototype.tree_extents = function() {
       return (this.children || [])
         .reduce(_tree_reduce, this.extents());

@@ -1,9 +1,12 @@
 if (typeof jQuery !== "undefined" &&
     typeof d3 !== "undefined")
 {
+  // Define a global variable DtdDiagram, which is a function that can be called
+  // with `new`.
   DtdDiagram = function($) {
 
-    // Class definition, constructor.
+    // Define the constructor function itself, that will be returned at the end of
+    // this IFFE, and become the value of the global variable DtdDiagram.
     var _DtdDiagram = function(opts) {
       var diagram = this;
       DtdDiagram.diagrams.push(diagram);
@@ -232,13 +235,6 @@ if (typeof jQuery !== "undefined" &&
             // Expand those children
             root.expand();
 
-            // x is the vertical, and y the horizontal, coordinate
-            root.x0 = 0;
-            root.y0 = 0;
-
-            // Starting state is to have the root and its kids expanded, but all
-            // the deeper descendents collapsed.
-            update(root);
           }
         });
       }
@@ -247,9 +243,6 @@ if (typeof jQuery !== "undefined" &&
         // The test file is an already-expanded tree, not from the DTD
         d3.json(test_file, function(error, _test_json) {
           root = bless(_test_json, null);
-          root.x0 = 0;
-          root.y0 = 0;
-          update(root);
         });
 
         // Used for testing only - this takes the objects from the test json, and
@@ -266,6 +259,16 @@ if (typeof jQuery !== "undefined" &&
           return n;
         }
       }
+      diagram.root = root;
+      
+      // x is the vertical, and y the horizontal, coordinate
+      root.x0 = 0;
+      root.y0 = 0;
+
+      // Starting state is to have the root and its kids expanded, but all
+      // the deeper descendents collapsed.
+      update(root);
+      update(root);
 
 
       // Main function to update the rendering. `source` is the node that was 
@@ -333,11 +336,14 @@ if (typeof jQuery !== "undefined" &&
         var nodes = engine.nodes(root);
         var links = engine.links(nodes);
 
+        var new_canvas = scroll_resize(diagram);
+
+/*
         //--------------------------------------------------------------------
         // FIXME: is there any way to snip out everything here between these
         // lines, and put it into its own module?
 
-        
+
         // To do auto-resizing of the drawing, and auto-scrolling, here is the
         // algorithm:
         // - find the new drawing size
@@ -509,8 +515,6 @@ if (typeof jQuery !== "undefined" &&
           };
         }(scroll_top, new_scroll_top, scroll_left, new_scroll_left);
 
-        //----------------------------------------------------------
-
         // Finally ready!
         // If the canvas is getting larger, first change the size abruptly,
         // then tween the scrollbars
@@ -534,6 +538,9 @@ if (typeof jQuery !== "undefined" &&
           scroll_canvas()
             .then(resize_canvas);
         }
+
+        //----------------------------------------------------------
+*/
 
         // At the same time, transition the svg coordinates
         svg_g.transition()

@@ -1,9 +1,9 @@
+// DtdDiagram.Box class.
+// Holds coordinates for top, left, bottom, and right. Has methods for
+// moving the box, vertically or horizontally.
+
 if (DtdDiagram) {
   DtdDiagram.Box = function() {
-
-    //--------------------------------------------------------------------
-    // Box class
-
     var Box = function(top, left, bottom, right) {
       this.top = top;
       this.left = left;
@@ -37,6 +37,5 @@ if (DtdDiagram) {
       return this;
     }
     return Box;
-
   }();
 }

@@ -55,13 +55,15 @@ cause documentation hyperlinks to go to the right place.
 
 # To do
 
-## Use flextree!
+* Get a test tree working first. Start simple.
 
-* Work on the nodeSize() function for regular element nodes: width
-  based on the text
-    * I do a post-processing step to re-set the y coords. Get rid of that.
-* Refactor such that the real tree structure, including "compound nodes",
-  is generated originally, instead of the current hack.
+
+* Get d3-flextree onto [jsdelivr 
+  CDN](https://www.jsdelivr.com/free-open-source-cdn/javascript-cdn), then update
+  the files here.
+* Automate build process to combine modules
+* After I get it completely working, change the default index.html page to render the JATS
+  DTD, for demo purposes. 
 
 
 ## Other
