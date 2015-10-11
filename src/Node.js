@@ -76,12 +76,12 @@ if (DtdDiagram) {
     }
 
     Node.prototype.extents = function() {
-      var opts = this.diagram;
+      var diagram = this.diagram;
       return new DtdDiagram.Box(
-        this.x - opts.node_box_height / 2,
+        this.x - diagram.node_box_height / 2,
         this.y,
-        this.x + opts.node_box_height / 2,
-        this.y + opts.node_width
+        this.x + diagram.node_box_height / 2,
+        this.y + diagram.node_width
       );
     }
 

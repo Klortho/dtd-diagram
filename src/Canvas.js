@@ -1,11 +1,6 @@
 function scroll_resize(diagram) {
   var root = diagram.root;
 
-        //--------------------------------------------------------------------
-        // FIXME: is there any way to snip out everything here between these
-        // lines, and put it into its own module?
-
-
         // To do auto-resizing of the drawing, and auto-scrolling, here is the
         // algorithm:
         // - find the new drawing size
@@ -200,8 +195,6 @@ function scroll_resize(diagram) {
           scroll_canvas()
             .then(resize_canvas);
         }
-
-        //----------------------------------------------------------
 
   return new_canvas;
 }
