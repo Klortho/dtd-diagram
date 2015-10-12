@@ -1,32 +1,4 @@
 {
     "name": "front-stub",
-    "type": "element",
-    "children": [
-        {
-            "name": "supplement",
-            "type": "element"
-        },
-        {
-            "type": "choice",
-            "children": [
-                {
-                    "name": "supplementary-material",
-                    "type": "element"
-                }
-            ]
-        },
-        {
-            "name": "self-uri",
-            "type": "element"
-        },
-        {
-            "type": "seq",
-            "children": [
-                {
-                    "name": "related-object",
-                    "type": "element"
-                }
-            ]
-        }
-    ]
+    "type": "element"
 }

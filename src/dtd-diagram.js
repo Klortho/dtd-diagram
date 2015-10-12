@@ -14,13 +14,35 @@ if (typeof jQuery !== "undefined" &&
 
       // Defer everything else, including options handling, until document
       // ready.
-      document_ready.then(function() {
-        diagram.draw();
-      });
+      document_ready
+        .then(function() {
+          return diagram.initialize();
+        })
+        .then(function() {
+          return diagram.update(diagram.root);
+        })
+        .catch(function(err) {
+          console.error(err);
+        })
+      ;
     };
 
     _DtdDiagram.diagrams = [];
     _DtdDiagram.auto_start = true;
+
+    // document_ready is a Promise that resolves when the document is ready.
+    // It simplifies making sure everything is syncronized.
+    var document_ready = _DtdDiagram.document_ready =
+      new Promise(function(resolve) {
+        $(document).ready(resolve);
+      });
+
+    // By default, if the user hasn't instantiated an object, then
+    // we'll make one for him at document.ready.        
+    document_ready.then(function() {
+      if (DtdDiagram.auto_start && DtdDiagram.diagrams.length == 0) 
+        new DtdDiagram();
+    });
 
 
     // Default values for all the options. 
@@ -30,8 +52,7 @@ if (typeof jQuery !== "undefined" &&
     // - Set them on the @data-options attribute of the <div>
     //   element. Make sure they are in strictly valid JSON format.
     // - Use the defaults
-
-    var defaults = {
+    _DtdDiagram.default_options = {
       // DTD JSON file
       dtd_json_file: "dtd.json",
 
@@ -54,6 +75,7 @@ if (typeof jQuery !== "undefined" &&
       node_box_height: 25,
       choice_seq_node_width: 18,
       q_width: 15,
+      button_width: 15,
       diagonal_width: 20,
       scrollbar_margin: 20,
       dropshadow_margin: 5,
@@ -66,18 +88,19 @@ if (typeof jQuery !== "undefined" &&
     };
 
 
-    //--------------------------------------------------------------------
-    // Main initial drawing routine. By default, called on document ready.
+    // Initialize the diagram, by computing and storing the options, creating
+    // the svg element, instantiating and configuring the layout engine
+    _DtdDiagram.prototype.initialize = function() {
+      var diagram = this;
 
-    _DtdDiagram.prototype.draw = function() {
       var Box = DtdDiagram.Box;
       var Node = DtdDiagram.Node;
-      var diagram = this;
-      var opts = diagram.opts;
       diagram.error = false;
+      diagram.last_id = 0;
 
       // User can pass in a specifier for the div either as an
       // id string, a DOM Element, or a jQuery object.
+      var opts = diagram.opts;
       var container = opts.container || 'dtd-diagram';
       var container_jq = diagram.container_jq =
           typeof container == "string" ? $('#' + container) :
@@ -99,16 +122,18 @@ if (typeof jQuery !== "undefined" &&
       // Get the actual options to use, based on the precedence rules. This sets
       // the properties right on the diagram object itself.
       var tag_options = container_jq.data("options") || {};
-      $.extend(true, diagram, defaults, tag_options, opts);
+      $.extend(true, diagram, DtdDiagram.default_options, tag_options, opts);
 
+      // If we're using a test file, then we're not going to use a dtd file
+      if (diagram.test_file) diagram.dtd_json_file = null;
 
       // Set local variables for the options, for convenience
       var dtd_json_file = diagram.dtd_json_file,
           test_file = diagram.test_file,
           root_element = diagram.root_element,
           tag_doc_url = diagram.tag_doc_url,
-          min_canvas_width = diagram.min_canvas_width;
-          min_canvas_height = diagram.min_canvas_height;
+          min_canvas_width = diagram.min_canvas_width,
+          min_canvas_height = diagram.min_canvas_height,
           node_text_margin = diagram.node_text_margin,
           node_height = diagram.node_height,
           node_box_height = diagram.node_box_height,
@@ -119,6 +144,7 @@ if (typeof jQuery !== "undefined" &&
           group_separation = diagram.group_separation,
           duration = diagram.duration;
 
+      // Use jQuery to add the main SVG element that will hold the diagram.
       container_jq.append(
         "<svg>\n" +
         "  <defs>\n" +
@@ -136,7 +162,7 @@ if (typeof jQuery !== "undefined" &&
         "  </defs>\n" +
         "</svg>\n"
       );
-      var svg = container_d3.select("svg");
+      var svg = diagram.svg = container_d3.select("svg");
 
       // scrollbar margin - if this is big enough, it ensures we'll never get
       // spurious scrollbars when the drawing is at the minimum size. But if it's
@@ -146,38 +172,8 @@ if (typeof jQuery !== "undefined" &&
         'height': (min_canvas_height + scrollbar_margin) + 'px'
       });
 
-      var last_id = 0;
-
-      // Create the flextree layout and set options
-      var engine = d3.layout.flextree()
-        .setNodeSizes(true)
-        .separation(function(a, b) {
-          var sep = a.elem_parent == b.elem_parent ? 1 : group_separation;
-          return sep;
-        })
-      ;
-
-      // Construct a new diagonal generator. `diagonal` is a new function that 
-      // draws the lines between the boxes.
-      // See https://github.com/mbostock/d3/wiki/SVG-Shapes#diagonal.
-      var diagonal = d3.svg.diagonal()
-        .source(function(d, i) {
-          var s = d.source;
-          return {
-            x: s.x, 
-            // FIXME: is this right? Is `width` defined?
-            y: s.y + (s.width ? s.width : 0) + 
-              (s instanceof Node && s.type == "element" ? 
-                node_expander_width : 0),
-          };
-        })
-        .projection(function(d) {
-          return [d.y, d.x];
-        })
-      ;
-
       // Initialize the SVG
-      var canvas = new Box(
+      var canvas = diagram.canvas = new Box(
         -min_canvas_height / 2, 
         0, 
         min_canvas_height / 2, 
@@ -190,336 +186,365 @@ if (typeof jQuery !== "undefined" &&
         "width": canvas.width(),
         "height": canvas.height(),
       });
-      var svg_g = svg.append("g")
+      var svg_g = diagram.svg_g = svg.append("g")
         .attr({"transform": "translate(0, " + (-canvas.top) + ")"});
 
-
-      // Read the input file, and kick off the visualization
-      var root;
-
-      if (!test_file) {
-        d3.json(dtd_json_file, function(error, _dtd_json) {
-          if (error) {
-            var msg = "Error reading DTD file '" + dtd_json_file + 
-                "': " + error.statusText;
-            console.error(msg);
-            diagram.error = msg;
-          }
-          else {
-            dtd_json = _dtd_json;
-
-            // Create the new tree. Unlike any subsequent element nodes, the root Node 
-            // is from a hand-crafted object, rather than being copied from an element 
-            // spec in the DTD
-            root = new Node(diagram, {
-              name: root_element || dtd_json.root,
-            }, null);
-
-            // Next, we initialize the root node, which causes all of its children to
-            // be instantiated from the DTD
-            root.initialize();
-
-            // Expand those children
-            root.expand();
-
-          }
-        });
-      }
-
-      else {
-        // The test file is an already-expanded tree, not from the DTD
-        d3.json(test_file, function(error, _test_json) {
-          root = bless(_test_json, null);
-        });
-
-        // Used for testing only - this takes the objects from the test json, and
-        // converts them into Node objects.
-        function bless(s, elem_parent) {
-          var n = new Node(diagram, s, elem_parent);
-          if (s.children) {
-            n.children = [];
-            var new_elem_parent = n.type == "element" ? n : elem_parent;
-            s.children.forEach(function(ks) {
-              n.children.push(bless(ks, new_elem_parent));
-            });
-          }
-          return n;
-        }
-      }
-      diagram.root = root;
-      
-      // x is the vertical, and y the horizontal, coordinate
-      root.x0 = 0;
-      root.y0 = 0;
-
-      // Starting state is to have the root and its kids expanded, but all
-      // the deeper descendents collapsed.
-      update(root);
-      update(root);
-
-
-      // Main function to update the rendering. `source` is the node that was 
-      // clicked.
-      function update(source) {
-        var min_canvas_width = container_jq.width() - scrollbar_margin,
-            min_canvas_height = container_jq.height() - scrollbar_margin;
-
-        var myID = 0;
-
-        // First get the bag of nodes in the right order
-        var nodes = d3.layout.hierarchy()(root);
-
-        // We should bind the data, and create the text here, since the test is
-        // used to compute the node sizes
-
-        // Bind the node data. The second argument to .data() provides the key,
-        // to ensure that the same data value is bound to the same node every
-        // time.
-        var node = svg_g.selectAll("g.node")
-          .data(nodes, function(d) { 
-            return d.id || (d.id = ++last_id); 
-          })
-        ;
-
-        var node_enter = node.enter().append("g")
-          .attr({
-            "class": "node",
-            filter: "url(#dropshadow)",
-          })
-        ;
-
-        var elem_attr_nodes = node_enter.filter(function(d) {
-          return d.type == "element" || d.type == "attribute";
-        });
-
-        // Text label for simple nodes
-        // Implement links to documentation here
-        elem_attr_nodes.append("a")
-          .attr("xlink:href", function(d) {
-            return tag_doc_url + "elem-" + d.name;
-          })
-          .append("text")
-            .attr({
-              id: function(d) { return d.id; },
-              x: function(d) {return 5 + (d.q ? q_width : 0)},
-              y: 0,
-              "text-anchor": "baseline",
-              "alignment-baseline": "middle",
-            })
-            .text(function(d) { 
-              return d.name; 
-            })
-            .style("fill-opacity", 0)
-        ;
-        engine.nodeSize(function(d) {
+      // Create the flextree layout and set options
+      var engine = diagram.engine = d3.layout.flextree()
+        .nodeSize(function(d) {
           var w = d.type == 'element' || d.type == 'attribute' 
             ? document.getElementById(d.id).getBBox()["width"] + 30
             : choice_seq_node_width;
-          return [25, w];
-        });
+          return [node_height, w];
+        })
+        .separation(function(a, b) {
+          return a.elem_parent == b.elem_parent ? 1 : group_separation;
+        })
+        .setNodeSizes(true)
+      ;
 
+      // Construct a new diagonal generator. `diagonal` is a function that 
+      // draws the lines between the boxes.
+      // See https://github.com/mbostock/d3/wiki/SVG-Shapes#diagonal.
+      var diagonal = diagram.diagonal = d3.svg.diagonal()
+        .source(function(d, i) {
+          var s = d.source;
+          return { x: s.x, y: s.y + s.width };
+        })
+        .projection(function(d) {
+          return [d.y, d.x];
+        })
+      ;
 
-        // Compute the new tree layout.
-        var nodes = engine.nodes(root);
-        var links = engine.links(nodes);
+      // Read the input file, and return the promise
+      return new Promise(function(resolve, reject) {
+        if (test_file) {
+          // The test file is an already-expanded tree, not from the DTD
+          d3.json(test_file, function(error, _test_json) {
+            diagram.root = Node.bless(diagram, _test_json, null);
+            resolve();
+          });
+        }
+        else {
+          d3.json(dtd_json_file, function(error, _dtd_json) {
+            if (error) {
+              var msg = "Error reading DTD file '" + dtd_json_file + 
+                  "': " + error.statusText;
+              console.error(msg);
+              diagram.error = msg;
+              reject(msg);
+            }
+            else {
+              var dtd_json = diagram.dtd_json = _dtd_json;
 
-        var new_canvas = scroll_resize(diagram);
+              // Create the new tree. Unlike any subsequent element nodes, the root Node 
+              // is from a hand-crafted object, rather than being copied from an element 
+              // spec in the DTD
+              var root = diagram.root = new Node(diagram, {
+                name: root_element || dtd_json.root,
+              }, null);
+              // Initialize the root node, which causes all of its children to
+              // be instantiated from the DTD
+              root.initialize();
+              // Initial state: root node expanded
+              root.expand();
+              resolve();
+            }
+          });
+        }
+      })
+        .then(function() {
+          // x is the vertical, and y the horizontal, coordinate
+          diagram.root.x0 = 0;
+          diagram.root.y0 = 0;
+          return diagram;
+        })
+      ;
+    };
 
-        // At the same time, transition the svg coordinates
-        svg_g.transition()
-          .duration(duration)
-          .attr({"transform": "translate(0, " + (-new_canvas.top) + ")"})
-        ;
-
-        canvas = new_canvas.copy();
-
-        // Now set the position of the new nodes at the parent's previous position.
-        node_enter.append("g")
-          .attr({
-            transform: function(d) { 
-              return "translate(" + source.y0 + "," + source.x0 + ")"; 
-            },
+    // Utility function to create a Promise out of a D3 transition. The
+    // Promise is resolved when all of the selection's transitions have
+    // ended.
+    function transition_promise(t) {
+      var n = 0;
+      return new Promise(function(resolve, reject) {
+        t.each(function() { ++n; }) 
+          .each("end", function() { 
+            if (!--n) resolve(); 
           })
         ;
+      }); 
+    }
 
-        elem_attr_nodes.append("rect")
+    // Main function to update the rendering. This is called once at the 
+    // beginning, and once every time a user clicks a button on a node.
+    // `src_node` is the node that was clicked.
+    _DtdDiagram.prototype.update = function(src_node) {
+      var diagram = this;
+      diagram.src_node = src_node;
+
+      // Some local variable shortcuts
+      var choice_seq_node_width = diagram.choice_seq_node_width,
+          diagonal = diagram.diagonal,
+          duration = diagram.duration
+          engine = diagram.engine
+          node_box_height = diagram.node_box_height,
+          root = diagram.root,
+          svg_g = diagram.svg_g;
+
+      // Since the node widths depend on the widths of the text inside each
+      // node, and those widths are used in the laying out of the tree, we
+      // have to bind the data and create the text nodes first.
+
+      // This gives us the complete array of nodes
+      var nodes = d3.layout.hierarchy()(root);
+
+      // Bind the data. The second argument to .data() provides the key,
+      // to ensure that the same data value is bound to the same node every
+      // time.
+      var nodes_update = svg_g.selectAll("g.node")
+        .data(nodes, function(d) { 
+          return d.id || (d.id = ++diagram.last_id); 
+        })
+      ;
+
+      // Drawing work:
+      //
+      //c 1. For all the entering nodes:
+      //c    A. Create the <g> containers. They will already be in their final
+      //c       positions
+      //c    B. Draw the SVG elements that depict the node, with 
+      //c       pre-transition positions and attributes. 
+      //c 2. Layout work
+      //c    A. Do the layout
+      //c    B. Start transition of scrollbars and drawing size
+      //  3. For ALL nodes, start transitions of the <g> containers to 
+      //     their final positions
+      //  4. Back to entering nodes:
+      //     A. For all the SVG elements, start transitions to final attributes
+      //  4. Diagonals
+      //     A. Draw starting positions
+      //     B. Start transitions to ending positions
+      //  5. For all exiting nodes:
+      //     A. Transition them to their "gone" positions and attributes
+
+      // Keep a list of all promises
+      var promises = [];
+
+      // 1A - Create the <g> containers
+      var nodes_enter = nodes_update.enter().append("g")
+        .attr({
+          "class": "node",
+          filter: "url(#dropshadow)",
+          transform: function(d) { 
+            return "translate(" + src_node.y0 + "," + src_node.x0 + ")"; 
+          },
+        })
+      ;
+
+      // 1B - Draw the nodes with pre-transition positions and attributes.
+
+      // element and attribute nodes
+      var elem_attr_nodes = nodes_enter.filter(function(d) {
+        return d.type == "element" || d.type == "attribute";
+      });
+
+      // draw the main rectangle
+      elem_attr_nodes.append("rect")
+        .attr({
+          "data-id": function(d) { return d.id; },
+          width: 0,
+          height: node_box_height,
+          y: - node_box_height / 2,
+          rx: 6,
+          ry: 6,
+        })
+      ;
+
+      // draw the text
+      elem_attr_nodes.append("a")
+        .attr("xlink:href", function(d) {
+          // FIXME: need to use URL templates
+          return diagram.tag_doc_url + "elem-" + d.name;
+        })
+        .append("text")
           .attr({
-            "class": function(d) {
-              return "simple" + (d.has_children() ? " has_children" : "");
-            },
-            "data-id": function(d) { return d.id },
+            id: function(d) { return d.id; },
+            x: 0,
+            y: 0,
+            "text-anchor": "baseline",
+            "alignment-baseline": "middle",
+          })
+          .text(function(d) { 
+            return d.name; 
+          })
+          .style("fill-opacity", 0)
+      ;
+
+      // Expander box for nodes that have kids
+      elem_attr_nodes.filter(function(d) {
+          return d.has_children();
+        })
+        .append("rect")
+          .attr({
             width: 0,
             height: node_box_height,
+            "data-id": function(d) { return d.id; },
             y: - node_box_height / 2,
-            rx: 6,
-            ry: 6,
+            x: 0,
           })
-        ;
+          .on("click", Node.click_handler)
+      ;
 
-
-        // Expander box for simple nodes that have kids
-        elem_attr_nodes.filter(function(d) {
-            return d.has_children();
-          })
-          .append("rect")
-            .attr({
-              "class": "expander has_children",
-              width: 0,
-              height: node_box_height,
-              "data-id": function(d) { return d.id || d.name },
-              y: - node_box_height / 2,
-              x: 0,
-            })
-            .on("click", click)
-        ;
-
-        var choice_nodes = node_enter.filter(function(d) {
-          return d.type == "choice";
-        });
-        choice_nodes.append("circle")
-          .attr({
-            'class': 'choice',
-            r: choice_seq_node_width/2,
-          })
-        ;
-
-        var seq_nodes = node_enter.filter(function(d) {
-          return d.type == "seq";
+      var choice_nodes = nodes_enter.filter(function(d) {
+        return d.type == "choice";
+      });
+      choice_nodes.append("circle")
+        .attr({
+          'class': 'choice',
+          r: choice_seq_node_width/2,
         })
-        seq_nodes.append("rect")
+      ;
+
+      var seq_nodes = nodes_enter.filter(function(d) {
+        return d.type == "seq";
+      })
+      seq_nodes.append("rect")
+        .attr({
+          'class': 'seq',
+          width: choice_seq_node_width * 0.8,
+          height: choice_seq_node_width * 0.8,
+          x: -choice_seq_node_width * 0.4,
+          y: -choice_seq_node_width * 0.4,
+        })
+      ;
+
+      // Text label for `q`
+      nodes_enter.filter(function(d) {return !!d.q;})
+        .append("text")
           .attr({
-            'class': 'seq',
-            width: choice_seq_node_width * 0.8,
-            height: choice_seq_node_width * 0.8,
-            x: -choice_seq_node_width * 0.4,
-            y: -choice_seq_node_width * 0.4,
+            "class": "q",
+            x: function(d) {
+              return d.type == "element" ? q_width/2 : 0;
+            },
+            y: 0,
+            "text-anchor": function(d) {
+              return d.type == "element" ? "start" : "middle";
+            },
+            "alignment-baseline": "middle",
           })
-        ;
+          .text(function(d) {return d.q;})
+      ;
 
-        // Text label for `q`
-        node_enter.filter(function(d) {return !!d.q;})
-          .append("text")
-            .attr({
-              "class": "q",
-              x: function(d) {
-                return d.type == "element" ? q_width/2 : 0;
-              },
-              y: 0,
-              "text-anchor": function(d) {
-                return d.type == "element" ? "start" : "middle";
-              },
-              "alignment-baseline": "middle",
-            })
-            .text(function(d) {return d.q;})
-        ;
+      // 2A - Compute the new tree layout, and get the list of links.
+      engine.nodes(root);
+      var links = engine.links(nodes);
 
-        // Transition all nodes to their new position.
-        var nodeUpdate = node.transition()
+      // 2B - Start transitions of scrollbars and drawing size
+      var p = DtdDiagram.Canvas.scroll_resize(diagram);
+      var do_last = p.do_last || null;
+      promises.push(p);
+      diagram.canvas = diagram.new_canvas.copy();
+
+
+      return;
+      //--------------
+
+    
+
+
+
+
+      // Transition all nodes to their new position.
+      promises.push(transition_promise(
+        nodes_update.transition()
           .duration(duration)
           .attr("transform", function(d) { 
             return "translate(" + d.y + "," + d.x + ")"; 
-          });
+          })
+      ));
 
-        function text_width(d) {
-          if (!d.width) {
-            var the_text = document.getElementById(d.id);
-            d.width = (the_text ? the_text.getBBox()["width"] + 10 : 96) +
-                      (d.q ? q_width : 0);
-          }
-          return d.width;
+      function text_width(d) {
+        if (!d.width) {
+          var the_text = document.getElementById(d.id);
+          d.width = (the_text ? the_text.getBBox()["width"] + 10 : 96) +
+                    (d.q ? q_width : 0);
         }
+        return d.width;
+      }
 
-        nodeUpdate.select("rect.simple")
-          .attr("width", function(d) {
-            return text_width(d)
-          })
-          .attr("height", node_box_height)
-        ;
+      nodes_update.select("rect.simple")
+        .attr("width", function(d) {
+          return text_width(d)
+        })
+        .attr("height", node_box_height)
+      ;
 
-        nodeUpdate.select("rect.expander")
-          .attr("width", node_expander_width)
-          .attr("x", function(d) {
-            return text_width(d);
-          })
-        ;
+    /*
+      nodes_update.select("rect.expander")
+        .attr("width", node_expander_width)
+        .attr("x", function(d) {
+          return text_width(d);
+        })
+      ;
+    */
 
-        nodeUpdate.select("text")
-          .style("fill-opacity", 1);
+      nodes_update.select("text")
+        .style("fill-opacity", 1);
 
 
-        // Transition exiting nodes to the parent's new position.
-        var nodeExit = node.exit().transition()
-          .duration(duration)
-          .attr("transform", function(d) { 
-            return "translate(" + source.y + "," + source.x + ")"; 
-          })
-          .remove();
+      // Transition exiting nodes to the parent's new position.
+      var nodes_exit = nodes_update.exit().transition()
+        .duration(duration)
+        .attr("transform", function(d) { 
+          return "translate(" + src_node.y + "," + src_node.x + ")"; 
+        })
+        .remove();
 
-        nodeExit.select("rect").attr("width", 0);
+      nodes_exit.select("rect").attr("width", 0);
 
-        nodeExit.select("text")
-          .style("fill-opacity", 0);
+      nodes_exit.select("text")
+        .style("fill-opacity", 0);
 
-        nodeExit.select("rect:nth-child(3)")
-          .attr("width", 0)
-          .attr("x", 0)
-        ;
+      nodes_exit.select("rect:nth-child(3)")
+        .attr("width", 0)
+        .attr("x", 0)
+      ;
 
-        // Update the links…
-        var link = svg_g.selectAll("path.link")
-          .data(links, function(d) { return d.target.id; });
+      // Update the links…
+      var link = svg_g.selectAll("path.link")
+        .data(links, function(d) { return d.target.id; });
 
-        // Enter any new links at the parent's previous position.
-        link.enter().insert("path", "g")
-          .attr("class", "link")
-          .attr("d", function(d) {
-            var o = {x: source.x0, y: source.y0};
-            return diagonal({source: o, target: o});
-          });
-
-        // Transition links to their new position.
-        link.transition()
-          .duration(duration)
-          .attr("d", diagonal);
-
-        // Transition exiting links to the parent's new position.
-        link.exit().transition()
-          .duration(duration)
-          .attr("d", function(d) {
-            var o = {x: source.x, y: source.y};
-            return diagonal({source: o, target: o});
-          })
-          .remove();
-
-        // Stash the old positions for transition.
-        nodes.forEach(function(d) {
-          d.x0 = d.x;
-          d.y0 = d.y;
+      // Enter any new links at the parent's previous position.
+      link.enter().insert("path", "g")
+        .attr("class", "link")
+        .attr("d", function(d) {
+          var o = {x: src_node.x0, y: src_node.y0};
+          return diagonal({source: o, target: o});
         });
-      }
 
-      // Toggle children on click.
-      function click(d) {
-        if (d.children) {
-          d.collapse();
-        } 
-        else {
-          d.expand();
-        }
-        update(d);
-      }
-    }
+      // Transition links to their new position.
+      link.transition()
+        .duration(duration)
+        .attr("d", diagonal);
+
+      // Transition exiting links to the parent's new position.
+      link.exit().transition()
+        .duration(duration)
+        .attr("d", function(d) {
+          var o = {x: src_node.x, y: src_node.y};
+          return diagonal({source: o, target: o});
+        })
+        .remove();
+
+      // Stash the old positions for transition.
+      nodes.forEach(function(d) {
+        d.x0 = d.x;
+        d.y0 = d.y;
+      });
+    };
 
     return _DtdDiagram;
   }(jQuery);
 
-  // By default, if the user hasn't instantiated an object, then
-  // we'll make one for him at document.ready.        
-  var document_ready = new Promise(function(resolve) {
-    $(document).ready(resolve);
-  });
-  document_ready.then(function() {
-    if (DtdDiagram.auto_start && DtdDiagram.diagrams.length == 0) 
-      new DtdDiagram();
-  });
 }

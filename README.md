@@ -95,6 +95,10 @@ cause documentation hyperlinks to go to the right place.
       Promise.all() at the end.
 
 
+
+
+
+
 # API
 
 The simplest way to use this is to load the code in a page that has a 
@@ -279,7 +283,7 @@ state after the click. Here they are:
 
 The DTD data and the display tree data are held in a separate data structures. 
 This is necessary, because a given element might appear in several places in the
-tree, and might be expanded in some places but collapsed in others.
+DTD, and might be expanded in some places but collapsed in others.
 
 The content model of an element can be quite complex, and is, in general, 
 a hierarchy itself (a sub-tree of the main tree).
@@ -291,63 +295,100 @@ See for example:
 * [&lt;name>](http://jatspan.org/niso/publishing-1.1d3/#p=nfd-name) - note
   the sub-hierarchy with surname and given-names
 
-A "compound node" is defined as one of the `choice` or `seq` nodes within the
-complex content model of an element.
-
-From the perspective of the D3 tree layout engine, however, a compound node is 
-just a flattened bag of simple nodes. I.e., when we pass the tree to the layout 
-engine, we need to hide any given content model's complex nature. That way, 
-the simple leaf nodes for that element's content model will be placed in the
-correct vertical positions.
-
-Horizontally, a compound node still must fit into a single column. This might
-be a problem for very complex content models.
 
 
-### Complex content models
 
-There are two types of nodes. Use node.is_simple() to determine the type
-of any given node. The types are:
+### Node class
 
-1. simple - have `name`. These correspond to an element or attribute, and 
-2. compound - have `type` (either `seq` or `choice`). These are
-   part of a complex content model in the DTD. 
+Attributes that we create/maintain:
 
-We maintain two separate trees at the same time:
+* name
+* type - one of "element", "attribute", "choice", or "seq"
+* q - from the DTD, either null, '?', '*', or '+'
+* children - if the node is expanded, array child Nodes
+* _children - stores the kids when the node is collapsed
+* diagram - the diagram to which this Node belongs
+* elem_parent - the nearest ancestor Node of type `element`. This is used
+  by the `separation` function -- all nodes with the same `elem_parent`
+  are considered part of the nuclear family, and spaced close together
+* width - computed by aggregating the widths of the parts. Doesn't include the
+  diagonal -- this is used to compute the y coordinate for the "source" of the
+  diagonal
+* x0, y0 - holds the old position. This is used as the starting point
+  for transitioning (when creating new child nodes, for example). x0 is
+  the vertical coordinat, y0 the horizontal
+* id - added when binding the data, and ensures that the same
+  data nodes are bound to the same SVG elements each time. The value here
+  is also used as the id attribute of the `text` element that renders the
+  `name`, and the data-id attributes of the other SVG elements associated
+  with this Node.
 
-1. children/_children - just the tree of the simple nodes. This is used by
-   the D3 tree layout routines for positioning
-2. cm_children - this tree includes all compound and simple nodes
+Created by the D3 flextree layout engine:
 
-
-### Simple nodes data members
-
-- Data that we create/maintain:
-    * name
-    * q
-    * children - if the node is expanded, this is an array of pointers to
-      the *simple* node children (not the compound children).
-    * _children - stores the kids when the node is collapsed
-    * cm_children - array of simple nodes and/or compound nodes
-    * width - based on the text content
-    * x0, y0 - holds the old position. This is used as the starting point
-      for transitioning (when creating new child nodes, for example)
-    * id - this is added when binding the data, and ensures that the same
-      data nodes are bound to the same SVG elements each time. The value here
-      is also used as the id attribute of the text SVG element, and the
-      data-id attributes of the two rect SVG elements.
-
-- Created by the D3 tree routines:
-    * depth
-    * x, y
-    * parent
-
-### Compound nodes data members
-
-* type - one of "choice", "seq", etc.
-* q
-* cm_children - array of simple nodes and/or compound nodes
+* depth
 * x, y
+* parent
+* x_size, y_size
+
+
+### DtdDiagram class
+
+Class attributes:
+
+* diagrams - list of all the DtdDiagram objects
+* auto_start - set this to `false` before document ready to prevent it from
+  auto-instantiating a DtdDiagram.
+* document_ready - a Promise that's resolved with document is ready.
+* default_options
+
+The instance attributes are the following.
+
+Active option values
+
+* dtd_json_file
+* test_file
+* root_element
+* tag_doc_url
+* min_canvas_width
+* min_canvas_height
+* node_text_margin
+* node_height
+* node_box_height
+* choice_seq_node_width
+* q_width
+* button_width
+* diagonal_width
+* scrollbar_margin
+* dropshadow_margin
+* group_separation
+* duration
+
+Other
+
+* container_d3 - D3 reference to the containing `div`
+* container_dom
+* container_jq
+* diagonal - the D3 diagonal generator
+* dtd_json - json object from reading dtd_json_file. null if we're using test_file.
+* engine - the d3.flextree layout engine
+* error - either `false` or a string error message
+* last_id - used to set unique IDs on each node
+* opts - the options passed into the constructor (these are merged with options
+  specified elsewhere)
+* root - the root Node
+* svg - D3 reference to the `svg` element
+* svg_g - D3 reference to the `g` element child of `svg`.
+
+Attributes used during transitioning:
+
+* src_node - the node that the user clicked on, used when we're doing 
+  transitions
+* new_drawing
+* canvas
+* new_canvas
+* viewport
+* new_viewport
+* embiggenning - true if the drawing is getting larger; false otherwise
 
 
 

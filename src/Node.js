@@ -1,6 +1,6 @@
 // DtdDiagram.Node class
 
-if (DtdDiagram) {
+if (typeof DtdDiagram != "undefined") {
   DtdDiagram.Node = function() {
 
     // Construct a Node from a specification (of any type) within a content-model 
@@ -17,14 +17,28 @@ if (DtdDiagram) {
           this[k] = spec[k];
         }
       }
-      // For `choice` and `seq` nodes, the type gets
-      // copied from the spec. For `element` nodes, we add the type.
+      // If the type is not `choice`, `seq`, or `attribute`, it must be
+      // an `element`
       if (!this["type"]) this["type"] = "element";
-    }
+    };
+
+    // This is used for testing, and recursively generates a tree of Nodes from
+    // JSON objects -- basically, "blessing" the existing objects as Nodes.
+    var bless = Node.bless = function(diagram, node_data, elem_parent) {
+      var n = new Node(diagram, node_data, null);
+      if (node_data.children) {
+        n.children = [];
+        var new_elem_parent = n.type == "element" ? n : elem_parent;
+        node_data.children.forEach(function(kid) {
+          n.children.push(bless(diagram, kid, new_elem_parent));
+        });
+      }
+      return n;
+    };
 
     Node.prototype.has_children = function() {
       return this.children || this._children;
-    }
+    };
 
     // For element nodes, this creates new child nodes from the content-model, as 
     // needed, filling in the _children array. When this returns, the (element) node 
@@ -83,7 +97,7 @@ if (DtdDiagram) {
         this.x + diagram.node_box_height / 2,
         this.y + diagram.node_width
       );
-    }
+    };
 
     // Tree-reduce function: returns the min/max extents
     // of an accumulator (previous extents), a given node (n) and all
@@ -106,7 +120,7 @@ if (DtdDiagram) {
     Node.prototype.tree_extents = function() {
       return (this.children || [])
         .reduce(_tree_reduce, this.extents());
-    }
+    };
 
     // This is called when the user clicks on a node in the tree that has
     // kids. We have to call initialize() on each of the *child* nodes,
@@ -122,11 +136,26 @@ if (DtdDiagram) {
           k.initialize();
         });
       }
-    }
+    };
 
     Node.prototype.collapse = function() {
       this._children = this.children;
       this.children = null;
+    };
+
+    // Toggle children on click.
+    Node.click_handler = function(src_node) {
+      src_node.handle_click();
+    };
+
+    Node.prototype.handle_click = function() {
+      if (this.children) {
+        this.collapse();
+      } 
+      else {
+        this.expand();
+      }
+      this.diagram.update(this);
     }
 
     return Node;

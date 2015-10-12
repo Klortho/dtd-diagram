@@ -2,7 +2,7 @@
 // Holds coordinates for top, left, bottom, and right. Has methods for
 // moving the box, vertically or horizontally.
 
-if (DtdDiagram) {
+if (typeof DtdDiagram != "undefined") {
   DtdDiagram.Box = function() {
     var Box = function(top, left, bottom, right) {
       this.top = top;
