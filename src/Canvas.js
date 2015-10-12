@@ -46,8 +46,8 @@ if (typeof DtdDiagram != "undefined") {
         }),
         // At the same time, transition the svg coordinates
         new Promise(function(resolve, reject) {
-          svg_g.transition()
-            .duration(duration)
+          diagram.svg_g.transition()
+            .duration(diagram.duration)
             .attr({"transform": "translate(0, " + (-new_canvas.top) + ")"})
             .each("end", function() {
               resolve("done transitioning svg coordinates");

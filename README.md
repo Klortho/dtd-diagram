@@ -313,7 +313,8 @@ Attributes that we create/maintain:
   are considered part of the nuclear family, and spaced close together
 * width - computed by aggregating the widths of the parts. Doesn't include the
   diagonal -- this is used to compute the y coordinate for the "source" of the
-  diagonal
+  diagonal.
+* x_size, y_size - includes everything (except the separation)
 * x0, y0 - holds the old position. This is used as the starting point
   for transitioning (when creating new child nodes, for example). x0 is
   the vertical coordinat, y0 the horizontal

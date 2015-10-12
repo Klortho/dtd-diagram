@@ -40,6 +40,13 @@ if (typeof DtdDiagram != "undefined") {
       return this.children || this._children;
     };
 
+    Node.prototype.has_attributes = function() {
+      // FIXME: need to implement
+      return false;
+    };
+
+
+
     // For element nodes, this creates new child nodes from the content-model, as 
     // needed, filling in the _children array. When this returns, the (element) node 
     // is in the collapsed state.

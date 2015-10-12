@@ -1,4 +1,10 @@
 {
     "name": "front-stub",
-    "type": "element"
+    "type": "element",
+    "q": "?",
+    "children": [
+      {
+        "name": "groink"
+      }
+    ]
 }

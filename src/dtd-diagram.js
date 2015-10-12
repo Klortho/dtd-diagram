@@ -84,7 +84,7 @@ if (typeof jQuery !== "undefined" &&
       group_separation: 1.4,
 
       // Duration of the animation, in milliseconds.
-      duration: 500,
+      duration: 2000,
     };
 
 
@@ -192,15 +192,11 @@ if (typeof jQuery !== "undefined" &&
       // Create the flextree layout and set options
       var engine = diagram.engine = d3.layout.flextree()
         .nodeSize(function(d) {
-          var w = d.type == 'element' || d.type == 'attribute' 
-            ? document.getElementById(d.id).getBBox()["width"] + 30
-            : choice_seq_node_width;
-          return [node_height, w];
+          return [d.x_size, d.y_size];
         })
         .separation(function(a, b) {
           return a.elem_parent == b.elem_parent ? 1 : group_separation;
         })
-        .setNodeSizes(true)
       ;
 
       // Construct a new diagonal generator. `diagonal` is a function that 
@@ -212,6 +208,7 @@ if (typeof jQuery !== "undefined" &&
           return { x: s.x, y: s.y + s.width };
         })
         .projection(function(d) {
+          console.log("diagonal returning [" + d.y + "," + d.x + "]");
           return [d.y, d.x];
         })
       ;
@@ -268,11 +265,14 @@ if (typeof jQuery !== "undefined" &&
     function transition_promise(t) {
       var n = 0;
       return new Promise(function(resolve, reject) {
-        t.each(function() { ++n; }) 
-          .each("end", function() { 
-            if (!--n) resolve(); 
-          })
-        ;
+        if (t.length == 0) resolve();
+        else {
+          t.each(function() { ++n; }) 
+            .each("end", function() { 
+              if (!--n) resolve(); 
+            })
+          ;
+        }
       }); 
     }
 
@@ -284,11 +284,16 @@ if (typeof jQuery !== "undefined" &&
       diagram.src_node = src_node;
 
       // Some local variable shortcuts
-      var choice_seq_node_width = diagram.choice_seq_node_width,
+      var button_width = diagram.button_width,
+          choice_seq_node_width = diagram.choice_seq_node_width,
           diagonal = diagram.diagonal,
-          duration = diagram.duration
-          engine = diagram.engine
+          diagonal_width = diagram.diagonal_width,
+          duration = diagram.duration,
+          engine = diagram.engine,
           node_box_height = diagram.node_box_height,
+          node_height = diagram.node_height,
+          node_text_margin = diagram.node_text_margin,
+          q_width = diagram.q_width,
           root = diagram.root,
           svg_g = diagram.svg_g;
 
@@ -310,23 +315,25 @@ if (typeof jQuery !== "undefined" &&
 
       // Drawing work:
       //
-      //c 1. For all the entering nodes:
-      //c    A. Create the <g> containers. They will already be in their final
-      //c       positions
-      //c    B. Draw the SVG elements that depict the node, with 
-      //c       pre-transition positions and attributes. 
-      //c 2. Layout work
-      //c    A. Do the layout
-      //c    B. Start transition of scrollbars and drawing size
+      //  1. For all the entering nodes:
+      //     A. Create the <g> containers. They will already be in their final
+      //        positions
+      //     B. Draw the SVG elements that depict the node, with 
+      //        pre-transition positions and attributes. 
+      //     C. Precompute some widths, and attach them to the Node objects
+      //  2. Layout work
+      //     A. Do the layout
+      //     B. Start transition of scrollbars and drawing size
       //  3. For ALL nodes, start transitions of the <g> containers to 
       //     their final positions
       //  4. Back to entering nodes:
-      //     A. For all the SVG elements, start transitions to final attributes
-      //  4. Diagonals
+      //     For all the SVG elements, start transitions to final attributes
+      //  5. Diagonals
       //     A. Draw starting positions
       //     B. Start transitions to ending positions
-      //  5. For all exiting nodes:
-      //     A. Transition them to their "gone" positions and attributes
+      //     C. Transition exiting links to their parents' positions
+      //  6. For all exiting nodes:
+      //     Transition them to their "gone" positions and attributes
 
       // Keep a list of all promises
       var promises = [];
@@ -353,6 +360,7 @@ if (typeof jQuery !== "undefined" &&
       elem_attr_nodes.append("rect")
         .attr({
           "data-id": function(d) { return d.id; },
+          "class": "node-box",
           width: 0,
           height: node_box_height,
           y: - node_box_height / 2,
@@ -370,6 +378,7 @@ if (typeof jQuery !== "undefined" &&
         .append("text")
           .attr({
             id: function(d) { return d.id; },
+            "class": "label",
             x: 0,
             y: 0,
             "text-anchor": "baseline",
@@ -381,20 +390,24 @@ if (typeof jQuery !== "undefined" &&
           .style("fill-opacity", 0)
       ;
 
-      // Expander box for nodes that have kids
+      // Expander button for nodes that have kids
       elem_attr_nodes.filter(function(d) {
           return d.has_children();
         })
         .append("rect")
           .attr({
+            "data-id": function(d) { return d.id; },
+            "class": "button",
             width: 0,
             height: node_box_height,
-            "data-id": function(d) { return d.id; },
             y: - node_box_height / 2,
             x: 0,
           })
           .on("click", Node.click_handler)
       ;
+
+      // Button for nodes that have attributes
+      // FIXME:  TBD
 
       var choice_nodes = nodes_enter.filter(function(d) {
         return d.type == "choice";
@@ -424,9 +437,7 @@ if (typeof jQuery !== "undefined" &&
         .append("text")
           .attr({
             "class": "q",
-            x: function(d) {
-              return d.type == "element" ? q_width/2 : 0;
-            },
+            x: 0,
             y: 0,
             "text-anchor": function(d) {
               return d.type == "element" ? "start" : "middle";
@@ -434,7 +445,24 @@ if (typeof jQuery !== "undefined" &&
             "alignment-baseline": "middle",
           })
           .text(function(d) {return d.q;})
+          .style("fill-opacity", 0)
       ;
+
+      // 1C - precompute some node sizes, and attach them to the Node objects.
+      // Note that this has to come after the text is drawn.
+      nodes_enter.each(function(d) {
+        d.x_size = node_height;
+        if (d.type == 'element' || d.type == 'attribute') {
+          d.width = node_text_margin * 2 + 
+                    (d.q ? q_width : 0) +
+                    (d.has_children() || d.has_attributes() ? button_width : 0) +
+                    document.getElementById(d.id).getBBox()["width"];
+        }
+        else {
+          d.width = choice_seq_node_width;
+        }
+        d.y_size = d.width + diagonal_width;
+      });
 
       // 2A - Compute the new tree layout, and get the list of links.
       engine.nodes(root);
@@ -447,15 +475,7 @@ if (typeof jQuery !== "undefined" &&
       diagram.canvas = diagram.new_canvas.copy();
 
 
-      return;
-      //--------------
-
-    
-
-
-
-
-      // Transition all nodes to their new position.
+      // 3 - Transition all nodes to their new position.
       promises.push(transition_promise(
         nodes_update.transition()
           .duration(duration)
@@ -464,54 +484,37 @@ if (typeof jQuery !== "undefined" &&
           })
       ));
 
-      function text_width(d) {
-        if (!d.width) {
-          var the_text = document.getElementById(d.id);
-          d.width = (the_text ? the_text.getBBox()["width"] + 10 : 96) +
-                    (d.q ? q_width : 0);
-        }
-        return d.width;
-      }
 
-      nodes_update.select("rect.simple")
-        .attr("width", function(d) {
-          return text_width(d)
-        })
-        .attr("height", node_box_height)
-      ;
+      // 4 - Transition all entering node stuff to final attribute values
 
-    /*
-      nodes_update.select("rect.expander")
-        .attr("width", node_expander_width)
-        .attr("x", function(d) {
-          return text_width(d);
-        })
-      ;
-    */
-
-      nodes_update.select("text")
-        .style("fill-opacity", 1);
+      promises.push(transition_promise(
+        nodes_enter.select(".node-box").transition()
+          .duration(duration)
+          .attr("width", function(d) { return d.width; })
+      ));
+      promises.push(transition_promise(
+        nodes_enter.select(".label").transition()
+          .duration(duration)
+          .style("fill-opacity", 1)
+          .attr({
+            x: function(d) { return node_text_margin + (d.q ? q_width : 0); }
+          })
+      ));
+      promises.push(transition_promise(
+        nodes_enter.select(".q").transition()
+          .duration(duration)
+          .style("fill-opacity", 1)
+          .attr("x", node_text_margin)
+      ));
 
 
-      // Transition exiting nodes to the parent's new position.
-      var nodes_exit = nodes_update.exit().transition()
-        .duration(duration)
-        .attr("transform", function(d) { 
-          return "translate(" + src_node.y + "," + src_node.x + ")"; 
-        })
-        .remove();
+      // FIXME: need transition effects for button, choice, seq.
 
-      nodes_exit.select("rect").attr("width", 0);
 
-      nodes_exit.select("text")
-        .style("fill-opacity", 0);
 
-      nodes_exit.select("rect:nth-child(3)")
-        .attr("width", 0)
-        .attr("x", 0)
-      ;
 
-      // Update the links…
+
+      // 5A - Diagonals - starting positions
       var link = svg_g.selectAll("path.link")
         .data(links, function(d) { return d.target.id; });
 
@@ -523,12 +526,12 @@ if (typeof jQuery !== "undefined" &&
           return diagonal({source: o, target: o});
         });
 
-      // Transition links to their new position.
+      // 5B - Transition links to their new position.
       link.transition()
         .duration(duration)
         .attr("d", diagonal);
 
-      // Transition exiting links to the parent's new position.
+      // 5C - Transition exiting links to the parent's new position.
       link.exit().transition()
         .duration(duration)
         .attr("d", function(d) {
@@ -536,6 +539,35 @@ if (typeof jQuery !== "undefined" &&
           return diagonal({source: o, target: o});
         })
         .remove();
+
+      // FIXME: add promises for the above transitions.
+
+
+      // 6 - Transition exiting nodes to the parent's new position.
+      var nodes_exit = nodes_update.exit().transition()
+        .duration(duration)
+        .attr("transform", function(d) { 
+          return "translate(" + src_node.y + "," + src_node.x + ")"; 
+        })
+        .remove();
+
+      nodes_exit.select(".node-box").attr("width", 0);
+      nodes_exit.select(".label,.q")
+        .style("fill-opacity", 0);
+
+      // FIXME: make promise and add the above transition to the list.
+
+      Promise.all(promises).then(
+        function(msg) {
+          console.log("Transitions complete: " + msg);
+          if (do_last) do_last();
+        },
+        function(msg) {
+          console.error("Problem during transistions: " + msg);
+        }
+      );
+
+
 
       // Stash the old positions for transition.
       nodes.forEach(function(d) {
