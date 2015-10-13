@@ -74,7 +74,7 @@ if (typeof jQuery !== "undefined" &&
       node_height: 32,
       node_box_height: 25,
       choice_node_width: 24,
-      seq_node_width: 20,
+      seq_node_width: 14,
       q_width: 15,
       button_width: 15,
       diagonal_width: 20,
@@ -438,7 +438,7 @@ if (typeof jQuery !== "undefined" &&
             return d.has_attributes() ? 0 : -node_box_height / 4;
           },
         })
-        .on("click", Node.click_handler)
+        .on("click", DtdDiagram.Node.click_handler)
       ;
 
       // Button for nodes that have attributes
@@ -468,7 +468,7 @@ if (typeof jQuery !== "undefined" &&
               ? -node_box_height / 2 : -node_box_height / 4;
           },
         })
-        .on("click", Node.click_handler)
+        .on("click", DtdDiagram.Node.click_handler)
       ;
 
 
@@ -580,7 +580,7 @@ if (typeof jQuery !== "undefined" &&
         .attr("points", '0,0 12,-12 24,0 12,12');
       nodes_enter.select(".seq").transition()
         .duration(duration)
-        .attr("d", seq_path_gen(10, 12, 5));
+        .attr("d", seq_path_gen(7, 6, 7));
 
       has_kids_nodes.select(".elem-button").transition()
         .duration(duration)

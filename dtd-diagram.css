@@ -27,6 +27,7 @@ svg {
   cursor: pointer;
   fill: none;
   pointer-events: all;
+  mouse-events: all;
 }
 .button-text {
   font-size: 80%;

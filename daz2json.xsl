@@ -26,9 +26,9 @@
   </xsl:template>
   
   <xsl:template match='content-model[@spec="element"]'>
-    <a k='content-model'>
+    <o k='content-model'>
       <xsl:apply-templates/>
-    </a>
+    </o>
   </xsl:template>
   
   <xsl:template match='seq|choice'>

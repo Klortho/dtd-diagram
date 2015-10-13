@@ -62,8 +62,6 @@ if (typeof DtdDiagram != "undefined") {
       return this._has_attributes;
     };
 
-
-
     // For element nodes, this creates new child nodes from the content-model, as 
     // needed, filling in the _children array. When this returns, the (element) node 
     // is in the collapsed state.
@@ -86,7 +84,7 @@ if (typeof DtdDiagram != "undefined") {
       }
 
       // type is "element"
-      var spec = dtd_json.elements[this.name];
+      var spec = self.diagram.dtd_json.elements[this.name];
       if (typeof spec != "object" || !spec["content-model"])
       {
         return;
@@ -169,6 +167,7 @@ if (typeof DtdDiagram != "undefined") {
 
     // Toggle children on click.
     Node.click_handler = function(src_node) {
+      console.log("got a click!");
       src_node.handle_click();
     };
 

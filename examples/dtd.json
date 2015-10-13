@@ -1,110 +1,110 @@
 {
-    "root": "article",
-    "elements": {
-        "article": {
-            "content-model": {
-                "type": "seq",
-                "children": [
-                    {
-                        "name": "front"
-                    },
-                    {
-                        "name": "body",
-                        "q": "?"
-                    },
-                    {
-                        "type": "choice",
-                        "children": [
-                            {
-                                "name": "sub-article",
-                                "q": "*"
-                            },
-                            {
-                                "name": "response",
-                                "q": "*"
-                            }
-                        ]
-                    }
-                ]
-            }
-        },
-        "front": {
-            "content-model": {
-                "type": "choice",
-                "children": [
-                    {
-                        "type": "choice",
-                        "q": "+",
-                        "children": [
-                            {
-                                "name": "p",
-                                "q": ""
-                            }
-                        ]
-                    }
-                ]
-            }
-        },
-        "body": {
-            "content-model": {
-                "type": "choice",
-                "children": [
-                    {
-                        "type": "choice",
-                        "q": "+",
-                        "children": [
-                            {
-                                "name": "p",
-                                "q": ""
-                            }
-                        ]
-                    }
-                ]
-            }
-        },
-        "sub-article": {
-            "content-model": {
-                "type": "seq",
-                "children": [
-                    {
-                        "name": "front"
-                    },
-                    {
-                        "name": "body",
-                        "q": "?"
-                    },
-                    {
-                        "type": "choice",
-                        "children": [
-                            {
-                                "name": "sub-article",
-                                "q": "*"
-                            },
-                            {
-                                "name": "response",
-                                "q": "*"
-                            }
-                        ]
-                    }
-                ]
-            }
-        },
-        "response": {
-            "content-model": {
-                "type": "choice",
-                "children": [
-                    {
-                        "type": "choice",
-                        "q": "+",
-                        "children": [
-                            {
-                                "name": "p",
-                                "q": ""
-                            }
-                        ]
-                    }
-                ]
-            }
+  "root": "article",
+  "elements": {
+    "article": {
+        "content-model": {
+            "type": "seq",
+            "children": [
+                {
+                    "name": "front"
+                },
+                {
+                    "name": "body",
+                    "q": "?"
+                },
+                {
+                    "type": "choice",
+                    "children": [
+                        {
+                            "name": "sub-article",
+                            "q": "*"
+                        },
+                        {
+                            "name": "response",
+                            "q": "*"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "front": {
+        "content-model": {
+            "type": "choice",
+            "children": [
+                {
+                    "type": "choice",
+                    "q": "+",
+                    "children": [
+                        {
+                            "name": "p",
+                            "q": ""
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "body": {
+        "content-model": {
+            "type": "choice",
+            "children": [
+                {
+                    "type": "choice",
+                    "q": "+",
+                    "children": [
+                        {
+                            "name": "p",
+                            "q": ""
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "sub-article": {
+        "content-model": {
+            "type": "seq",
+            "children": [
+                {
+                    "name": "front"
+                },
+                {
+                    "name": "body",
+                    "q": "?"
+                },
+                {
+                    "type": "choice",
+                    "children": [
+                        {
+                            "name": "sub-article",
+                            "q": "*"
+                        },
+                        {
+                            "name": "response",
+                            "q": "*"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "response": {
+        "content-model": {
+            "type": "choice",
+            "children": [
+                {
+                    "type": "choice",
+                    "q": "+",
+                    "children": [
+                        {
+                            "name": "p",
+                            "q": ""
+                        }
+                    ]
+                }
+            ]
         }
     }
+  }
 }

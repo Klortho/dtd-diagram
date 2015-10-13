@@ -55,34 +55,24 @@ cause documentation hyperlinks to go to the right place.
 
 # To do
 
-* Get a test tree working first. Start simple.
-
-
+* "mixed" content models
+* Implement attributes
+* Work on exit transitions
+* Change the style of the expander buttons depending on whether or not
+  they are expanded. Could I use some kind of actual button style there?
 * Get d3-flextree onto [jsdelivr 
   CDN](https://www.jsdelivr.com/free-open-source-cdn/javascript-cdn), then update
   the files here.
 * Automate build process to combine modules
-* After I get it completely working, change the default index.html page to render the JATS
-  DTD, for demo purposes. 
-
+* After I get it completely working, change the default index.html page to render 
+  the JATS DTD, for demo purposes. 
 
 ## Other
 
-* Change the style of the nodes to look pretty
-* Add attributes
 * Work on the sample DTD to make sure it covers all cases
-* Auto-adjust column widths, based on the rightmost edge of any node in that column
-* Corollary: expand the compound node's width proportionally to its height.
 * Add a "re-root" link somewhere on each node. Clicking that causes the whole
   tree to be redrawn, with that node now at the root.
-* More cowbell.
-    - Colors
-    - Maybe use a greek cross for the expander, rather than a rectangle
-    - How about a diamond shape for choice (reminiscent of flowcharts) and 
-      a horizontal ellipsis for sequence?
-    - Tweak how the `q` symbols look, esp. on the compound nodes
 * Add "fork me on github" banner, page titles, etc.
-* Create an index.html page that links to the various examples.
 * Tiny bug: when shrinking, sometimes the scroll value
   will not change. Right now, this means the canvas will get resized right
   away. (It waits until scrolling is done, but not until the end of the 
