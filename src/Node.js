@@ -25,10 +25,10 @@ if (typeof DtdDiagram != "undefined") {
     // This is used for testing, and recursively generates a tree of Nodes from
     // JSON objects -- basically, "blessing" the existing objects as Nodes.
     var bless = Node.bless = function(diagram, node_data, elem_parent) {
-      var n = new Node(diagram, node_data, null);
+      var n = new Node(diagram, node_data, elem_parent);
       if (node_data.children) {
         n.children = [];
-        var new_elem_parent = n.type == "element" ? n : elem_parent;
+        var new_elem_parent = (n.type == "element" ? n : elem_parent);
         node_data.children.forEach(function(kid) {
           n.children.push(bless(diagram, kid, new_elem_parent));
         });
@@ -36,13 +36,30 @@ if (typeof DtdDiagram != "undefined") {
       return n;
     };
 
-    Node.prototype.has_children = function() {
-      return this.children || this._children;
+    // Returns tree if there are any element children. This caches the
+    // result. If it has choice or seq children, then that implies
+    // element children.
+    Node.prototype.has_elem_children = function() {
+      if (!("_has_elem_children" in this)) {
+        var kids = this.children || this._children || [];
+        var e = kids.find(function(k) {
+          return k.type == "element" || k.type == "choice" ||
+            k.type == "seq";
+        });
+        this._has_elem_children = (typeof e != "undefined");
+      }
+      return this._has_elem_children;
     };
 
     Node.prototype.has_attributes = function() {
-      // FIXME: need to implement
-      return false;
+      if (!("_has_attributes" in this)) {
+        var kids = this.children || this._children || [];
+        var e = kids.find(function(k) {
+          return k.type == "attribute";
+        });
+        this._has_attributes = (typeof e != "undefined");
+      }
+      return this._has_attributes;
     };
 
 

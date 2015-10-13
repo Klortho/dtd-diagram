@@ -73,7 +73,8 @@ if (typeof jQuery !== "undefined" &&
       node_text_margin: 10,     // horizontal margin, on both sides
       node_height: 32,
       node_box_height: 25,
-      choice_seq_node_width: 18,
+      choice_node_width: 24,
+      seq_node_width: 20,
       q_width: 15,
       button_width: 15,
       diagonal_width: 20,
@@ -84,7 +85,7 @@ if (typeof jQuery !== "undefined" &&
       group_separation: 1.4,
 
       // Duration of the animation, in milliseconds.
-      duration: 2000,
+      duration: 500,
     };
 
 
@@ -137,11 +138,9 @@ if (typeof jQuery !== "undefined" &&
           node_text_margin = diagram.node_text_margin,
           node_height = diagram.node_height,
           node_box_height = diagram.node_box_height,
-          choice_seq_node_width = diagram.choice_seq_node_width,
           q_width = diagram.q_width,
           scrollbar_margin = diagram.scrollbar_margin,
           dropshadow_margin = diagram.dropshadow_margin,
-          group_separation = diagram.group_separation,
           duration = diagram.duration;
 
       // Use jQuery to add the main SVG element that will hold the diagram.
@@ -195,7 +194,10 @@ if (typeof jQuery !== "undefined" &&
           return [d.x_size, d.y_size];
         })
         .separation(function(a, b) {
-          return a.elem_parent == b.elem_parent ? 1 : group_separation;
+          var sep = a.elem_parent == b.elem_parent 
+            ? 1 : diagram.group_separation
+          console.log("In separation, returning " + sep);
+          return sep;
         })
       ;
 
@@ -208,7 +210,7 @@ if (typeof jQuery !== "undefined" &&
           return { x: s.x, y: s.y + s.width };
         })
         .projection(function(d) {
-          console.log("diagonal returning [" + d.y + "," + d.x + "]");
+          //console.log("diagonal returning [" + d.y + "," + d.x + "]");
           return [d.y, d.x];
         })
       ;
@@ -261,11 +263,12 @@ if (typeof jQuery !== "undefined" &&
 
     // Utility function to create a Promise out of a D3 transition. The
     // Promise is resolved when all of the selection's transitions have
-    // ended.
+    // ended. This was adapted from the code in this mailing list answer:
+    // https://groups.google.com/d/msg/d3-js/WC_7Xi6VV50/j1HK0vIWI-EJ
     function transition_promise(t) {
       var n = 0;
       return new Promise(function(resolve, reject) {
-        if (t.length == 0) resolve();
+        if (t.empty()) resolve();
         else {
           t.each(function() { ++n; }) 
             .each("end", function() { 
@@ -285,7 +288,6 @@ if (typeof jQuery !== "undefined" &&
 
       // Some local variable shortcuts
       var button_width = diagram.button_width,
-          choice_seq_node_width = diagram.choice_seq_node_width,
           diagonal = diagram.diagonal,
           diagonal_width = diagram.diagonal_width,
           duration = diagram.duration,
@@ -390,45 +392,123 @@ if (typeof jQuery !== "undefined" &&
           .style("fill-opacity", 0)
       ;
 
-      // Expander button for nodes that have kids
-      elem_attr_nodes.filter(function(d) {
-          return d.has_children();
+      // 1C - precompute some node sizes, and attach them to the Node objects.
+      // Note that this has to come after the text is drawn.
+      nodes_enter.each(function(d) {
+        d.x_size = node_height;
+        if (d.type == 'element' || d.type == 'attribute') {
+          d.width = node_text_margin * 2 + 
+                    (d.q ? q_width : 0) +
+                    (d.has_elem_children() || d.has_attributes() 
+                      ? button_width : 0) +
+                    document.getElementById(d.id).getBBox()["width"];
+        }
+        else if (d.type == 'choice') {
+          d.width = diagram.choice_node_width;
+        }
+        else {
+          d.width = diagram.seq_node_width;
+        }
+        d.y_size = d.width + diagonal_width;
+      });
+
+      // Button for nodes that have kids
+      var has_kids_nodes = elem_attr_nodes.filter(function(d) {
+        return d.has_elem_children();
+      });
+      has_kids_nodes.append("text")
+        .attr({
+          "class": "button-text elem-button",
+          x: 0,
+          y: 0,
+          "text-anchor": "baseline",
+          "alignment-baseline": "middle",
         })
-        .append("rect")
-          .attr({
-            "data-id": function(d) { return d.id; },
-            "class": "button",
-            width: 0,
-            height: node_box_height,
-            y: - node_box_height / 2,
-            x: 0,
-          })
-          .on("click", Node.click_handler)
+        .text('< >')
+        .style("fill-opacity", 0)
+      ;
+      has_kids_nodes.append("rect")
+        .attr({
+          "data-id": function(d) { return d.id; },
+          "class": "button",
+          width: button_width,
+          height: node_box_height / 2,
+          x: function(d) { return d.width - button_width; },
+          y: function(d) {
+            return d.has_attributes() ? 0 : -node_box_height / 4;
+          },
+        })
+        .on("click", Node.click_handler)
       ;
 
       // Button for nodes that have attributes
-      // FIXME:  TBD
+      var has_attr_nodes = elem_attr_nodes.filter(function(d) {
+        return d.has_attributes();
+      });
+      has_attr_nodes.append("text")
+        .attr({
+          "class": "button-text attr-button",
+          x: 0,
+          y: 0,
+          "text-anchor": "baseline",
+          "alignment-baseline": "middle",
+        })
+        .text(' @ ')
+        .style("fill-opacity", 0)
+      ;
+      has_attr_nodes.append("rect")
+        .attr({
+          "data-id": function(d) { return d.id; },
+          "class": "button",
+          width: button_width,
+          height: node_box_height / 2,
+          x: function(d) { return d.width - button_width; },
+          y: function(d) {
+            return d.has_elem_children() 
+              ? -node_box_height / 2 : -node_box_height / 4;
+          },
+        })
+        .on("click", Node.click_handler)
+      ;
+
+
+
+
+
 
       var choice_nodes = nodes_enter.filter(function(d) {
         return d.type == "choice";
       });
-      choice_nodes.append("circle")
+      choice_nodes.append("polygon")
         .attr({
           'class': 'choice',
-          r: choice_seq_node_width/2,
+          'points': '0,0 1,-1 2,0 1,1'
         })
       ;
 
       var seq_nodes = nodes_enter.filter(function(d) {
         return d.type == "seq";
-      })
-      seq_nodes.append("rect")
+      });
+
+      // This generates a bulbous sequence figure, which is supposed
+      // to look like a stylized vertical ellipsis, with room for 
+      // a quantifier in the center circle.
+      function seq_path_gen(cr, d, r) {
+        var yp = (cr * cr - r * r + d * d) / (2 * d);
+        var xp = Math.sqrt(cr * cr - yp * yp),
+            x1 = cr - xp, 
+            x2 = cr + xp;
+        return 'M ' + x1 + ' ' + (-yp) + ' ' +
+          'A ' +  r + ' ' +  r + ' 0   1 1 ' + x2 + ' ' + (-yp) + ' ' +
+          'A ' + cr + ' ' + cr + ' 0   0 1 ' + x2 + ' ' + yp + ' ' +
+          'A ' +  r + ' ' +  r + ' 0   1 1 ' + x1 + ' ' + yp + ' ' +
+          'A ' + cr + ' ' + cr + ' 0   0 1 ' + x1 + ' ' + (-yp) + ' ' +
+          'z';
+      }
+      seq_nodes.append("path")
         .attr({
           'class': 'seq',
-          width: choice_seq_node_width * 0.8,
-          height: choice_seq_node_width * 0.8,
-          x: -choice_seq_node_width * 0.4,
-          y: -choice_seq_node_width * 0.4,
+          'd': seq_path_gen(1.0, 1.2, 0.5),
         })
       ;
 
@@ -448,21 +528,6 @@ if (typeof jQuery !== "undefined" &&
           .style("fill-opacity", 0)
       ;
 
-      // 1C - precompute some node sizes, and attach them to the Node objects.
-      // Note that this has to come after the text is drawn.
-      nodes_enter.each(function(d) {
-        d.x_size = node_height;
-        if (d.type == 'element' || d.type == 'attribute') {
-          d.width = node_text_margin * 2 + 
-                    (d.q ? q_width : 0) +
-                    (d.has_children() || d.has_attributes() ? button_width : 0) +
-                    document.getElementById(d.id).getBBox()["width"];
-        }
-        else {
-          d.width = choice_seq_node_width;
-        }
-        d.y_size = d.width + diagonal_width;
-      });
 
       // 2A - Compute the new tree layout, and get the list of links.
       engine.nodes(root);
@@ -510,6 +575,34 @@ if (typeof jQuery !== "undefined" &&
 
       // FIXME: need transition effects for button, choice, seq.
 
+      nodes_enter.select(".choice").transition()
+        .duration(duration)
+        .attr("points", '0,0 12,-12 24,0 12,12');
+      nodes_enter.select(".seq").transition()
+        .duration(duration)
+        .attr("d", seq_path_gen(10, 12, 5));
+
+      has_kids_nodes.select(".elem-button").transition()
+        .duration(duration)
+        .attr({
+          x: function(d) { return d.width - button_width; },
+          y: function(d) {
+            return d.has_attributes() ? node_box_height / 4 : 0;
+          },
+        })
+        .style("fill-opacity", 1)
+      ;
+      has_attr_nodes.select(".attr-button").transition()
+        .duration(duration)
+        .attr({
+          x: function(d) { return d.width - button_width; },
+          y: function(d) {
+            return d.has_elem_children() ? -node_box_height / 4 : 0;
+          },
+        })
+        .style("fill-opacity", 1)
+      ;
+
 
 
 
@@ -522,7 +615,7 @@ if (typeof jQuery !== "undefined" &&
       link.enter().insert("path", "g")
         .attr("class", "link")
         .attr("d", function(d) {
-          var o = {x: src_node.x0, y: src_node.y0};
+          var o = {x: src_node.x0, y: src_node.y0, width: 0};
           return diagonal({source: o, target: o});
         });
 
@@ -535,7 +628,7 @@ if (typeof jQuery !== "undefined" &&
       link.exit().transition()
         .duration(duration)
         .attr("d", function(d) {
-          var o = {x: src_node.x, y: src_node.y};
+          var o = {x: src_node.x0, y: src_node.y0, width: 0};
           return diagonal({source: o, target: o});
         })
         .remove();

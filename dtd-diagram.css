@@ -15,26 +15,25 @@ svg {
   font: 12px sans-serif;
 }
 
-rect, circle {
+.node-box, .choice, .seq {
   stroke: steelblue;
   stroke-width: 1.5px;
   fill: white;
 }
 .has_children {
 }
-circle.choice {
-}
-rect.expander {
+
+.button {
   cursor: pointer;
+  fill: none;
+  pointer-events: all;
 }
-.node path {
-  stroke: black;
+.button-text {
+  font-size: 80%;
+  fill: steelblue;
 }
 
 
-
-.node {
-}
 text.q {
   font: 12pt "courier";
 }
