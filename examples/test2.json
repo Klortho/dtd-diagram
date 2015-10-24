@@ -9,12 +9,15 @@
                         "type": "seq",
                         "children": [
                             {
+                                "type": "element",
                                 "name": "front"
                             },
                             {
+                                "type": "element",
                                 "name": "body"
                             },
                             {
+                                "type": "element",
                                 "name": "back",
                                 "q": "?"
                             }
@@ -24,6 +27,7 @@
             },
             "attributes": [
                 {
+                    "type": "attribute",
                     "name": "version"
                 }
             ]
@@ -33,15 +37,18 @@
                 "spec": "any",
                 "children": [
                     {
+                        "type": "other",
                         "name": "ANY"
                     }
                 ]
             },
             "attributes": [
                 {
+                    "type": "attribute",
                     "name": "type"
                 },
                 {
+                    "type": "attribute",
                     "name": "id"
                 }
             ]
@@ -51,9 +58,11 @@
                 "spec": "mixed",
                 "children": [
                     {
+                        "type": "other",
                         "name": "#PCDATA"
                     },
                     {
+                        "type": "element",
                         "name": "em"
                     }
                 ]
@@ -67,6 +76,7 @@
                         "type": "seq",
                         "children": [
                             {
+                                "type": "element",
                                 "name": "head"
                             },
                             {
@@ -74,14 +84,17 @@
                                 "q": "+",
                                 "children": [
                                     {
+                                        "type": "element",
                                         "name": "sec"
                                     },
                                     {
+                                        "type": "element",
                                         "name": "note"
                                     }
                                 ]
                             },
                             {
+                                "type": "element",
                                 "name": "app",
                                 "q": "*"
                             }
@@ -95,6 +108,7 @@
                 "spec": "any",
                 "children": [
                     {
+                        "type": "other",
                         "name": "ANY"
                     }
                 ]
@@ -106,6 +120,7 @@
             },
             "attributes": [
                 {
+                    "type": "attribute",
                     "name": "src"
                 }
             ]
@@ -115,6 +130,7 @@
                 "spec": "text",
                 "children": [
                     {
+                        "type": "other",
                         "name": "#PCDATA"
                     }
                 ]
@@ -128,6 +144,7 @@
                         "type": "choice",
                         "children": [
                             {
+                                "type": "element",
                                 "name": "sec"
                             }
                         ]
@@ -144,9 +161,11 @@
                         "q": "*",
                         "children": [
                             {
+                                "type": "element",
                                 "name": "meta"
                             },
                             {
+                                "type": "element",
                                 "name": "note"
                             }
                         ]
@@ -159,6 +178,7 @@
                 "spec": "any",
                 "children": [
                     {
+                        "type": "other",
                         "name": "ANY"
                     }
                 ]

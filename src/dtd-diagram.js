@@ -399,7 +399,7 @@ if (typeof jQuery !== "undefined" &&
         if (d.type == 'element' || d.type == 'attribute') {
           d.width = node_text_margin * 2 + 
                     (d.q ? q_width : 0) +
-                    (d.has_elem_children() || d.has_attributes() 
+                    (d.has_children() || d.has_attributes() 
                       ? button_width : 0) +
                     document.getElementById(d.id).getBBox()["width"];
         }
@@ -414,7 +414,7 @@ if (typeof jQuery !== "undefined" &&
 
       // Button for nodes that have kids
       var has_kids_nodes = elem_attr_nodes.filter(function(d) {
-        return d.has_elem_children();
+        return d.has_children();
       });
       has_kids_nodes.append("text")
         .attr({
@@ -464,7 +464,7 @@ if (typeof jQuery !== "undefined" &&
           height: node_box_height / 2,
           x: function(d) { return d.width - button_width; },
           y: function(d) {
-            return d.has_elem_children() 
+            return d.has_children() 
               ? -node_box_height / 2 : -node_box_height / 4;
           },
         })
@@ -597,7 +597,7 @@ if (typeof jQuery !== "undefined" &&
         .attr({
           x: function(d) { return d.width - button_width; },
           y: function(d) {
-            return d.has_elem_children() ? -node_box_height / 4 : 0;
+            return d.has_children() ? -node_box_height / 4 : 0;
           },
         })
         .style("fill-opacity", 1)

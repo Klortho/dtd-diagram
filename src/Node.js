@@ -9,7 +9,6 @@ if (typeof DtdDiagram != "undefined") {
     // Nodes start life "uninitialized", meaning the children have not yet
     // been instantiated.
     var Node = function(diagram, spec, elem_parent) {
-      this.initialized = false;
       this.diagram = diagram;
       this.elem_parent = elem_parent;
       for (var k in spec) {
@@ -36,19 +35,20 @@ if (typeof DtdDiagram != "undefined") {
       return n;
     };
 
-    // Returns tree if there are any element children. This caches the
-    // result. If it has choice or seq children, then that implies
-    // element children.
-    Node.prototype.has_elem_children = function() {
-      if (!("_has_elem_children" in this)) {
+    // Returns true if there are any children in
+    // the content model (as opposed to attributes). This caches the
+    // result. This is used to determine whether or not the node box
+    // gets an expander button for the content.
+    Node.prototype.has_children = function() {
+      if (!("_has_children" in this)) {
         var kids = this.children || this._children || [];
         var e = kids.find(function(k) {
           return k.type == "element" || k.type == "choice" ||
             k.type == "seq";
         });
-        this._has_elem_children = (typeof e != "undefined");
+        this._has_children = (typeof e != "undefined");
       }
-      return this._has_elem_children;
+      return this._has_children;
     };
 
     Node.prototype.has_attributes = function() {
@@ -62,53 +62,47 @@ if (typeof DtdDiagram != "undefined") {
       return this._has_attributes;
     };
 
-    // For element nodes, this creates new child nodes from the content-model, as 
-    // needed, filling in the _children array. When this returns, the (element) node 
+    // initialize is only called on element nodes, and only once, when a given node first
+    // appears on the scene. It reads the json dtd, and creates new child nodes as needed, 
+    // filling in the _children array. When this returns, the (element) node 
     // is in the collapsed state.
-    // For choice and seq nodes, this recurses, eventually initializing all of the
-    // nodes up to the first elements or attributes that it sees.
 
     Node.prototype.initialize = function() {
-      var self = this;
+      var self = this,
+          diagram = self.diagram;
 
       // Make sure this is only called once
-      if (self.initialized) return;
+      if (self.initialized || self.type != "element") return;
       self.initialized = true;
 
-      if (self.type == "attribute") return;
-      if (self.type == "choice" || self.type == "seq") {
-        self.children.forEach(function(k) {
-          k.initialize();
-        });
-        return;
-      }
-
-      // type is "element"
-      var spec = self.diagram.dtd_json.elements[this.name];
-      if (typeof spec != "object" || !spec["content-model"])
+      var spec = diagram.dtd_json.elements[this.name];
+      if (typeof spec != "object" || 
+          !spec["content-model"] ||
+          !spec["content-model"]["children"])
       {
         return;
       }
-
+      var spec_children = spec["content-model"]["children"];
       self._children = [];
 
-      // This recursive function looks at one spec in the content-model of the
-      // dtd, and creates Nodes for it.
-      function make_kid(kid_spec, parent_array, elem_parent) {
-        var kid = new Node(self.diagram, kid_spec, elem_parent);
-        parent_array.push(kid);
+      spec_children.forEach(function(kid_spec) {
+        make_kid(diagram, kid_spec, self, self._children);
+      });
+    }
 
-        if (kid.type == "choice" || kid.type == "seq") {
-          kid.children = [];
-          kid_spec.children.forEach(function(gk_spec) {
-            make_kid(gk_spec, kid.children, elem_parent);
-          });
-        }
+    // This recursive function looks at one spec in the content-model of the
+    // dtd, and creates Nodes for it. It recurses past choice and seq, until it 
+    // hits element nodes, then stops.
+    function make_kid(diagram, kid_spec, elem_parent, parent_array) {
+      var kid = new Node(diagram, kid_spec, elem_parent);
+      parent_array.push(kid);
+
+      if (kid.type == "choice" || kid.type == "seq") {
+        kid.children = [];
+        kid_spec.children.forEach(function(gk_spec) {
+          make_kid(diagram, gk_spec, elem_parent, kid.children);
+        });
       }
-
-      //spec["content-model"].forEach(function(kid_spec) {
-        make_kid(spec["content-model"], self._children, self);
-      //});
     }
 
     Node.prototype.extents = function() {
@@ -144,6 +138,21 @@ if (typeof DtdDiagram != "undefined") {
         .reduce(_tree_reduce, this.extents());
     };
 
+    // Get all the element children of this node
+    Node.prototype.elem_children = function() {
+      var ec = [];
+      var c = this.children || this._children || [];
+      c.forEach(function(k) {
+        if (k.type == "element") {
+          ec.push(k);
+        }
+        else if (k.type == "choice" || k.type == "seq") {
+          $.merge(ec, k.elem_children());
+        }
+      });
+      return ec;
+    }
+
     // This is called when the user clicks on a node in the tree that has
     // kids. We have to call initialize() on each of the *child* nodes,
     // so that we can render them correctly.
@@ -154,7 +163,7 @@ if (typeof DtdDiagram != "undefined") {
       }
       // Initialize each of the kids
       if (this.children != null) {
-        this.children.forEach(function(k) {
+        this.elem_children().forEach(function(k) {
           k.initialize();
         });
       }

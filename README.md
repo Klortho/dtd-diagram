@@ -288,17 +288,29 @@ See for example:
 
 ### Node class
 
-Attributes that we create/maintain:
+Properties:
 
 * name
-* type - one of "element", "attribute", "choice", or "seq"
+* type - one of "element", "attribute", "choice", "seq", or "other"
 * q - from the DTD, either null, '?', '*', or '+'
-* children - if the node is expanded, array child Nodes
-* _children - stores the kids when the node is collapsed
+* initialized - boolean flag for element, choice, and seq Nodes only.
+  Starts out `false`; set to
+  `true` when initialize() is called on that Node; indicating that the *content*
+  and *attribute* arrays have been filled in from the data in the dtd spec.
+
+* content - for element, choice, and seq Nodes, this is an array of Nodes
+  from the content model
+* attributes - for element Nodes only, an array of attribute Node children.
+* children - if the node (content and/or attributes) is expanded, then this is an
+  array of child Nodes. This is used in the tree layout.
+
 * diagram - the diagram to which this Node belongs
 * elem_parent - the nearest ancestor Node of type `element`. This is used
   by the `separation` function -- all nodes with the same `elem_parent`
-  are considered part of the nuclear family, and spaced close together
+  are considered part of the nuclear family, and spaced close together. It's
+  also used to determine the starting location of the Nodes that are
+  "entering" in the animation.
+
 * width - computed by aggregating the widths of the parts. Doesn't include the
   diagonal -- this is used to compute the y coordinate for the "source" of the
   diagonal.
@@ -312,12 +324,9 @@ Attributes that we create/maintain:
   `name`, and the data-id attributes of the other SVG elements associated
   with this Node.
 
-Created by the D3 flextree layout engine:
-
-* depth
-* x, y
-* parent
-* x_size, y_size
+* depth - added by the flextree layout engine
+* x, y - added by the flextree layout engine
+* parent - added by the flextree layout engine
 
 
 ### DtdDiagram class

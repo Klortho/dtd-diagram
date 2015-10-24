@@ -41,14 +41,23 @@
         <a k='children'>
           <xsl:choose>
             <xsl:when test='@spec = "text"'>
-              <o><s k='name'>#PCDATA</s></o>
+              <o>
+                <s k='type'>other</s>
+                <s k='name'>#PCDATA</s>
+              </o>
             </xsl:when>
             <xsl:when test='@spec = "mixed"'>
-              <o><s k='name'>#PCDATA</s></o>
+              <o>
+                <s k='type'>other</s>
+                <s k='name'>#PCDATA</s>
+              </o>
               <xsl:apply-templates/>
             </xsl:when>
             <xsl:when test='@spec = "any"'>
-              <o><s k='name'>ANY</s></o>
+              <o>
+                <s k='type'>other</s>
+                <s k='name'>ANY</s>
+              </o>
             </xsl:when>
             <xsl:when test='@spec = "element"'>
               <xsl:apply-templates/>
@@ -73,6 +82,7 @@
   
   <xsl:template match='child'>
     <o>
+      <s k='type'>element</s>
       <s k='name'><xsl:value-of select="."/></s>
       <xsl:if test='@q'>
         <s k='q'><xsl:value-of select="@q"/></s>
@@ -81,6 +91,9 @@
   </xsl:template>
 
   <xsl:template match='attribute'>
-    <o><s k='name'><xsl:value-of select='@name'/></s></o>
+    <o>
+      <s k='type'>attribute</s>
+      <s k='name'><xsl:value-of select='@name'/></s>
+    </o>
   </xsl:template>
 </xsl:stylesheet>
