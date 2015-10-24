@@ -1,0 +1,13 @@
+<?xml version='1.0'?>
+<!DOCTYPE doc SYSTEM "test2.dtd">
+
+<doc>
+  <front/>
+  <body>
+    <head/>
+    <sec>
+      <img src='freddie'/>
+    </sec>
+  </body>
+  <back/>
+</doc>

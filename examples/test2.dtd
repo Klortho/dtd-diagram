@@ -1,0 +1,28 @@
+<!-- element content -->
+<!ELEMENT doc (front, body, back?)>
+<!ELEMENT body (head, (sec | note)+, app*)>
+<!ELEMENT head (meta|note)*>
+
+<!-- empty element -->
+<!ELEMENT img EMPTY>
+
+<!-- mixed content -->
+<!ELEMENT string (#PCDATA)>
+<!ELEMENT p (#PCDATA|em)* >
+
+<!-- any -->
+<!ELEMENT note ANY>
+<!ELEMENT front ANY>
+<!ELEMENT back ANY>
+<!ELEMENT sec ANY>
+
+
+<!ATTLIST doc version CDATA #FIXED "1.1">
+<!ATTLIST img src CDATA #REQUIRED>
+<!ATTLIST sec id ID #IMPLIED>
+<!ATTLIST meta 
+  type CDATA #IMPLIED
+  date CDATA "now">
+<!ATTLIST sec
+  type (red|green|blue) #IMPLIED>
+
