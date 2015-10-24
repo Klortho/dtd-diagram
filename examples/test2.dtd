@@ -2,6 +2,7 @@
 <!ELEMENT doc (front, body, back?)>
 <!ELEMENT body (head, (sec | note)+, app*)>
 <!ELEMENT head (meta|note)*>
+<!ELEMENT back (sec)>
 
 <!-- empty element -->
 <!ELEMENT img EMPTY>
@@ -13,7 +14,6 @@
 <!-- any -->
 <!ELEMENT note ANY>
 <!ELEMENT front ANY>
-<!ELEMENT back ANY>
 <!ELEMENT sec ANY>
 
 

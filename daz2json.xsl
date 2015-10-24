@@ -12,22 +12,50 @@
   
   <xsl:template name='root'>
     <o>
-      <s k='root'><xsl:value-of select='$root'/></s>
+      <s k='root'>
+        <xsl:value-of select='/declarations/elements/element[@root="true"][1]/@name'/>
+      </s>
       <o k='elements'>
         <xsl:for-each select='/declarations/elements/element'>
-          <xsl:if test='not(starts-with(@name, "mml:"))'>
-            <o k='{@name}'>
-              <xsl:apply-templates select='content-model[@spec="element"]'/>
-            </o>
-          </xsl:if>
+          <xsl:variable name='name' select='@name'/>
+          <o k='{$name}'>
+            <xsl:apply-templates select='content-model'/>
+            <xsl:if test='/declarations/attributes/attribute[attributeDeclaration/@element=$name]'>
+              <a k='attributes'>
+                <xsl:apply-templates
+                  select='/declarations/attributes/attribute[attributeDeclaration/@element=$name]'/>
+              </a>
+            </xsl:if>
+          </o>
         </xsl:for-each>
       </o>
     </o>
   </xsl:template>
   
-  <xsl:template match='content-model[@spec="element"]'>
+  <xsl:template match='content-model'>
     <o k='content-model'>
-      <xsl:apply-templates/>
+      <s k='spec'>
+        <xsl:value-of select='@spec'/>
+      </s>
+      <xsl:if test='@spec != "empty"'>
+        <a k='children'>
+          <xsl:choose>
+            <xsl:when test='@spec = "text"'>
+              <o><s k='name'>#PCDATA</s></o>
+            </xsl:when>
+            <xsl:when test='@spec = "mixed"'>
+              <o><s k='name'>#PCDATA</s></o>
+              <xsl:apply-templates/>
+            </xsl:when>
+            <xsl:when test='@spec = "any"'>
+              <o><s k='name'>ANY</s></o>
+            </xsl:when>
+            <xsl:when test='@spec = "element"'>
+              <xsl:apply-templates/>
+            </xsl:when>
+          </xsl:choose>
+        </a>
+      </xsl:if>
     </o>
   </xsl:template>
   
@@ -46,7 +74,13 @@
   <xsl:template match='child'>
     <o>
       <s k='name'><xsl:value-of select="."/></s>
-      <s k='q'><xsl:value-of select="@q"/></s>
+      <xsl:if test='@q'>
+        <s k='q'><xsl:value-of select="@q"/></s>
+      </xsl:if>
     </o>
+  </xsl:template>
+
+  <xsl:template match='attribute'>
+    <o><s k='name'><xsl:value-of select='@name'/></s></o>
   </xsl:template>
 </xsl:stylesheet>

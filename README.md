@@ -20,13 +20,11 @@ To generate JSON versions of DTDs:
 * Run `./setup.sh`, if you haven't already,
 * Install 
   [DtdAnalyzer](http://dtd.nlm.nih.gov/ncbi/dtdanalyzer/)
-* Generate the JSON. For
-  example:
+* Generate the JSON. For example, for the test DTD
 
     ```
     cd examples
-    dtdanalyzer --xslt ../daz2json.xsl dtd.dtd > dtd.json
-    dtddocumentor dtd.dtd
+    dtdanalyzer --roots doc --xslt ../daz2json.xsl test2.dtd > test2.json 
     ```
 
 To configure this to work with one of the JATS DTDs, you could do this:

@@ -1,0 +1,168 @@
+{
+    "root": "doc",
+    "elements": {
+        "doc": {
+            "content-model": {
+                "spec": "element",
+                "children": [
+                    {
+                        "type": "seq",
+                        "children": [
+                            {
+                                "name": "front"
+                            },
+                            {
+                                "name": "body"
+                            },
+                            {
+                                "name": "back",
+                                "q": "?"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "attributes": [
+                {
+                    "name": "version"
+                }
+            ]
+        },
+        "sec": {
+            "content-model": {
+                "spec": "any",
+                "children": [
+                    {
+                        "name": "ANY"
+                    }
+                ]
+            },
+            "attributes": [
+                {
+                    "name": "type"
+                },
+                {
+                    "name": "id"
+                }
+            ]
+        },
+        "p": {
+            "content-model": {
+                "spec": "mixed",
+                "children": [
+                    {
+                        "name": "#PCDATA"
+                    },
+                    {
+                        "name": "em"
+                    }
+                ]
+            }
+        },
+        "body": {
+            "content-model": {
+                "spec": "element",
+                "children": [
+                    {
+                        "type": "seq",
+                        "children": [
+                            {
+                                "name": "head"
+                            },
+                            {
+                                "type": "choice",
+                                "q": "+",
+                                "children": [
+                                    {
+                                        "name": "sec"
+                                    },
+                                    {
+                                        "name": "note"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "app",
+                                "q": "*"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "note": {
+            "content-model": {
+                "spec": "any",
+                "children": [
+                    {
+                        "name": "ANY"
+                    }
+                ]
+            }
+        },
+        "img": {
+            "content-model": {
+                "spec": "empty"
+            },
+            "attributes": [
+                {
+                    "name": "src"
+                }
+            ]
+        },
+        "string": {
+            "content-model": {
+                "spec": "text",
+                "children": [
+                    {
+                        "name": "#PCDATA"
+                    }
+                ]
+            }
+        },
+        "back": {
+            "content-model": {
+                "spec": "element",
+                "children": [
+                    {
+                        "type": "choice",
+                        "children": [
+                            {
+                                "name": "sec"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "head": {
+            "content-model": {
+                "spec": "element",
+                "children": [
+                    {
+                        "type": "choice",
+                        "q": "*",
+                        "children": [
+                            {
+                                "name": "meta"
+                            },
+                            {
+                                "name": "note"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "front": {
+            "content-model": {
+                "spec": "any",
+                "children": [
+                    {
+                        "name": "ANY"
+                    }
+                ]
+            }
+        }
+    }
+}
