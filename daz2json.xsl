@@ -33,7 +33,7 @@
   </xsl:template>
   
   <xsl:template match='content-model'>
-    <o k='content-model'>
+    <o k='content'>
       <s k='spec'>
         <xsl:value-of select='@spec'/>
       </s>

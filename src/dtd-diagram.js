@@ -93,20 +93,17 @@ if (typeof jQuery !== "undefined" &&
     // the svg element, instantiating and configuring the layout engine
     _DtdDiagram.prototype.initialize = function() {
       var diagram = this;
-
-      var Box = DtdDiagram.Box;
-      var Node = DtdDiagram.Node;
       diagram.error = false;
       diagram.last_id = 0;
 
       // User can pass in a specifier for the div either as an
       // id string, a DOM Element, or a jQuery object.
-      var opts = diagram.opts;
-      var container = opts.container || 'dtd-diagram';
-      var container_jq = diagram.container_jq =
-          typeof container == "string" ? $('#' + container) :
-          container instanceof Element ? $(container) :
-          container;
+      var opts = diagram.opts,
+          container = opts.container || 'dtd-diagram',
+          container_jq = diagram.container_jq =
+            typeof container == "string" ? $('#' + container) :
+            container instanceof Element ? $(container) :
+            container;
 
       // If the expected div is not found, or if the selection somehow
       // matches more than one, then get out now.
@@ -127,21 +124,6 @@ if (typeof jQuery !== "undefined" &&
 
       // If we're using a test file, then we're not going to use a dtd file
       if (diagram.test_file) diagram.dtd_json_file = null;
-
-      // Set local variables for the options, for convenience
-      var dtd_json_file = diagram.dtd_json_file,
-          test_file = diagram.test_file,
-          root_element = diagram.root_element,
-          tag_doc_url = diagram.tag_doc_url,
-          min_canvas_width = diagram.min_canvas_width,
-          min_canvas_height = diagram.min_canvas_height,
-          node_text_margin = diagram.node_text_margin,
-          node_height = diagram.node_height,
-          node_box_height = diagram.node_box_height,
-          q_width = diagram.q_width,
-          scrollbar_margin = diagram.scrollbar_margin,
-          dropshadow_margin = diagram.dropshadow_margin,
-          duration = diagram.duration;
 
       // Use jQuery to add the main SVG element that will hold the diagram.
       container_jq.append(
@@ -166,13 +148,16 @@ if (typeof jQuery !== "undefined" &&
       // scrollbar margin - if this is big enough, it ensures we'll never get
       // spurious scrollbars when the drawing is at the minimum size. But if it's
       // too big, it messes up the centering. 22 gives plenty of room
+      var min_canvas_width = diagram.min_canvas_width,
+          min_canvas_height = diagram.min_canvas_height,
+          scrollbar_margin = diagram.scrollbar_margin;
       container_d3.style({
         'width': (min_canvas_width + scrollbar_margin) + 'px',
         'height': (min_canvas_height + scrollbar_margin) + 'px'
       });
 
       // Initialize the SVG
-      var canvas = diagram.canvas = new Box(
+      var canvas = diagram.canvas = new DtdDiagram.Box(
         -min_canvas_height / 2, 
         0, 
         min_canvas_height / 2, 
@@ -196,7 +181,7 @@ if (typeof jQuery !== "undefined" &&
         .separation(function(a, b) {
           var sep = a.elem_parent == b.elem_parent 
             ? 1 : diagram.group_separation
-          console.log("In separation, returning " + sep);
+          //console.log("In separation, returning " + sep);
           return sep;
         })
       ;
@@ -217,40 +202,31 @@ if (typeof jQuery !== "undefined" &&
 
       // Read the input file, and return the promise
       return new Promise(function(resolve, reject) {
-        if (test_file) {
-          // The test file is an already-expanded tree, not from the DTD
-          d3.json(test_file, function(error, _test_json) {
-            diagram.root = Node.bless(diagram, _test_json, null);
-            resolve();
-          });
-        }
-        else {
-          d3.json(dtd_json_file, function(error, _dtd_json) {
-            if (error) {
-              var msg = "Error reading DTD file '" + dtd_json_file + 
-                  "': " + error.statusText;
-              console.error(msg);
-              diagram.error = msg;
-              reject(msg);
-            }
-            else {
-              var dtd_json = diagram.dtd_json = _dtd_json;
+        var dtd_json_file = diagram.dtd_json_file;
+        d3.json(dtd_json_file, function(error, dtd_json) {
+          if (error) {
+            var msg = "Error reading DTD file '" + dtd_json_file + 
+                "': " + error.statusText;
+            console.error(msg);
+            diagram.error = msg;
+            reject(msg);
+          }
+          else {
+            diagram.dtd_json = dtd_json;
 
-              // Create the new tree. Unlike any subsequent element nodes, the root Node 
-              // is from a hand-crafted object, rather than being copied from an element 
-              // spec in the DTD
-              var root = diagram.root = new Node(diagram, {
-                name: root_element || dtd_json.root,
-              }, null);
-              // Initialize the root node, which causes all of its children to
-              // be instantiated from the DTD
-              root.initialize();
-              // Initial state: root node expanded
-              root.expand();
-              resolve();
-            }
-          });
-        }
+            // Create the new tree. Unlike all subsequent nodes, the root  
+            // is hand-crafted, rather than being copied from an element 
+            // spec in the DTD
+            var root = diagram.root = DtdDiagram.Node.factory(diagram, {
+              name: diagram.root_element || dtd_json.root,
+              type: 'element',
+            }, null);
+
+            // Initial state: root node expanded
+            root.expand();
+            resolve();
+          }
+        });
       })
         .then(function() {
           // x is the vertical, and y the horizontal, coordinate
@@ -399,7 +375,7 @@ if (typeof jQuery !== "undefined" &&
         if (d.type == 'element' || d.type == 'attribute') {
           d.width = node_text_margin * 2 + 
                     (d.q ? q_width : 0) +
-                    (d.has_children() || d.has_attributes() 
+                    (d.has_content() || d.has_attributes() 
                       ? button_width : 0) +
                     document.getElementById(d.id).getBBox()["width"];
         }
@@ -414,7 +390,7 @@ if (typeof jQuery !== "undefined" &&
 
       // Button for nodes that have kids
       var has_kids_nodes = elem_attr_nodes.filter(function(d) {
-        return d.has_children();
+        return d.has_content();
       });
       has_kids_nodes.append("text")
         .attr({
@@ -464,7 +440,7 @@ if (typeof jQuery !== "undefined" &&
           height: node_box_height / 2,
           x: function(d) { return d.width - button_width; },
           y: function(d) {
-            return d.has_children() 
+            return d.has_content() 
               ? -node_box_height / 2 : -node_box_height / 4;
           },
         })
@@ -597,7 +573,7 @@ if (typeof jQuery !== "undefined" &&
         .attr({
           x: function(d) { return d.width - button_width; },
           y: function(d) {
-            return d.has_children() ? -node_box_height / 4 : 0;
+            return d.has_content() ? -node_box_height / 4 : 0;
           },
         })
         .style("fill-opacity", 1)

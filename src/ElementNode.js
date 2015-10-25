@@ -1,0 +1,131 @@
+// DtdDiagram.ElementNode class
+
+if (typeof DtdDiagram != "undefined") {
+  DtdDiagram.ElementNode = function() {
+    var Node = DtdDiagram.Node;
+
+    // Constructor. Don't call this directly; it is called from the Node
+    // constructor.
+    var ElementNode = function(diagram, spec, elem_parent) {
+      var self = this;
+      Node.call(self, diagram, spec, elem_parent);
+      if (!("q" in self)) self.q = null;
+
+      self.content = null;
+      self.content_expanded = false;
+      self.attributes_expanded = false;
+
+      // Initialize attributes now
+      var decl = self.declaration = diagram.dtd_json.elements[self.name];
+      if (typeof decl != "object") {
+        console.error("Can't find a declaration for element " + self.name +
+          " in the DTD.");
+        decl = self.declaration = null;
+      }
+      var attrs = self.attributes = [];
+      if (decl && decl.attributes) {
+        decl.attributes.forEach(function(attr_spec) {
+          attrs.push(Node.factory(diagram, attr_spec, self));
+        });
+      }
+    };
+
+    // Inherit from Node
+    Node.subclasses["element"] = ElementNode;
+    ElementNode.prototype = Object.create(Node.prototype);
+    ElementNode.prototype.constructor = ElementNode;
+
+
+    // Called the first time we need to discover the content children
+    // for an ElementNode.
+    ElementNode.prototype.init_content = function() {
+      var self = this,
+          diagram = self.diagram,
+          decl = self.declaration;
+
+      var content = self.content = [];
+      if (decl && decl.content && decl.content.children) {
+        decl.content.children.forEach(function(kid_spec) {
+          content.push(Node.factory(diagram, kid_spec, self));
+        });
+      }
+    };
+
+    // Get the array of content children (as opposed to attribute children)
+    // or the empty array, if there are none.
+    ElementNode.prototype.get_content = function() {
+      if (this.content == null) this.init_content();
+      return this.content;
+    };
+
+    // Returns true if there are any content children 
+    // (as opposed to attributes). 
+    ElementNode.prototype.has_content = function() {
+      if (this.content == null) this.init_content();
+      return this.content.length > 1;
+    };
+
+    // Returns true if this Node has any attribute children.
+    ElementNode.prototype.has_attributes = function() {
+      return this.attributes.length > 1;
+    };
+
+
+    ////////////////////////////////////////////////
+    // Event handlers
+
+    ElementNode.content_click_handler = function(src_node) {
+      src_node.toggle_content();
+      this.diagram.update(this);
+    };
+
+    ElementNode.prototype.toggle_content = function() {
+      this.content_expanded = !this.content_expanded;
+      this.set_children();
+    };
+
+    ElementNode.prototype.expand_content = function() {
+      this.content_expanded = true;
+      this.set_children();
+    };
+
+    ElementNode.attributes_click_handler = function(src_node) {
+      src_node.toggle_attributes();
+      this.diagram.update(this);
+    };
+
+    ElementNode.prototype.toggle_attributes = function() {
+      this.attributes_expanded = !this.attributes_expanded;
+      this.set_children();
+    };
+
+    ElementNode.prototype.expand_attributes = function() {
+      this.attributes_expanded = true;
+      this.set_children();
+    };
+
+    ElementNode.prototype.expand = function() {
+      this.content_expanded = this.attributes_expanded = true;
+      this.set_children();
+    };
+
+    ElementNode.prototype.set_children = function() {
+      if (!this.content_expanded && !this.attributes_expanded) {
+        this.children = [];
+      }
+      else if (!this.content_expanded && this.attributes_expanded) {
+        this.children = this.attributes;
+      }
+      else if (this.content_expanded && !this.attributes_expanded) {
+        this.children = this.get_content();
+      }
+      else {
+        this.children = this.attributes.concat(this.get_content());
+      }
+    };
+
+
+    return ElementNode;
+  }();
+}
+

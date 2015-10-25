@@ -235,11 +235,6 @@ Default is 20.
     };
 ```
 
-**test_file**
-
-Use a pre-layed-out test file, for testing. Default is *null*.
-This is exclusive with **dtd_json_file**.
-
 
 
 # Generating the JSON
@@ -286,30 +281,48 @@ See for example:
 
 
 
-### Node class
+### Node classes
 
-Properties:
+The base Node class is "abstract". We could do some fancy inheritance or
+mix-ins, but to keep thing simple, the inheritance is:
 
-* name
+- Node
+    - SimpleNode - "attribute" and "other"
+    - ElementNode - "element"
+    - ChoiceSeqNode - "choice", "seq"
+
+
+#### Node methods
+
+* has_content() - returns true if this Node has content children
+* has_attributes() - returns true if this Node has attribute children
+* get_content() - returns an array of content children. If this node
+  has no content children, returns an empty array.
+* elem_descendants()
+
+
+
+#### Common properties
+
+* name - (SimpleNode and ElementNode only)
 * type - one of "element", "attribute", "choice", "seq", or "other"
-* q - from the DTD, either null, '?', '*', or '+'
-* initialized - boolean flag for element, choice, and seq Nodes only.
-  Starts out `false`; set to
-  `true` when initialize() is called on that Node; indicating that the *content*
-  and *attribute* arrays have been filled in from the data in the dtd spec.
-
-* content - for element, choice, and seq Nodes, this is an array of Nodes
-  from the content model
-* attributes - for element Nodes only, an array of attribute Node children.
-* children - if the node (content and/or attributes) is expanded, then this is an
-  array of child Nodes. This is used in the tree layout.
+* q - (ElementNode and ChoiceSeqNode only) - from the DTD, either 
+  null, '?', '*', or '+'
 
 * diagram - the diagram to which this Node belongs
-* elem_parent - the nearest ancestor Node of type `element`. This is used
+* elem_parent - the nearest ancestor Node of type `element`. For every Node
+  except the root of the tree, this is a valid ElementNode object. For the
+  root, this is *null*.  This is used
   by the `separation` function -- all nodes with the same `elem_parent`
   are considered part of the nuclear family, and spaced close together. It's
   also used to determine the starting location of the Nodes that are
   "entering" in the animation.
+
+* children - always a valid (possibly zero-length) array. 
+  This is used by the layout engine, and reflects the actual, visible
+  children of the Node. For ElementNodes, this is an aggregation of content 
+  and/or attributes, depending on which are expanded. For ChoiceSeqNodes,
+  this is always set to the content children.
 
 * width - computed by aggregating the widths of the parts. Doesn't include the
   diagonal -- this is used to compute the y coordinate for the "source" of the
@@ -327,6 +340,32 @@ Properties:
 * depth - added by the flextree layout engine
 * x, y - added by the flextree layout engine
 * parent - added by the flextree layout engine
+
+
+#### SimpleNode properties
+
+#### ElementNode properties:
+
+* declaration - the element declaration object from the DTD. If there's a problem
+  with the DTD, this might be null
+* content - an array of content Node children.
+  This is initially null, and is retrieved lazily.
+  After it's been "retrieved", it's always an array; if the element has
+  no content children, it will be an empty array.
+* attributes - an array of attribute SimpleNode children.
+  This will always be a (possibly zero-length) valid array.
+* content_expanded - boolean, for element Nodes only: keeps track of the 
+  expand/collapse state of content
+* attributes_expanded - boolean, for element Nodes only: keeps track of the 
+  expand/collapse state of attributes
+
+
+#### ChoiceSeqNode properties
+
+
+
+
+
 
 
 ### DtdDiagram class
