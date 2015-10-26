@@ -15,7 +15,7 @@ svg {
   font: 12px sans-serif;
 }
 
-.node-box, .choice, .seq {
+.element-box, .attribute-box, .other-box, .choice, .seq {
   stroke: steelblue;
   stroke-width: 1.5px;
   fill: white;

@@ -124,6 +124,20 @@ if (typeof DtdDiagram != "undefined") {
       }
     };
 
+    ////////////////////////////////////////////////
+    // Drawing
+
+    ElementNode.prototype.draw_enter = function(g) {
+      console.log("ElementNode.draw_enter: d = %o, g = %o", this, g);
+      this.draw_enter_box(g);
+    };
+
+    ElementNode.prototype.transition_enter = function(g) {
+      console.log("ElementNode.transition_enter");
+      return this.transition_enter_box(g);
+    };
+
+
 
     return ElementNode;
   }();

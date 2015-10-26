@@ -64,7 +64,6 @@ if (typeof DtdDiagram != "undefined") {
     };
 
 
-
     ////////////////////////////////////////////////
     // Geometry / layout related
 
@@ -101,6 +100,76 @@ if (typeof DtdDiagram != "undefined") {
         .reduce(_tree_reduce, this.extents());
     };
 
+    ////////////////////////////////////////////////
+    // SVG drawing
+
+    // Draw the initial state of the node, at the begining of the animation
+    // FIXME: this default impl will go away, once it's done for all subclasses
+    Node.prototype.draw_enter = function(g) {
+      console.log("Node.draw_enter: d = %o, g = %o", this, g);
+    };
+
+    // Draw an entering node box (zero-width) and its label. 
+    // This is shared by ElementNodes and SimpleNodes.
+    Node.prototype.draw_enter_box = function(g) {
+      var self = this,
+          diagram = self.diagram,
+          node_box_height = diagram.node_box_height;
+
+      var gs = self.gs = d3.select(g);
+
+      // draw the box
+      gs.append("rect")
+        .attr({
+          "data-id": self.id,
+          "class": self.type + "-box",
+          width: 0,
+          height: node_box_height,
+          y: - node_box_height / 2,
+          rx: 6,
+          ry: 6,
+        })
+      ;
+
+      // draw the text
+      gs.append("a")
+        // FIXME: need to use URL templates
+        .attr("xlink:href", diagram.tag_doc_url + "elem-" + self.name)
+        .append("text")
+          .attr({
+            id: self.id,
+            "class": "label",
+            x: 0,
+            y: 0,
+            "text-anchor": "baseline",
+            "alignment-baseline": "middle",
+          })
+          .text(self.name)
+          .style("fill-opacity", 0)
+      ;
+    };
+
+    Node.prototype.transition_enter = function(g) {
+      console.log("Node.transition_enter");
+      return null;
+    };
+
+    // Transition an entering node box and its label to their
+    // final, displayed values.
+    // This is shared by ElementNodes and SimpleNodes.
+    Node.prototype.transition_enter_box = function() {
+      var self = this,
+          gs = self.gs,
+          box_class = self.type + "-box",
+          diagram = self.diagram,
+          duration = diagram.duration;
+
+      console.log("transition_enter_box: box_class = " + box_class);
+      gs.select('.' + box_class).transition()
+        .duration(duration)
+        .attr("width", function(d) { return d.width; })
+      ;
+    };
 
     return Node;
   }();

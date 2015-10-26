@@ -262,59 +262,29 @@ if (typeof jQuery !== "undefined" &&
       var diagram = this;
       diagram.src_node = src_node;
 
-      // Some local variable shortcuts
-      var button_width = diagram.button_width,
-          diagonal = diagram.diagonal,
-          diagonal_width = diagram.diagonal_width,
-          duration = diagram.duration,
-          engine = diagram.engine,
-          node_box_height = diagram.node_box_height,
-          node_height = diagram.node_height,
-          node_text_margin = diagram.node_text_margin,
-          q_width = diagram.q_width,
-          root = diagram.root,
-          svg_g = diagram.svg_g;
-
       // Since the node widths depend on the widths of the text inside each
       // node, and those widths are used in the laying out of the tree, we
       // have to bind the data and create the text nodes first.
 
       // This gives us the complete array of nodes
-      var nodes = d3.layout.hierarchy()(root);
+      var root = diagram.root,
+          nodes = d3.layout.hierarchy()(root);
 
       // Bind the data. The second argument to .data() provides the key,
       // to ensure that the same data value is bound to the same node every
       // time.
+      var svg_g = diagram.svg_g;
       var nodes_update = svg_g.selectAll("g.node")
         .data(nodes, function(d) { 
           return d.id || (d.id = ++diagram.last_id); 
         })
       ;
 
-      // Drawing work:
-      //
-      //  1. For all the entering nodes:
-      //     A. Create the <g> containers. They will already be in their final
-      //        positions
-      //     B. Draw the SVG elements that depict the node, with 
-      //        pre-transition positions and attributes. 
-      //     C. Precompute some widths, and attach them to the Node objects
-      //  2. Layout work
-      //     A. Do the layout
-      //     B. Start transition of scrollbars and drawing size
-      //  3. For ALL nodes, start transitions of the <g> containers to 
-      //     their final positions
-      //  4. Back to entering nodes:
-      //     For all the SVG elements, start transitions to final attributes
-      //  5. Diagonals
-      //     A. Draw starting positions
-      //     B. Start transitions to ending positions
-      //     C. Transition exiting links to their parents' positions
-      //  6. For all exiting nodes:
-      //     Transition them to their "gone" positions and attributes
-
       // Keep a list of all promises
       var promises = [];
+
+      // Drawing work: see the README file, under "The update() method", for
+      // the list of tasks.
 
       // 1A - Create the <g> containers
       var nodes_enter = nodes_update.enter().append("g")
@@ -327,6 +297,11 @@ if (typeof jQuery !== "undefined" &&
         })
       ;
 
+      nodes_enter.each(function(d, i) {
+        d.draw_enter(this);
+      });
+
+
       // 1B - Draw the nodes with pre-transition positions and attributes.
 
       // element and attribute nodes
@@ -335,43 +310,16 @@ if (typeof jQuery !== "undefined" &&
       });
 
       // draw the main rectangle
-      elem_attr_nodes.append("rect")
-        .attr({
-          "data-id": function(d) { return d.id; },
-          "class": "node-box",
-          width: 0,
-          height: node_box_height,
-          y: - node_box_height / 2,
-          rx: 6,
-          ry: 6,
-        })
-      ;
-
-      // draw the text
-      elem_attr_nodes.append("a")
-        .attr("xlink:href", function(d) {
-          // FIXME: need to use URL templates
-          return diagram.tag_doc_url + "elem-" + d.name;
-        })
-        .append("text")
-          .attr({
-            id: function(d) { return d.id; },
-            "class": "label",
-            x: 0,
-            y: 0,
-            "text-anchor": "baseline",
-            "alignment-baseline": "middle",
-          })
-          .text(function(d) { 
-            return d.name; 
-          })
-          .style("fill-opacity", 0)
-      ;
+      var node_box_height = diagram.node_box_height;
 
       // 1C - precompute some node sizes, and attach them to the Node objects.
       // Note that this has to come after the text is drawn.
+      var node_text_margin = diagram.node_text_margin,
+          diagonal_width = diagram.diagonal_width,
+          q_width = diagram.q_width,
+          button_width = diagram.button_width;
       nodes_enter.each(function(d) {
-        d.x_size = node_height;
+        d.x_size = diagram.node_height;
         if (d.type == 'element' || d.type == 'attribute') {
           d.width = node_text_margin * 2 + 
                     (d.q ? q_width : 0) +
@@ -447,11 +395,6 @@ if (typeof jQuery !== "undefined" &&
         .on("click", DtdDiagram.Node.click_handler)
       ;
 
-
-
-
-
-
       var choice_nodes = nodes_enter.filter(function(d) {
         return d.type == "choice";
       });
@@ -506,6 +449,7 @@ if (typeof jQuery !== "undefined" &&
 
 
       // 2A - Compute the new tree layout, and get the list of links.
+      var engine = diagram.engine;
       engine.nodes(root);
       var links = engine.links(nodes);
 
@@ -517,6 +461,7 @@ if (typeof jQuery !== "undefined" &&
 
 
       // 3 - Transition all nodes to their new position.
+      var duration = diagram.duration;
       promises.push(transition_promise(
         nodes_update.transition()
           .duration(duration)
@@ -528,11 +473,10 @@ if (typeof jQuery !== "undefined" &&
 
       // 4 - Transition all entering node stuff to final attribute values
 
-      promises.push(transition_promise(
-        nodes_enter.select(".node-box").transition()
-          .duration(duration)
-          .attr("width", function(d) { return d.width; })
-      ));
+      nodes_enter.each(function(d) {
+        promises.push(d.transition_enter(this));
+      });
+
       promises.push(transition_promise(
         nodes_enter.select(".label").transition()
           .duration(duration)
@@ -580,14 +524,12 @@ if (typeof jQuery !== "undefined" &&
       ;
 
 
-
-
-
       // 5A - Diagonals - starting positions
       var link = svg_g.selectAll("path.link")
         .data(links, function(d) { return d.target.id; });
 
       // Enter any new links at the parent's previous position.
+      var diagonal = diagram.diagonal;
       link.enter().insert("path", "g")
         .attr("class", "link")
         .attr("d", function(d) {

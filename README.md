@@ -364,10 +364,6 @@ mix-ins, but to keep thing simple, the inheritance is:
 
 
 
-
-
-
-
 ### DtdDiagram class
 
 Class attributes:
@@ -426,6 +422,31 @@ Attributes used during transitioning:
 * viewport
 * new_viewport
 * embiggenning - true if the drawing is getting larger; false otherwise
+
+
+
+## The update() method
+
+For reference, here's a list of the steps executed when updating the diagram.
+
+1. For all the entering nodes:
+   A. Create the <g> containers.
+   B. Draw the SVG elements that depict the node, with 
+      pre-transition positions and attributes. 
+   C. Precompute some widths, and attach them to the Node objects
+2. Layout work
+   A. Do the layout
+   B. Start transition of scrollbars and drawing size
+3. For ALL nodes, start transitions of the <g> containers to 
+   their final positions
+4. Back to entering nodes:
+   For all the SVG elements, start transitions to final attributes
+5. Diagonals
+   A. Draw starting positions
+   B. Start transitions to ending positions
+   C. Transition exiting links to their parents' positions
+6. For all exiting nodes:
+   Transition them to their "gone" positions and attributes
 
 
 

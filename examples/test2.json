@@ -1,6 +1,31 @@
 {
     "root": "doc",
     "elements": {
+        "app": {
+            "content": {
+                "spec": "element",
+                "children": [
+                    {
+                        "type": "choice",
+                        "q": "+",
+                        "children": [
+                            {
+                                "type": "element",
+                                "name": "body"
+                            },
+                            {
+                                "type": "element",
+                                "name": "sec"
+                            },
+                            {
+                                "type": "element",
+                                "name": "p"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
         "doc": {
             "content": {
                 "spec": "element",

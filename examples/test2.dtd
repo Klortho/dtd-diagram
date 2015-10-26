@@ -15,6 +15,7 @@
 <!ELEMENT note ANY>
 <!ELEMENT front ANY>
 <!ELEMENT sec ANY>
+<!ELEMENT app (body|sec|p)+>
 
 
 <!ATTLIST doc version CDATA #FIXED "1.1">
