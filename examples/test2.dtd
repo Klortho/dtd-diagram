@@ -10,7 +10,7 @@
 
 <!-- mixed content -->
 <!ELEMENT string (#PCDATA)>
-<!ELEMENT p (#PCDATA|em|img)* >
+<!ELEMENT p (#PCDATA|string|img)* >
 
 <!-- any -->
 <!ELEMENT note ANY>
@@ -27,4 +27,5 @@
   date CDATA "now">
 <!ATTLIST sec
   type (red|green|blue) #IMPLIED>
+
 

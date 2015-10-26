@@ -103,7 +103,7 @@
                     },
                     {
                         "type": "element",
-                        "name": "em"
+                        "name": "string"
                     },
                     {
                         "type": "element",

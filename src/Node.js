@@ -45,6 +45,10 @@ if (typeof DtdDiagram != "undefined") {
       return false;
     };
 
+    Node.prototype.has_q = function() {
+      return false;
+    };
+
     Node.prototype.get_content = function() {
       return [];
     };
@@ -64,8 +68,8 @@ if (typeof DtdDiagram != "undefined") {
     };
 
 
-    ////////////////////////////////////////////////
     // Geometry / layout related
+    // -------------------------
 
     Node.prototype.extents = function() {
       var diagram = this.diagram;
@@ -73,7 +77,7 @@ if (typeof DtdDiagram != "undefined") {
         this.x - diagram.node_box_height / 2,
         this.y,
         this.x + diagram.node_box_height / 2,
-        this.y + diagram.node_width
+        this.y + this.width()
       );
     };
 
@@ -100,8 +104,9 @@ if (typeof DtdDiagram != "undefined") {
         .reduce(_tree_reduce, this.extents());
     };
 
-    ////////////////////////////////////////////////
+
     // D3/SVG drawing
+    // --------------
 
     // Start the update, which means binding the data - the list of Node
     // objects in the tree bound to their `g.node` SVG elements;
@@ -137,7 +142,7 @@ if (typeof DtdDiagram != "undefined") {
         d.gs = d3.select(this);
       });
 
-      var nodes_exit = diagram.nodes_exit = nodes_update.exit();
+      diagram.nodes_exit = nodes_update.exit();
     };
 
 
@@ -145,104 +150,11 @@ if (typeof DtdDiagram != "undefined") {
     // it's total width (the d3.flextree layout uses x for vertical and y for
     // horizontal).
     Node.prototype.y_size = function() {
-      var self = this;
-      if (!("_y_size" in self)) {
-        self._y_size = self.width() + self.diagram.diagonal_width;
-      }
-      return self._y_size;
+      return this.width() + this.diagram.diagonal_width;
     };
 
-    // Get the displayed width for a label string. This generates a temporary
-    // SVG text node, measures its width, and then destroys it.
-    Node.label_width = function(diagram, label) {
-      if (!("label_width_cache" in diagram)) {
-        diagram.label_width_cache = {};
-      }
-      var cache = diagram.label_width_cache;
-      if (!(label in cache)) {
-        var text = diagram.svg_g
-          .append("text")
-            .attr({
-              "id": "temporary-label",
-              "class": "label",
-              x: 0,
-              y: 0,
-            })
-            .text(label)
-            .style("fill-opacity", 0)
-        ;
-        cache[label] = 
-          document.getElementById("temporary-label").getBBox()["width"];
-        text.remove();
-      }
-      return cache[label];
-    }
 
-
-    // Draw the initial state of the node, at the beginning of the animation.
-    // FIXME: this default impl will go away, once it's done for all subclasses
-    Node.prototype.draw_enter = function() {
-      console.log("FIXME: Node.draw_enter: d = %o, g = %o", this, g);
-    };
-
-    // Draw an entering node box and its label. 
-    // This is shared by ElementNodes and SimpleNodes.
-    Node.prototype.draw_enter_box = function() {
-      var self = this,
-          gs = self.gs,
-          diagram = self.diagram,
-          node_box_height = diagram.node_box_height;
-
-      // Draw the box. Initially, it has zero width.
-      gs.append("rect")
-        .attr({
-          "data-id": self.id,
-          "class": self.type + "-box",
-          width: self.width(),
-          height: node_box_height,
-          y: - node_box_height / 2,
-          rx: 6,
-          ry: 6,
-        })
-      ;
-
-      // Draw the text. 
-      gs.append("a")
-        // FIXME: need to use URL templates
-        .attr("xlink:href", diagram.tag_doc_url + "elem-" + self.name)
-        .append("text")
-          .attr({
-            id: self.id,
-            "class": "label",
-            x: diagram.node_text_margin +
-               (self.q ? diagram.q_width : 0),
-            y: 0,
-            "text-anchor": "baseline",
-            "alignment-baseline": "middle",
-          })
-          .text(self.name)
-      ;
-    };
-
-    // Text label for `q`
-    Node.prototype.draw_enter_q = function() {
-      var self = this,
-          gs = self.gs,
-          diagram = self.diagram;
-      if (!self.q) return;
-
-      gs.append("text")
-        .attr({
-          "class": "q",
-          x: diagram.node_text_margin,
-          y: 0,
-          "text-anchor": self.type == "element" ? "start" : "middle",
-          "alignment-baseline": "middle",
-        })
-        .text(self.q)
-      ;
-    }
-
+    // Transition *all* nodes to their new positions and full-sized scale
     Node.prototype.transition_update = function() {
       var self = this;
       self.gs.transition()
@@ -255,6 +167,8 @@ if (typeof DtdDiagram != "undefined") {
       return null;
     };
 
+    // Transition exiting nodes to their parents' positions and zero size,
+    // then remove them.
     Node.prototype.transition_exit = function() {
       var self = this
           src_node = self.diagram.src_node;

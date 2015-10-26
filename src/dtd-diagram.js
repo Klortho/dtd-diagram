@@ -75,8 +75,6 @@ if (typeof jQuery !== "undefined" &&
       node_text_margin: 10,     // horizontal margin, on both sides
       node_height: 32,
       node_box_height: 25,
-      choice_node_width: 24,
-      seq_node_width: 14,
       q_width: 15,
       button_width: 15,
       diagonal_width: 20,
@@ -87,7 +85,7 @@ if (typeof jQuery !== "undefined" &&
       group_separation: 1.4,
 
       // Duration of the animation, in milliseconds.
-      duration: 800,
+      duration: 500,
     };
 
 

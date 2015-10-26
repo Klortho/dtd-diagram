@@ -1,12 +1,12 @@
-// DtdDiagram.ChoiceSeqNode class
+// DtdDiagram.SeqNode class
 
 if (typeof DtdDiagram != "undefined") {
-  DtdDiagram.ChoiceSeqNode = function() {
+  (function() {
     var Node = DtdDiagram.Node;
 
     // Constructor. Unlike ElementNode constructor, for these,
     // we recursively create all the child content nodes.
-    var ChoiceSeqNode = function(diagram, spec, elem_parent) {
+    var SeqNode = function(diagram, spec, elem_parent) {
       var self = this;
       Node.call(self, diagram, spec, elem_parent);
       if (!("q" in self)) self.q = null;
@@ -17,13 +17,10 @@ if (typeof DtdDiagram != "undefined") {
     };
 
     // Inherit from Node
-    Node.subclasses["choice"] = Node.subclasses["seq"] = ChoiceSeqNode;
-    ChoiceSeqNode.prototype = Object.create(Node.prototype);
-    ChoiceSeqNode.prototype.constructor = ChoiceSeqNode;
+    Node.subclasses["seq"] = SeqNode;
+    SeqNode.prototype = Object.create(Node.prototype);
+    SeqNode.prototype.constructor = SeqNode;
 
-
-    ////////////////////////////////////////////////
-    // Drawing
 
     // Helper function generates a bulbous sequence figure, which is supposed
     // to look like a stylized vertical ellipsis, with room for 
@@ -41,44 +38,30 @@ if (typeof DtdDiagram != "undefined") {
         'z';
     }
 
-    // Width
-    ChoiceSeqNode.prototype.width = function() {
-      var self = this,
-          diagram = self.diagram;
-          
-      return self.type == "choice" ? 
-        diagram.choice_node_width : diagram.seq_node_width;
-    };
+    jQuery.extend(
+      SeqNode.prototype, 
+      DtdDiagram.HasQNode,
+      {
+        width: function() {
+          return 14;
+        },
 
-    // Draw entering nodes
-    ChoiceSeqNode.prototype.draw_enter = function() {
-      var self = this,
-          diagram = self.diagram,
-          gs = self.gs;
+        // Draw entering nodes
+        draw_enter: function() {
+          var self = this,
+              diagram = self.diagram,
+              gs = self.gs;
 
-      if (self.type == "choice") {
-        gs.append("polygon")
-          .attr({
-            'class': 'choice',
-            'points': '0,0 12,-12 24,0 12,12'
-          })
-        ;
+          gs.append("path")
+            .attr({
+              'class': 'seq',
+              'd': seq_path_gen(7, 6, 7),
+            })
+          ;
+          self.draw_enter_q();
+        },
       }
-      else {
-        gs.append("path")
-          .attr({
-            'class': 'seq',
-            'd': seq_path_gen(7, 6, 7),
-          })
-        ;
-      }
-      self.draw_enter_q();
-
-    };
-
-
-
-    return ChoiceSeqNode;
-  }();
+    );
+  })();
 }
 
