@@ -315,30 +315,6 @@ if (typeof jQuery !== "undefined" &&
       var has_kids_nodes = elem_attr_nodes.filter(function(d) {
         return d.has_content();
       });
-      has_kids_nodes.append("text")
-        .attr({
-          "class": "button-text elem-button",
-          x: 0,
-          y: 0,
-          "text-anchor": "baseline",
-          "alignment-baseline": "middle",
-        })
-        .text('< >')
-        .style("fill-opacity", 0)
-      ;
-      has_kids_nodes.append("rect")
-        .attr({
-          "data-id": function(d) { return d.id; },
-          "class": "button",
-          width: button_width,
-          height: node_box_height / 2,
-          x: function(d) { return d.width - button_width; },
-          y: function(d) {
-            return d.has_attributes() ? 0 : -node_box_height / 4;
-          },
-        })
-        .on("click", DtdDiagram.Node.click_handler)
-      ;
 
       // Button for nodes that have attributes
       var has_attr_nodes = elem_attr_nodes.filter(function(d) {
@@ -348,54 +324,11 @@ if (typeof jQuery !== "undefined" &&
       var choice_nodes = nodes_enter.filter(function(d) {
         return d.type == "choice";
       });
-      choice_nodes.append("polygon")
-        .attr({
-          'class': 'choice',
-          'points': '0,0 1,-1 2,0 1,1'
-        })
-      ;
 
       var seq_nodes = nodes_enter.filter(function(d) {
         return d.type == "seq";
       });
 
-      // This generates a bulbous sequence figure, which is supposed
-      // to look like a stylized vertical ellipsis, with room for 
-      // a quantifier in the center circle.
-      function seq_path_gen(cr, d, r) {
-        var yp = (cr * cr - r * r + d * d) / (2 * d);
-        var xp = Math.sqrt(cr * cr - yp * yp),
-            x1 = cr - xp, 
-            x2 = cr + xp;
-        return 'M ' + x1 + ' ' + (-yp) + ' ' +
-          'A ' +  r + ' ' +  r + ' 0   1 1 ' + x2 + ' ' + (-yp) + ' ' +
-          'A ' + cr + ' ' + cr + ' 0   0 1 ' + x2 + ' ' + yp + ' ' +
-          'A ' +  r + ' ' +  r + ' 0   1 1 ' + x1 + ' ' + yp + ' ' +
-          'A ' + cr + ' ' + cr + ' 0   0 1 ' + x1 + ' ' + (-yp) + ' ' +
-          'z';
-      }
-      seq_nodes.append("path")
-        .attr({
-          'class': 'seq',
-          'd': seq_path_gen(1.0, 1.2, 0.5),
-        })
-      ;
-
-      // Text label for `q`
-      nodes_enter.filter(function(d) {return !!d.q;})
-        .append("text")
-          .attr({
-            "class": "q",
-            x: 0,
-            y: 0,
-            "text-anchor": function(d) {
-              return d.type == "element" ? "start" : "middle";
-            },
-            "alignment-baseline": "middle",
-          })
-          .text(function(d) {return d.q;})
-          .style("fill-opacity", 0)
-      ;
 
 
       // 2A - Compute the new tree layout, and get the list of links.
@@ -428,14 +361,6 @@ if (typeof jQuery !== "undefined" &&
       });
 
       promises.push(transition_promise(
-        nodes_enter.select(".label").transition()
-          .duration(duration)
-          .style("fill-opacity", 1)
-          .attr({
-            x: function(d) { return node_text_margin + (d.q ? q_width : 0); }
-          })
-      ));
-      promises.push(transition_promise(
         nodes_enter.select(".q").transition()
           .duration(duration)
           .style("fill-opacity", 1)
@@ -443,35 +368,6 @@ if (typeof jQuery !== "undefined" &&
       ));
 
 
-      // FIXME: need transition effects for button, choice, seq.
-
-      nodes_enter.select(".choice").transition()
-        .duration(duration)
-        .attr("points", '0,0 12,-12 24,0 12,12');
-      nodes_enter.select(".seq").transition()
-        .duration(duration)
-        .attr("d", seq_path_gen(7, 6, 7));
-
-      has_kids_nodes.select(".content-button").transition()
-        .duration(duration)
-        .attr({
-          x: function(d) { return d.width - button_width; },
-          y: function(d) {
-            return d.has_attributes() ? node_box_height / 4 : 0;
-          },
-        })
-        .style("fill-opacity", 1)
-      ;
-      has_attr_nodes.select(".attributes-button").transition()
-        .duration(duration)
-        .attr({
-          x: function(d) { return d.width - button_width; },
-          y: function(d) {
-            return d.has_content() ? -node_box_height / 4 : 0;
-          },
-        })
-        .style("fill-opacity", 1)
-      ;
 
 
       // 5A - Diagonals - starting positions
@@ -514,7 +410,7 @@ if (typeof jQuery !== "undefined" &&
         .remove();
 
       nodes_exit.select(".node-box").attr("width", 0);
-      nodes_exit.select(".label,.q")
+      nodes_exit.select(".label, .q")
         .style("fill-opacity", 0);
 
       // FIXME: make promise and add the above transition to the list.

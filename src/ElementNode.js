@@ -127,12 +127,14 @@ if (typeof DtdDiagram != "undefined") {
     ////////////////////////////////////////////////
     // Drawing
 
+    // Draw the initial state of the node box, label, etc.
     ElementNode.prototype.draw_enter = function() {
       var self = this,
           diagram = self.diagram,
           node_box_height = diagram.node_box_height;
       
       self.draw_enter_box();
+      self.draw_enter_q();
 
       // Set some sizes
       self.width = diagram.node_text_margin * 2 + 
@@ -170,7 +172,7 @@ if (typeof DtdDiagram != "undefined") {
         .attr({
           "class": "button-text " + cls + "-button",
           x: 0,
-          y: 0,
+          y: y + node_box_height/4,
           "text-anchor": "baseline",
           "alignment-baseline": "middle",
         })
@@ -190,9 +192,19 @@ if (typeof DtdDiagram != "undefined") {
       ;
     }
 
-    ElementNode.prototype.transition_enter = function(g) {
-      console.log("ElementNode.transition_enter");
-      return this.transition_enter_box(g);
+    ElementNode.prototype.transition_enter = function() {
+      var self = this,
+          diagram = self.diagram,
+          gs = self.gs;
+
+      this.transition_enter_box();
+
+      gs.selectAll(".content-button, .attributes-button").transition()
+        .duration(diagram.duration)
+        .attr("x", self.width - diagram.button_width)
+        .style("fill-opacity", 1)
+      ;
+
     };
 
 

@@ -189,6 +189,25 @@ if (typeof DtdDiagram != "undefined") {
       ;
     };
 
+    // Text label for `q`
+    Node.prototype.draw_enter_q = function() {
+      var self = this,
+          gs = self.gs;
+      if (!self.q) return;
+
+      gs.append("text")
+        .attr({
+          "class": "q",
+          x: 0,
+          y: 0,
+          "text-anchor": self.type == "element" ? "start" : "middle",
+          "alignment-baseline": "middle",
+        })
+        .text(self.q)
+        .style("fill-opacity", 0)
+      ;
+    }
+
     Node.prototype.transition_enter = function(g) {
       console.log("FIXME: Node.transition_enter");
       return null;
@@ -200,13 +219,32 @@ if (typeof DtdDiagram != "undefined") {
     Node.prototype.transition_enter_box = function() {
       var self = this,
           gs = self.gs,
-          diagram = self.diagram;
+          diagram = self.diagram,
+          duration = diagram.duration;
 
       gs.select('.' + self.type + "-box").transition()
-        .duration(diagram.duration)
+        .duration(duration)
         .attr("width", self.width)
       ;
+
+      gs.select(".label").transition()
+        .duration(duration)
+        .style("fill-opacity", 1)
+        .attr("x", diagram.node_text_margin +
+                   (self.q ? diagram.q_width : 0))
+      ;
     };
+
+    Node.prototype.transition_enter_q = function() {
+      var self = this,
+          gs = self.gs;
+
+      gs.select(".q").transition()
+          .duration(duration)
+          .style("fill-opacity", 1)
+          .attr("x", node_text_margin)
+
+    }
 
     return Node;
   }();
