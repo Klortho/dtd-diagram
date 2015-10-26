@@ -17,14 +17,22 @@ if (typeof DtdDiagram != "undefined") {
     ////////////////////////////////////////////////
     // Drawing
 
-    SimpleNode.prototype.draw_enter = function() {
+    // Width
+    SimpleNode.prototype.width = function() {
       var self = this,
           diagram = self.diagram;
 
-      // Set some sizes
-      self.width = diagram.node_text_margin * 2 + 
-                   Node.label_width(diagram, self.name);
-      self.y_size = self.width + diagram.diagonal_width;
+      if (!("_width" in self)) {
+        self._width = 
+        self._width = diagram.node_text_margin * 2 + 
+                     Node.label_width(diagram, self.name);
+      }
+      return self._width;
+    };
+
+    SimpleNode.prototype.draw_enter = function() {
+      var self = this,
+          diagram = self.diagram;
 
       self.draw_enter_box();
     };

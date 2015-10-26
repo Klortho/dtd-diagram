@@ -41,16 +41,20 @@ if (typeof DtdDiagram != "undefined") {
         'z';
     }
 
+    // Width
+    ChoiceSeqNode.prototype.width = function() {
+      var self = this,
+          diagram = self.diagram;
+          
+      return self.type == "choice" ? 
+        diagram.choice_node_width : diagram.seq_node_width;
+    };
 
+    // Draw entering nodes
     ChoiceSeqNode.prototype.draw_enter = function() {
       var self = this,
           diagram = self.diagram,
           gs = self.gs;
-
-      // Set some sizes
-      self.width = self.type == "choice" ? 
-        diagram.choice_node_width : diagram.seq_node_width;
-      self.y_size = self.width + diagram.diagonal_width;
 
       if (self.type == "choice") {
         gs.append("polygon")

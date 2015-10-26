@@ -6,12 +6,12 @@
         * destroy the DOM element
 
 
-* Refactor transitions: let's massively simplify, but just doing a single
+* [c] Refactor transitions: let's massively simplify, but just doing a single
   transition / node, on the scale of the <g>
     * [c] Let's add that first
     * [c] Then remove the old ones.
-    * Add exit transition to shrink the <g>
-    * Get rid of other exit transitions
+    * [c] Add exit transition to shrink the <g>
+    * [c] Get rid of other exit transitions
 
 
 * Implement inheritance through mixins:

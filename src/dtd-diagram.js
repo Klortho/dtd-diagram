@@ -172,13 +172,13 @@ if (typeof jQuery !== "undefined" &&
         "width": canvas.width(),
         "height": canvas.height(),
       });
-      var svg_g = diagram.svg_g = svg.append("g")
+      diagram.svg_g = svg.append("g")
         .attr({"transform": "translate(0, " + (-canvas.top) + ")"});
 
       // Create the flextree layout and set options
       var engine = diagram.engine = d3.layout.flextree()
         .nodeSize(function(d) {
-          return [diagram.node_height, d.y_size];
+          return [diagram.node_height, d.y_size()];
         })
         .separation(function(a, b) {
           var sep = a.elem_parent == b.elem_parent 
@@ -194,7 +194,7 @@ if (typeof jQuery !== "undefined" &&
       var diagonal = diagram.diagonal = d3.svg.diagonal()
         .source(function(d, i) {
           var s = d.source;
-          return { x: s.x, y: s.y + s.width };
+          return { x: s.x, y: s.y + s.width() };
         })
         .projection(function(d) {
           //console.log("diagonal returning [" + d.y + "," + d.x + "]");
@@ -264,95 +264,44 @@ if (typeof jQuery !== "undefined" &&
       var diagram = this;
       diagram.src_node = src_node;
 
-      // Since the node widths depend on the widths of the text inside each
-      // node, and those widths are used in the laying out of the tree, we
-      // have to bind the data and create the text nodes first.
-
-      // This gives us the complete array of Nodes in the tree at this time.
-      var nodes = diagram.nodes = d3.layout.hierarchy()(diagram.root);
-      var svg_g = diagram.svg_g;
-
-      // Bind the data. The second argument to .data() provides the key,
-      // to ensure that the same data value is bound to the same node every
-      // time.
-
-      DtdDiagram.Node.start_update(diagram);
-
-      var nodes_update = diagram.nodes_update,
-          nodes_enter = diagram.nodes_enter,
-          nodes_exit = diagram.nodes_exit;
-
-
       // Keep a list of all promises
       var promises = [];
 
-      // Drawing work: see the README file, under "The update() method", for
-      // the list of tasks.
+      // Nodes
+      // -----
 
-      nodes_enter.each(function(d) {
-        d.draw_enter(this);
-      });
-
-
-      // 1B - Draw the nodes with pre-transition positions and attributes.
-
-      // element and attribute nodes
-      var elem_attr_nodes = nodes_enter.filter(function(d) {
-        return d.type == "element" || d.type == "attribute";
-      });
-
-      // draw the main rectangle
-      var node_box_height = diagram.node_box_height;
-
-      // 1C - precompute some node sizes, and attach them to the Node objects.
-      // Note that this has to come after the text is drawn.
-      var node_text_margin = diagram.node_text_margin,
-          diagonal_width = diagram.diagonal_width,
-          q_width = diagram.q_width,
-          button_width = diagram.button_width;
-
-
-      // Button for nodes that have kids
-      var has_kids_nodes = elem_attr_nodes.filter(function(d) {
-        return d.has_content();
-      });
-
-      // Button for nodes that have attributes
-      var has_attr_nodes = elem_attr_nodes.filter(function(d) {
-        return d.has_attributes();
-      });
-
-      var choice_nodes = nodes_enter.filter(function(d) {
-        return d.type == "choice";
-      });
-
-      var seq_nodes = nodes_enter.filter(function(d) {
-        return d.type == "seq";
-      });
-
-
-
-      // 2A - Compute the new tree layout, and get the list of links.
+      // Compute the new tree layout
       var engine = diagram.engine;
-      engine.nodes(diagram.root);
+      var nodes = engine.nodes(diagram.root);
+
+      // Instantiate the SVG <g> for each entering node, and set
+      // the nodes_update, nodes_enter, and nodes_exit selections
+      DtdDiagram.Node.start_update(diagram, nodes);
+
+      // Draw each new, entering node
+      diagram.nodes_enter.each(function(n) {
+        n.draw_enter(this);
+      });
+
+      // Transition all nodes to their new positions and full sizes
+      diagram.nodes_update.each(function(n) {
+        n.transition_update();
+      });
+
+      // Transition exiting nodes to the parent's new position, and
+      // zero size.
+      diagram.nodes_exit.each(function(n) {
+        n.transition_exit();
+      });
+
+
+      // Links (diagonals)
+      // -----------------
+
       var links = engine.links(nodes);
 
-      // 2B - Start transitions of scrollbars and drawing size
-      var p = DtdDiagram.Canvas.scroll_resize(diagram);
-      var do_last = p.do_last || null;
-      promises.push(p);
-      diagram.canvas = diagram.new_canvas.copy();
-
-
-      // 3 - Transition all nodes to their new positions and full size
-      var duration = diagram.duration;
-      nodes_update.each(function(d) {
-        d.transition_update();
-      });
-
-
-      // 5A - Diagonals - starting positions
-      var link = svg_g.selectAll("path.link")
+      // Bind the links to the SVG paths
+      var link = diagram.svg_g.selectAll("path.link")
         .data(links, function(d) { return d.target.id; });
 
       // Enter any new links at the parent's previous position.
@@ -360,34 +309,38 @@ if (typeof jQuery !== "undefined" &&
       link.enter().insert("path", "g")
         .attr("class", "link")
         .attr("d", function(d) {
-          var o = {x: src_node.x0, y: src_node.y0, width: 0};
+          var o = {x: src_node.x0, y: src_node.y0, 
+                   width: function() {return 0;}};
           return diagonal({source: o, target: o});
         });
 
-      // 5B - Transition links to their new position.
+      // Transition links to their new position.
+      var duration = diagram.duration;
       link.transition()
         .duration(duration)
         .attr("d", diagonal);
 
-      // 5C - Transition exiting links to the parent's new position.
+      // Transition exiting links to the parent's new positions.
       link.exit().transition()
         .duration(duration)
         .attr("d", function(d) {
-          var o = {x: src_node.x0, y: src_node.y0, width: 0};
+          var o = {x: src_node.x0, y: src_node.y0, 
+                   width: function() {return 0;}};
           return diagonal({source: o, target: o});
         })
         .remove();
 
-      // 6 - Transition exiting nodes to the parent's new position, and
-      // zero size.
-      nodes_exit.each(function(d) {
-        d.transition_exit();
-      });
+
+      // Canvas / scrollbars
+      // -------------------
+
+      // Transition scrollbars and drawing size
+      var p = DtdDiagram.Canvas.scroll_resize(diagram);
+      var do_last = p.do_last || null;
+      promises.push(p);
+      diagram.canvas = diagram.new_canvas.copy();
 
 
-
-
-      // FIXME: make promise and add the above transition to the list.
 
       Promise.all(promises).then(
         function(msg) {
@@ -398,8 +351,6 @@ if (typeof jQuery !== "undefined" &&
           console.error("Problem during transistions: " + msg);
         }
       );
-
-
 
       // Stash the old positions for transition.
       nodes.forEach(function(d) {

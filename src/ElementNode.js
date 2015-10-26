@@ -127,24 +127,30 @@ if (typeof DtdDiagram != "undefined") {
     ////////////////////////////////////////////////
     // Drawing
 
+    // Width
+    ElementNode.prototype.width = function() {
+      var self = this,
+          diagram = self.diagram;
+
+      if (!("_width" in self)) {
+        self._width = 
+          diagram.node_text_margin * 2 + 
+          (self.q ? diagram.q_width : 0) +
+          (self.has_content() || self.has_attributes() 
+            ? diagram.button_width : 0) +
+          Node.label_width(diagram, self.name);
+      }
+      return self._width;
+    };
+
     // Draw the initial state of the node box, label, etc.
     ElementNode.prototype.draw_enter = function() {
       var self = this,
           diagram = self.diagram,
           node_box_height = diagram.node_box_height;
 
-      // Set some sizes
-      self.width = diagram.node_text_margin * 2 + 
-                   (self.q ? diagram.q_width : 0) +
-                   (self.has_content() || self.has_attributes() 
-                     ? diagram.button_width : 0) +
-                   Node.label_width(diagram, self.name);
-      self.y_size = self.width + diagram.diagonal_width;
-      
       self.draw_enter_box();
       self.draw_enter_q();
-
-
 
       // content expand button
       if (self.has_content()) {
@@ -167,13 +173,14 @@ if (typeof DtdDiagram != "undefined") {
           diagram = self.diagram,
           gs = self.gs,
           button_width = diagram.button_width,
-          node_box_height = diagram.node_box_height;
+          node_box_height = diagram.node_box_height,
+          width = self.width();
 
       gs.append("text")
         .attr({
           "class": "button-text " + cls + "-button",
-          x: self.width - diagram.button_width,
-          y: y + node_box_height/4,
+          x: width - button_width,
+          y: y + node_box_height / 4,
           "text-anchor": "baseline",
           "alignment-baseline": "middle",
         })
@@ -185,7 +192,7 @@ if (typeof DtdDiagram != "undefined") {
           "class": "button",
           width: button_width,
           height: node_box_height / 2,
-          x: self.width - button_width,
+          x: width - button_width,
           y: y,
         })
         .on("click", handler)

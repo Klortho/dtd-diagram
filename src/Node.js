@@ -107,10 +107,8 @@ if (typeof DtdDiagram != "undefined") {
     // objects in the tree bound to their `g.node` SVG elements;
     // then creating update, enter, and exit selections and storing 
     // those in diagram.
-
-    Node.start_update = function(diagram) {
-      var src_node = diagram.src_node,
-          nodes = diagram.nodes;
+    Node.start_update = function(diagram, nodes) {
+      var src_node = diagram.src_node;
 
       var nodes_update = diagram.nodes_update = 
         diagram.svg_g.selectAll("g.node")
@@ -143,6 +141,17 @@ if (typeof DtdDiagram != "undefined") {
     };
 
 
+    // Get a Node's y_size, which is used by the layout engine. This is really
+    // it's total width (the d3.flextree layout uses x for vertical and y for
+    // horizontal).
+    Node.prototype.y_size = function() {
+      var self = this;
+      if (!("_y_size" in self)) {
+        self._y_size = self.width() + self.diagram.diagonal_width;
+      }
+      return self._y_size;
+    };
+
     // Get the displayed width for a label string. This generates a temporary
     // SVG text node, measures its width, and then destroys it.
     Node.label_width = function(diagram, label) {
@@ -171,8 +180,6 @@ if (typeof DtdDiagram != "undefined") {
 
 
     // Draw the initial state of the node, at the beginning of the animation.
-    // This also sets the width and y_size, which sometimes depends on the
-    // drawing.
     // FIXME: this default impl will go away, once it's done for all subclasses
     Node.prototype.draw_enter = function() {
       console.log("FIXME: Node.draw_enter: d = %o, g = %o", this, g);
@@ -191,7 +198,7 @@ if (typeof DtdDiagram != "undefined") {
         .attr({
           "data-id": self.id,
           "class": self.type + "-box",
-          width: self.width,
+          width: self.width(),
           height: node_box_height,
           y: - node_box_height / 2,
           rx: 6,
