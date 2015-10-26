@@ -12,7 +12,7 @@ if (typeof DtdDiagram != "undefined") {
       if (!("q" in self)) self.q = null;
 
       (spec.children || []).forEach(function(kid_spec) {
-        self.children.push(Node.factory(diagram, kid_spec, self));
+        self.children.push(Node.factory(diagram, kid_spec, elem_parent));
       });
     };
 
