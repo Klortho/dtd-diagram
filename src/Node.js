@@ -101,24 +101,63 @@ if (typeof DtdDiagram != "undefined") {
     };
 
     ////////////////////////////////////////////////
-    // SVG drawing
+    // D3/SVG drawing
 
-    // Draw the initial state of the node, at the begining of the animation
-    // FIXME: this default impl will go away, once it's done for all subclasses
-    Node.prototype.draw_enter = function(g) {
-      console.log("Node.draw_enter: d = %o, g = %o", this, g);
+    // Start the update, which means binding the data - the list of Node
+    // objects in the tree bound to their `g.node` SVG elements;
+    // then creating update, enter, and exit selections and storing 
+    // those in diagram.
+
+    Node.start_update = function(diagram) {
+      var src_node = diagram.src_node,
+          nodes = diagram.nodes;
+
+      var nodes_update = diagram.nodes_update = 
+        diagram.svg_g.selectAll("g.node")
+          .data(nodes, function(d) { 
+            return d.id || (d.id = ++diagram.last_id); 
+          })
+        ;
+
+      // The x,y location <g> of entering nodes all start the animation
+      // at the src_node
+      var nodes_enter = diagram.nodes_enter = 
+        nodes_update.enter().append("g")
+          .attr({
+            "class": "node",
+            filter: "url(#dropshadow)",
+            transform: function(d) { 
+              return "translate(" + src_node.y0 + "," + src_node.x0 + ")"; 
+            },
+          })
+        ;
+
+      // For entering Nodes, initialize gs, which is the D3 selection for
+      // the <g> container element
+      nodes_enter.each(function(d) {
+        d.gs = d3.select(this);
+      });
+
+      var nodes_exit = diagram.nodes_exit = nodes_update.exit();
     };
 
-    // Draw an entering node box (zero-width) and its label. 
+    // Draw the initial state of the node, at the beginning of the animation.
+    // This also sets the width and y_size, which sometimes depends on the
+    // drawing.
+    // FIXME: this default impl will go away, once it's done for all subclasses
+    Node.prototype.draw_enter = function() {
+      console.log("FIXME: Node.draw_enter: d = %o, g = %o", this, g);
+    };
+
+    // Draw an entering node box and its label. 
     // This is shared by ElementNodes and SimpleNodes.
-    Node.prototype.draw_enter_box = function(g) {
+    Node.prototype.draw_enter_box = function() {
       var self = this,
+          gs = self.gs,
           diagram = self.diagram,
           node_box_height = diagram.node_box_height;
 
-      var gs = self.gs = d3.select(g);
-
-      // draw the box
+      // Draw the box. Initially, it has zero width.
       gs.append("rect")
         .attr({
           "data-id": self.id,
@@ -131,7 +170,8 @@ if (typeof DtdDiagram != "undefined") {
         })
       ;
 
-      // draw the text
+      // Draw the text. The text DOM node will have this Node's @id value,
+      // for easy access.
       gs.append("a")
         // FIXME: need to use URL templates
         .attr("xlink:href", diagram.tag_doc_url + "elem-" + self.name)
@@ -150,7 +190,7 @@ if (typeof DtdDiagram != "undefined") {
     };
 
     Node.prototype.transition_enter = function(g) {
-      console.log("Node.transition_enter");
+      console.log("FIXME: Node.transition_enter");
       return null;
     };
 
@@ -160,14 +200,11 @@ if (typeof DtdDiagram != "undefined") {
     Node.prototype.transition_enter_box = function() {
       var self = this,
           gs = self.gs,
-          box_class = self.type + "-box",
-          diagram = self.diagram,
-          duration = diagram.duration;
+          diagram = self.diagram;
 
-      console.log("transition_enter_box: box_class = " + box_class);
-      gs.select('.' + box_class).transition()
-        .duration(duration)
-        .attr("width", function(d) { return d.width; })
+      gs.select('.' + self.type + "-box").transition()
+        .duration(diagram.duration)
+        .attr("width", self.width)
       ;
     };
 

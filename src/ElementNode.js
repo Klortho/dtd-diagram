@@ -62,12 +62,12 @@ if (typeof DtdDiagram != "undefined") {
     // (as opposed to attributes). 
     ElementNode.prototype.has_content = function() {
       if (this.content == null) this.init_content();
-      return this.content.length > 1;
+      return this.content.length > 0;
     };
 
     // Returns true if this Node has any attribute children.
     ElementNode.prototype.has_attributes = function() {
-      return this.attributes.length > 1;
+      return this.attributes.length > 0;
     };
 
 
@@ -127,10 +127,68 @@ if (typeof DtdDiagram != "undefined") {
     ////////////////////////////////////////////////
     // Drawing
 
-    ElementNode.prototype.draw_enter = function(g) {
-      console.log("ElementNode.draw_enter: d = %o, g = %o", this, g);
-      this.draw_enter_box(g);
+    ElementNode.prototype.draw_enter = function() {
+      var self = this,
+          diagram = self.diagram,
+          node_box_height = diagram.node_box_height;
+      
+      self.draw_enter_box();
+
+      // Set some sizes
+      self.width = diagram.node_text_margin * 2 + 
+                   (self.q ? diagram.q_width : 0) +
+                   (self.has_content() || self.has_attributes() 
+                     ? diagram.button_width : 0) +
+                   document.getElementById(self.id).getBBox()["width"];
+      self.y_size = self.width + diagram.diagonal_width;
+
+
+      // content expand button
+      if (self.has_content()) {
+        self.draw_button("content", "< >",
+          self.has_attributes() ? 0 : -node_box_height / 4,
+          ElementNode.content_click_handler);
+      }
+
+      // attributes expand button
+      if (self.has_attributes()) {
+        self.draw_button("attributes", " @ ",
+          self.has_content() ? -node_box_height / 2 : -node_box_height / 4,
+          ElementNode.attributes_click_handler);
+      }
     };
+
+    // Helper to draw a single content or attributes expander button
+    ElementNode.prototype.draw_button = function(cls, label, y, handler) {
+      var self = this,
+          diagram = self.diagram,
+          gs = self.gs,
+          button_width = diagram.button_width,
+          node_box_height = diagram.node_box_height;
+
+      gs.append("text")
+        .attr({
+          "class": "button-text " + cls + "-button",
+          x: 0,
+          y: 0,
+          "text-anchor": "baseline",
+          "alignment-baseline": "middle",
+        })
+        .text(label)
+        .style("fill-opacity", 0)
+      ;
+      gs.append("rect")
+        .attr({
+          "data-id": self.id,
+          "class": "button",
+          width: button_width,
+          height: node_box_height / 2,
+          x: self.width - button_width,
+          y: y,
+        })
+        .on("click", handler)
+      ;
+    }
 
     ElementNode.prototype.transition_enter = function(g) {
       console.log("ElementNode.transition_enter");

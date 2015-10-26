@@ -7,6 +7,8 @@
     * Likewise, "collapse" -> "collapse_content" and "collapse_attributes"
     * _children goes away
 
+* draw_enter
+    * set width and y_size, for all Node types
 
 
 

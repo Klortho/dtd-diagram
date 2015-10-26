@@ -68,6 +68,8 @@ if (typeof jQuery !== "undefined" &&
       tag_doc_url: "doc/#p=",
 
       // Some dimensions
+      // FIXME: I think a lot of these should not be options. (That doesn't mean
+      // they shouldn't be parameterized.)
       min_canvas_width: 800,
       min_canvas_height: 500,
       node_text_margin: 10,     // horizontal margin, on both sides
@@ -176,7 +178,7 @@ if (typeof jQuery !== "undefined" &&
       // Create the flextree layout and set options
       var engine = diagram.engine = d3.layout.flextree()
         .nodeSize(function(d) {
-          return [d.x_size, d.y_size];
+          return [diagram.node_height, d.y_size];
         })
         .separation(function(a, b) {
           var sep = a.elem_parent == b.elem_parent 
@@ -266,19 +268,19 @@ if (typeof jQuery !== "undefined" &&
       // node, and those widths are used in the laying out of the tree, we
       // have to bind the data and create the text nodes first.
 
-      // This gives us the complete array of nodes
-      var root = diagram.root,
-          nodes = d3.layout.hierarchy()(root);
+      // This gives us the complete array of Nodes in the tree at this time.
+      var nodes = diagram.nodes = d3.layout.hierarchy()(diagram.root);
+      var svg_g = diagram.svg_g;
 
       // Bind the data. The second argument to .data() provides the key,
       // to ensure that the same data value is bound to the same node every
       // time.
-      var svg_g = diagram.svg_g;
-      var nodes_update = svg_g.selectAll("g.node")
-        .data(nodes, function(d) { 
-          return d.id || (d.id = ++diagram.last_id); 
-        })
-      ;
+
+      DtdDiagram.Node.start_update(diagram);
+
+      var nodes_update = diagram.nodes_update,
+          nodes_enter = diagram.nodes_enter;
+
 
       // Keep a list of all promises
       var promises = [];
@@ -286,18 +288,7 @@ if (typeof jQuery !== "undefined" &&
       // Drawing work: see the README file, under "The update() method", for
       // the list of tasks.
 
-      // 1A - Create the <g> containers
-      var nodes_enter = nodes_update.enter().append("g")
-        .attr({
-          "class": "node",
-          filter: "url(#dropshadow)",
-          transform: function(d) { 
-            return "translate(" + src_node.y0 + "," + src_node.x0 + ")"; 
-          },
-        })
-      ;
-
-      nodes_enter.each(function(d, i) {
+      nodes_enter.each(function(d) {
         d.draw_enter(this);
       });
 
@@ -318,23 +309,7 @@ if (typeof jQuery !== "undefined" &&
           diagonal_width = diagram.diagonal_width,
           q_width = diagram.q_width,
           button_width = diagram.button_width;
-      nodes_enter.each(function(d) {
-        d.x_size = diagram.node_height;
-        if (d.type == 'element' || d.type == 'attribute') {
-          d.width = node_text_margin * 2 + 
-                    (d.q ? q_width : 0) +
-                    (d.has_content() || d.has_attributes() 
-                      ? button_width : 0) +
-                    document.getElementById(d.id).getBBox()["width"];
-        }
-        else if (d.type == 'choice') {
-          d.width = diagram.choice_node_width;
-        }
-        else {
-          d.width = diagram.seq_node_width;
-        }
-        d.y_size = d.width + diagonal_width;
-      });
+
 
       // Button for nodes that have kids
       var has_kids_nodes = elem_attr_nodes.filter(function(d) {
@@ -369,31 +344,6 @@ if (typeof jQuery !== "undefined" &&
       var has_attr_nodes = elem_attr_nodes.filter(function(d) {
         return d.has_attributes();
       });
-      has_attr_nodes.append("text")
-        .attr({
-          "class": "button-text attr-button",
-          x: 0,
-          y: 0,
-          "text-anchor": "baseline",
-          "alignment-baseline": "middle",
-        })
-        .text(' @ ')
-        .style("fill-opacity", 0)
-      ;
-      has_attr_nodes.append("rect")
-        .attr({
-          "data-id": function(d) { return d.id; },
-          "class": "button",
-          width: button_width,
-          height: node_box_height / 2,
-          x: function(d) { return d.width - button_width; },
-          y: function(d) {
-            return d.has_content() 
-              ? -node_box_height / 2 : -node_box_height / 4;
-          },
-        })
-        .on("click", DtdDiagram.Node.click_handler)
-      ;
 
       var choice_nodes = nodes_enter.filter(function(d) {
         return d.type == "choice";
@@ -450,7 +400,7 @@ if (typeof jQuery !== "undefined" &&
 
       // 2A - Compute the new tree layout, and get the list of links.
       var engine = diagram.engine;
-      engine.nodes(root);
+      engine.nodes(diagram.root);
       var links = engine.links(nodes);
 
       // 2B - Start transitions of scrollbars and drawing size
@@ -502,7 +452,7 @@ if (typeof jQuery !== "undefined" &&
         .duration(duration)
         .attr("d", seq_path_gen(7, 6, 7));
 
-      has_kids_nodes.select(".elem-button").transition()
+      has_kids_nodes.select(".content-button").transition()
         .duration(duration)
         .attr({
           x: function(d) { return d.width - button_width; },
@@ -512,7 +462,7 @@ if (typeof jQuery !== "undefined" &&
         })
         .style("fill-opacity", 1)
       ;
-      has_attr_nodes.select(".attr-button").transition()
+      has_attr_nodes.select(".attributes-button").transition()
         .duration(duration)
         .attr({
           x: function(d) { return d.width - button_width; },
@@ -555,7 +505,8 @@ if (typeof jQuery !== "undefined" &&
 
 
       // 6 - Transition exiting nodes to the parent's new position.
-      var nodes_exit = nodes_update.exit().transition()
+      var nodes_exit = diagram.nodes_exit;
+      nodes_exit.transition()
         .duration(duration)
         .attr("transform", function(d) { 
           return "translate(" + src_node.y + "," + src_node.x + ")"; 

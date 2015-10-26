@@ -21,6 +21,25 @@ if (typeof DtdDiagram != "undefined") {
     ChoiceSeqNode.prototype = Object.create(Node.prototype);
     ChoiceSeqNode.prototype.constructor = ChoiceSeqNode;
 
+
+    ////////////////////////////////////////////////
+    // Drawing
+
+    ChoiceSeqNode.prototype.draw_enter = function() {
+      var self = this,
+          diagram = self.diagram;
+
+      // Set some sizes
+      self.width = self.type == "choice" ? 
+        diagram.choice_node_width : diagram.seq_node_width;
+      self.y_size = self.width + diagram.diagonal_width;
+    };
+
+    ChoiceSeqNode.prototype.transition_enter = function() {
+      return null;
+    };
+
+
     return ChoiceSeqNode;
   }();
 }

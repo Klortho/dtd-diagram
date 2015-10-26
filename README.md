@@ -327,7 +327,7 @@ mix-ins, but to keep thing simple, the inheritance is:
 * width - computed by aggregating the widths of the parts. Doesn't include the
   diagonal -- this is used to compute the y coordinate for the "source" of the
   diagonal.
-* x_size, y_size - includes everything (except the separation)
+* y_size - width of the node, including everything (used by the layout engine)
 * x0, y0 - holds the old position. This is used as the starting point
   for transitioning (when creating new child nodes, for example). x0 is
   the vertical coordinat, y0 the horizontal
@@ -412,10 +412,15 @@ Other
 * svg - D3 reference to the `svg` element
 * svg_g - D3 reference to the `g` element child of `svg`.
 
-Attributes used during transitioning:
+Attributes used during update:
 
 * src_node - the node that the user clicked on, used when we're doing 
   transitions
+* nodes - list of all Nodes in the tree
+* nodes_update - D3 update selection
+* nodes_enter
+* nodes_exit
+
 * new_drawing
 * canvas
 * new_canvas
