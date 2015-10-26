@@ -132,17 +132,18 @@ if (typeof DtdDiagram != "undefined") {
       var self = this,
           diagram = self.diagram,
           node_box_height = diagram.node_box_height;
-      
-      self.draw_enter_box();
-      self.draw_enter_q();
 
       // Set some sizes
       self.width = diagram.node_text_margin * 2 + 
                    (self.q ? diagram.q_width : 0) +
                    (self.has_content() || self.has_attributes() 
                      ? diagram.button_width : 0) +
-                   document.getElementById(self.id).getBBox()["width"];
+                   Node.label_width(diagram, self.name);
       self.y_size = self.width + diagram.diagonal_width;
+      
+      self.draw_enter_box();
+      self.draw_enter_q();
+
 
 
       // content expand button
@@ -171,13 +172,12 @@ if (typeof DtdDiagram != "undefined") {
       gs.append("text")
         .attr({
           "class": "button-text " + cls + "-button",
-          x: 0,
+          x: self.width - diagram.button_width,
           y: y + node_box_height/4,
           "text-anchor": "baseline",
           "alignment-baseline": "middle",
         })
         .text(label)
-        .style("fill-opacity", 0)
       ;
       gs.append("rect")
         .attr({
@@ -192,20 +192,6 @@ if (typeof DtdDiagram != "undefined") {
       ;
     }
 
-    ElementNode.prototype.transition_enter = function() {
-      var self = this,
-          diagram = self.diagram,
-          gs = self.gs;
-
-      this.transition_enter_box();
-
-      gs.selectAll(".content-button, .attributes-button").transition()
-        .duration(diagram.duration)
-        .attr("x", self.width - diagram.button_width)
-        .style("fill-opacity", 1)
-      ;
-
-    };
 
 
 

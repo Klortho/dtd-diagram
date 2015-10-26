@@ -127,7 +127,8 @@ if (typeof DtdDiagram != "undefined") {
             "class": "node",
             filter: "url(#dropshadow)",
             transform: function(d) { 
-              return "translate(" + src_node.y0 + "," + src_node.x0 + ")"; 
+              return "translate(" + src_node.y0 + "," + src_node.x0 + ") " +
+                     "scale(0.001, 0.001)"; 
             },
           })
         ;
@@ -140,6 +141,34 @@ if (typeof DtdDiagram != "undefined") {
 
       var nodes_exit = diagram.nodes_exit = nodes_update.exit();
     };
+
+
+    // Get the displayed width for a label string. This generates a temporary
+    // SVG text node, measures its width, and then destroys it.
+    Node.label_width = function(diagram, label) {
+      if (!("label_width_cache" in diagram)) {
+        diagram.label_width_cache = {};
+      }
+      var cache = diagram.label_width_cache;
+      if (!(label in cache)) {
+        var text = diagram.svg_g
+          .append("text")
+            .attr({
+              "id": "temporary-label",
+              "class": "label",
+              x: 0,
+              y: 0,
+            })
+            .text(label)
+            .style("fill-opacity", 0)
+        ;
+        cache[label] = 
+          document.getElementById("temporary-label").getBBox()["width"];
+        text.remove();
+      }
+      return cache[label];
+    }
+
 
     // Draw the initial state of the node, at the beginning of the animation.
     // This also sets the width and y_size, which sometimes depends on the
@@ -162,7 +191,7 @@ if (typeof DtdDiagram != "undefined") {
         .attr({
           "data-id": self.id,
           "class": self.type + "-box",
-          width: 0,
+          width: self.width,
           height: node_box_height,
           y: - node_box_height / 2,
           rx: 6,
@@ -170,8 +199,7 @@ if (typeof DtdDiagram != "undefined") {
         })
       ;
 
-      // Draw the text. The text DOM node will have this Node's @id value,
-      // for easy access.
+      // Draw the text. 
       gs.append("a")
         // FIXME: need to use URL templates
         .attr("xlink:href", diagram.tag_doc_url + "elem-" + self.name)
@@ -179,72 +207,61 @@ if (typeof DtdDiagram != "undefined") {
           .attr({
             id: self.id,
             "class": "label",
-            x: 0,
+            x: diagram.node_text_margin +
+               (self.q ? diagram.q_width : 0),
             y: 0,
             "text-anchor": "baseline",
             "alignment-baseline": "middle",
           })
           .text(self.name)
-          .style("fill-opacity", 0)
       ;
     };
 
     // Text label for `q`
     Node.prototype.draw_enter_q = function() {
       var self = this,
-          gs = self.gs;
+          gs = self.gs,
+          diagram = self.diagram;
       if (!self.q) return;
 
       gs.append("text")
         .attr({
           "class": "q",
-          x: 0,
+          x: diagram.node_text_margin,
           y: 0,
           "text-anchor": self.type == "element" ? "start" : "middle",
           "alignment-baseline": "middle",
         })
         .text(self.q)
-        .style("fill-opacity", 0)
       ;
     }
 
-    Node.prototype.transition_enter = function(g) {
-      console.log("FIXME: Node.transition_enter");
+    Node.prototype.transition_update = function() {
+      var self = this;
+      self.gs.transition()
+        .duration(self.diagram.duration)
+        .attr("transform", 
+          "translate(" + self.y + "," + self.x + ") " +
+          "scale(1, 1)"
+        )
+      ;
       return null;
     };
 
-    // Transition an entering node box and its label to their
-    // final, displayed values.
-    // This is shared by ElementNodes and SimpleNodes.
-    Node.prototype.transition_enter_box = function() {
-      var self = this,
-          gs = self.gs,
-          diagram = self.diagram,
-          duration = diagram.duration;
+    Node.prototype.transition_exit = function() {
+      var self = this
+          src_node = self.diagram.src_node;
 
-      gs.select('.' + self.type + "-box").transition()
-        .duration(duration)
-        .attr("width", self.width)
-      ;
+      self.gs.transition()
+        .duration(self.diagram.duration)
+        .attr("transform", function(d) { 
+          return "translate(" + src_node.y + "," + src_node.x + ") " +
+                 "scale(0.001, 0.001)"; 
+        })
+        .remove();
 
-      gs.select(".label").transition()
-        .duration(duration)
-        .style("fill-opacity", 1)
-        .attr("x", diagram.node_text_margin +
-                   (self.q ? diagram.q_width : 0))
-      ;
+      return null;
     };
-
-    Node.prototype.transition_enter_q = function() {
-      var self = this,
-          gs = self.gs;
-
-      gs.select(".q").transition()
-          .duration(duration)
-          .style("fill-opacity", 1)
-          .attr("x", node_text_margin)
-
-    }
 
     return Node;
   }();

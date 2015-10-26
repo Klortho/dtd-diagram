@@ -47,11 +47,16 @@ if (typeof DtdDiagram != "undefined") {
           diagram = self.diagram,
           gs = self.gs;
 
+      // Set some sizes
+      self.width = self.type == "choice" ? 
+        diagram.choice_node_width : diagram.seq_node_width;
+      self.y_size = self.width + diagram.diagonal_width;
+
       if (self.type == "choice") {
         gs.append("polygon")
           .attr({
             'class': 'choice',
-            'points': '0,0 1,-1 2,0 1,1'
+            'points': '0,0 12,-12 24,0 12,12'
           })
         ;
       }
@@ -59,32 +64,14 @@ if (typeof DtdDiagram != "undefined") {
         gs.append("path")
           .attr({
             'class': 'seq',
-            'd': seq_path_gen(1.0, 1.2, 0.5),
+            'd': seq_path_gen(7, 6, 7),
           })
         ;
       }
       self.draw_enter_q();
 
-      // Set some sizes
-      self.width = self.type == "choice" ? 
-        diagram.choice_node_width : diagram.seq_node_width;
-      self.y_size = self.width + diagram.diagonal_width;
     };
 
-
-    ChoiceSeqNode.prototype.transition_enter = function() {
-      var self = this,
-          gs = self.gs,
-          diagram = self.diagram
-          duration = diagram.duration;
-
-      gs.select(".choice").transition()
-        .duration(duration)
-        .attr("points", '0,0 12,-12 24,0 12,12');
-      gs.select(".seq").transition()
-        .duration(duration)
-        .attr("d", seq_path_gen(7, 6, 7));
-    };
 
 
     return ChoiceSeqNode;

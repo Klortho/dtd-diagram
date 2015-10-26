@@ -87,7 +87,7 @@ if (typeof jQuery !== "undefined" &&
       group_separation: 1.4,
 
       // Duration of the animation, in milliseconds.
-      duration: 500,
+      duration: 800,
     };
 
 
@@ -279,7 +279,8 @@ if (typeof jQuery !== "undefined" &&
       DtdDiagram.Node.start_update(diagram);
 
       var nodes_update = diagram.nodes_update,
-          nodes_enter = diagram.nodes_enter;
+          nodes_enter = diagram.nodes_enter,
+          nodes_exit = diagram.nodes_exit;
 
 
       // Keep a list of all promises
@@ -343,31 +344,11 @@ if (typeof jQuery !== "undefined" &&
       diagram.canvas = diagram.new_canvas.copy();
 
 
-      // 3 - Transition all nodes to their new position.
+      // 3 - Transition all nodes to their new positions and full size
       var duration = diagram.duration;
-      promises.push(transition_promise(
-        nodes_update.transition()
-          .duration(duration)
-          .attr("transform", function(d) { 
-            return "translate(" + d.y + "," + d.x + ")"; 
-          })
-      ));
-
-
-      // 4 - Transition all entering node stuff to final attribute values
-
-      nodes_enter.each(function(d) {
-        promises.push(d.transition_enter(this));
+      nodes_update.each(function(d) {
+        d.transition_update();
       });
-
-      promises.push(transition_promise(
-        nodes_enter.select(".q").transition()
-          .duration(duration)
-          .style("fill-opacity", 1)
-          .attr("x", node_text_margin)
-      ));
-
-
 
 
       // 5A - Diagonals - starting positions
@@ -397,21 +378,14 @@ if (typeof jQuery !== "undefined" &&
         })
         .remove();
 
-      // FIXME: add promises for the above transitions.
+      // 6 - Transition exiting nodes to the parent's new position, and
+      // zero size.
+      nodes_exit.each(function(d) {
+        d.transition_exit();
+      });
 
 
-      // 6 - Transition exiting nodes to the parent's new position.
-      var nodes_exit = diagram.nodes_exit;
-      nodes_exit.transition()
-        .duration(duration)
-        .attr("transform", function(d) { 
-          return "translate(" + src_node.y + "," + src_node.x + ")"; 
-        })
-        .remove();
 
-      nodes_exit.select(".node-box").attr("width", 0);
-      nodes_exit.select(".label, .q")
-        .style("fill-opacity", 0);
 
       // FIXME: make promise and add the above transition to the list.
 

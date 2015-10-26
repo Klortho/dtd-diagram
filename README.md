@@ -411,6 +411,7 @@ Other
 * root - the root Node
 * svg - D3 reference to the `svg` element
 * svg_g - D3 reference to the `g` element child of `svg`.
+* label_width_cache - key/value store for computed label widths
 
 Attributes used during update:
 

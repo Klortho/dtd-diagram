@@ -4,8 +4,9 @@
 <!ELEMENT head (meta|note)*>
 <!ELEMENT back (sec)>
 
-<!-- empty element -->
+<!-- empty -->
 <!ELEMENT img EMPTY>
+<!ELEMENT meta EMPTY>
 
 <!-- mixed content -->
 <!ELEMENT string (#PCDATA)>

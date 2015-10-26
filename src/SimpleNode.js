@@ -21,17 +21,12 @@ if (typeof DtdDiagram != "undefined") {
       var self = this,
           diagram = self.diagram;
 
-      self.draw_enter_box();
-
       // Set some sizes
       self.width = diagram.node_text_margin * 2 + 
-                   document.getElementById(self.id).getBBox()["width"];
+                   Node.label_width(diagram, self.name);
       self.y_size = self.width + diagram.diagonal_width;
-    };
 
-    SimpleNode.prototype.transition_enter = function() {
-      console.log("SimpleNode.transition_enter");
-      return this.transition_enter_box();
+      self.draw_enter_box();
     };
 
     return SimpleNode;

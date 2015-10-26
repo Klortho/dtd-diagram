@@ -26,6 +26,21 @@
                 ]
             }
         },
+        "meta": {
+            "content": {
+                "spec": "empty"
+            },
+            "attributes": [
+                {
+                    "type": "attribute",
+                    "name": "type"
+                },
+                {
+                    "type": "attribute",
+                    "name": "date"
+                }
+            ]
+        },
         "doc": {
             "content": {
                 "spec": "element",
