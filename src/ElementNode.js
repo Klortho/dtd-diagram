@@ -76,7 +76,7 @@ if (typeof DtdDiagram != "undefined") {
 
     ElementNode.content_click_handler = function(src_node) {
       src_node.toggle_content();
-      this.diagram.update(this);
+      src_node.diagram.update(src_node);
     };
 
     ElementNode.prototype.toggle_content = function() {
@@ -91,7 +91,7 @@ if (typeof DtdDiagram != "undefined") {
 
     ElementNode.attributes_click_handler = function(src_node) {
       src_node.toggle_attributes();
-      this.diagram.update(this);
+      src_node.diagram.update(src_node);
     };
 
     ElementNode.prototype.toggle_attributes = function() {

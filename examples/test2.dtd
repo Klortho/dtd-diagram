@@ -9,7 +9,7 @@
 
 <!-- mixed content -->
 <!ELEMENT string (#PCDATA)>
-<!ELEMENT p (#PCDATA|em)* >
+<!ELEMENT p (#PCDATA|em|img)* >
 
 <!-- any -->
 <!ELEMENT note ANY>

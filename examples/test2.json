@@ -89,6 +89,10 @@
                     {
                         "type": "element",
                         "name": "em"
+                    },
+                    {
+                        "type": "element",
+                        "name": "img"
                     }
                 ]
             }
