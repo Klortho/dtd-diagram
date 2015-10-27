@@ -82,10 +82,10 @@ if (typeof jQuery !== "undefined" &&
       dropshadow_margin: 5,
 
       // Ratio of the separation between groups to the separation between sibling nodes
-      group_separation: 1.4,
+      group_separation: 1,
 
       // Duration of the animation, in milliseconds.
-      duration: 5,
+      duration: 500,
     };
 
 

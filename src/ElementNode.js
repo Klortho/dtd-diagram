@@ -52,7 +52,7 @@ if (typeof DtdDiagram != "undefined") {
     // Define the object methods
     jQuery.extend(
       ElementNode.prototype, 
-      DtdDiagram.BoxedNode,
+      DtdDiagram.HasLabelNode,
       DtdDiagram.HasQNode,
       {
         // Called the first time we need to discover the content children
@@ -87,10 +87,6 @@ if (typeof DtdDiagram != "undefined") {
         // Returns true if this Node has any attribute children.
         has_attributes: function() {
           return this.attributes.length > 0;
-        },
-
-        has_q: function() {
-          return !!this.q;
         },
 
         // Event handlers
@@ -143,13 +139,41 @@ if (typeof DtdDiagram != "undefined") {
         // anchor for the `q` label, overrides default
         q_anchor: "start",
 
+        width: function() {
+          var self = this,
+              diagram = self.diagram;
+
+          if (!("_width" in self)) {
+            self._width = 
+              diagram.node_text_margin * 2 + 
+              self.q_width() +
+              (self.has_content() || self.has_attributes() 
+                ? diagram.button_width : 0) +
+              self.label_width();
+          }
+          return self._width;
+        },
+
         // Draw the initial state of the node box, label, etc.
         draw_enter: function() {
           var self = this,
               diagram = self.diagram,
               node_box_height = diagram.node_box_height;
 
-          self.draw_enter_box();
+          // Draw the box.
+          self.gs.append("rect")
+            .attr({
+              "data-id": self.id,
+              "class": "box",
+              width: self.width(),
+              height: node_box_height,
+              y: -node_box_height / 2,
+              rx: 6,
+              ry: 6,
+            })
+          ;
+
+          self.draw_enter_label();
           self.draw_enter_q();
 
           // content expand button

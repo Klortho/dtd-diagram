@@ -24,7 +24,8 @@ svg {
 
 /* element nodes */
 .element .box {
-  stroke: steelblue;
+  fill: hsl(207, 43%, 97%);
+  stroke: hsl(207, 43%, 49%);
 }
 
 rect.button {
@@ -37,31 +38,34 @@ text.button {
   font-size: 80%;
 }
 .element text {
-  fill: steelblue;
+  fill: hsl(207, 43%, 49%);
 }
 
 /* attribute nodes */
 .attribute .box {
-  stroke: #B3446C;  /* rasberry rose */
+  fill: hsl(0, 43%, 97%);
+  stroke: hsl(0, 43%, 49%);
 }
 .attribute text {
-  fill: #B3446C;
+  fill: hsl(0, 43%, 49%);
 }
 
 /* other nodes */
 .other .box {
-  stroke: #228042;  /* forest green */
+  fill: hsl(140, 43%, 97%);
+  stroke: hsl(140, 43%, 49%);
 }
 .other text {
-  fill: #228042; 
+  fill: hsl(140, 43%, 49%); 
 } 
 
 /* choice & seq nodes */
 .choice, .seq {
-  stroke: grey;
+  fill: hsl(0, 0%, 97%);
+  stroke: hsl(0, 0%, 49%);
 }
 .choice text, .seq text {
-  fill: grey;
+  fill: hsl(0, 0%, 49%);
 }
 
 

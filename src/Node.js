@@ -147,7 +147,6 @@ if (typeof DtdDiagram != "undefined") {
       diagram.nodes_exit = nodes_update.exit();
     };
 
-
     // Get a Node's y_size, which is used by the layout engine. This is really
     // it's total width (the d3.flextree layout uses x for vertical and y for
     // horizontal).

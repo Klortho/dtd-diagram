@@ -13,17 +13,20 @@ if (typeof DtdDiagram != "undefined") {
       // Default to `q` label anchored in the middle
       q_anchor: "middle",
 
-      // Text label for `q`
-      draw_enter_q: function() {
-        var self = this,
-            gs = self.gs,
-            diagram = self.diagram;
-        if (!self.q) return;
+      // Width of the `q` label, if there is one
+      q_width: function() {
+        return this.has_q() ? this.diagram.q_width : 0;
+      },
 
-        gs.append("text")
+      // Draw the text label for `q`
+      draw_enter_q: function() {
+        var self = this;
+        if (!self.has_q()) return;
+
+        self.gs.append("text")
           .attr({
             "class": "q",
-            x: diagram.node_text_margin,
+            x: self.diagram.node_text_margin,
             y: 0,
             "text-anchor": self.type == self.q_anchor,
             "alignment-baseline": "middle",
