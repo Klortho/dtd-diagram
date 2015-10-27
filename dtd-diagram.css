@@ -15,24 +15,56 @@ svg {
   font: 12px sans-serif;
 }
 
-.element-box, .attribute-box, .other-box, .choice, .seq {
-  stroke: steelblue;
+.node {
   stroke-width: 1.5px;
+}
+.box, .choice, .seq {
   fill: white;
 }
-.has_children {
+
+/* element nodes */
+.element .box {
+  stroke: steelblue;
 }
 
-.button {
+rect.button {
   cursor: pointer;
   fill: none;
   pointer-events: all;
   mouse-events: all;
 }
-.button-text {
+text.button {
   font-size: 80%;
+}
+.element text {
   fill: steelblue;
 }
+
+/* attribute nodes */
+.attribute .box {
+  stroke: #B3446C;  /* rasberry rose */
+}
+.attribute text {
+  fill: #B3446C;
+}
+
+/* other nodes */
+.other .box {
+  stroke: #228042;  /* forest green */
+}
+.other text {
+  fill: #228042; 
+} 
+
+/* choice & seq nodes */
+.choice, .seq {
+  stroke: grey;
+}
+.choice text, .seq text {
+  fill: grey;
+}
+
+
 
 
 text.q {

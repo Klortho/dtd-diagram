@@ -48,17 +48,13 @@ if (typeof DtdDiagram != "undefined") {
 
         // Draw entering nodes
         draw_enter: function() {
-          var self = this,
-              diagram = self.diagram,
-              gs = self.gs;
-
-          gs.append("path")
+          this.gs.append("path")
             .attr({
               'class': 'seq',
               'd': seq_path_gen(7, 6, 7),
             })
           ;
-          self.draw_enter_q();
+          this.draw_enter_q();
         },
       }
     );

@@ -85,7 +85,7 @@ if (typeof jQuery !== "undefined" &&
       group_separation: 1.4,
 
       // Duration of the animation, in milliseconds.
-      duration: 500,
+      duration: 5,
     };
 
 
@@ -322,7 +322,7 @@ if (typeof jQuery !== "undefined" &&
       link.exit().transition()
         .duration(duration)
         .attr("d", function(d) {
-          var o = {x: src_node.x0, y: src_node.y0, 
+          var o = {x: src_node.x, y: src_node.y, 
                    width: function() {return 0;}};
           return diagonal({source: o, target: o});
         })

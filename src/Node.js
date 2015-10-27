@@ -127,7 +127,9 @@ if (typeof DtdDiagram != "undefined") {
       var nodes_enter = diagram.nodes_enter = 
         nodes_update.enter().append("g")
           .attr({
-            "class": "node",
+            "class": function(d) {
+              return "node " + d.type;
+            },
             filter: "url(#dropshadow)",
             transform: function(d) { 
               return "translate(" + src_node.y0 + "," + src_node.x0 + ") " +

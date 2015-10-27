@@ -30,7 +30,7 @@ if (typeof DtdDiagram != "undefined") {
       // Get the function that will resize the canvas
       var new_canvas = diagram.new_canvas;
       var resize_canvas = 
-        resize_canvas_generator(new_canvas.width(), new_canvas.height());
+        resize_canvas_generator(diagram.svg, new_canvas.width(), new_canvas.height());
 
       // If the canvas is getting larger, first change the size abruptly,
       // then tween the scrollbars
@@ -182,7 +182,7 @@ if (typeof DtdDiagram != "undefined") {
 
     // This returns a function that changes the svg size (abruptly, 
     // no animation).
-    function resize_canvas_generator(w, h) {
+    function resize_canvas_generator(svg, w, h) {
       return function() {
         //console.log("Setting canvas size to w = " + w + ", h = " + h);
         svg.style({

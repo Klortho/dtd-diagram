@@ -154,21 +154,21 @@ if (typeof DtdDiagram != "undefined") {
 
           // content expand button
           if (self.has_content()) {
-            self.draw_button("content", "< >",
+            self.draw_button("< >",
               self.has_attributes() ? 0 : -node_box_height / 4,
               ElementNode.content_click_handler);
           }
 
           // attributes expand button
           if (self.has_attributes()) {
-            self.draw_button("attributes", " @ ",
+            self.draw_button(" @ ",
               self.has_content() ? -node_box_height / 2 : -node_box_height / 4,
               ElementNode.attributes_click_handler);
           }
         },
 
         // Helper to draw a single content or attributes expander button
-        draw_button: function(cls, label, y, handler) {
+        draw_button: function(label, y, handler) {
           var self = this,
               diagram = self.diagram,
               gs = self.gs,
@@ -178,7 +178,7 @@ if (typeof DtdDiagram != "undefined") {
 
           gs.append("text")
             .attr({
-              "class": "button-text " + cls + "-button",
+              "class": "button",
               x: width - button_width,
               y: y + node_box_height / 4,
               "text-anchor": "baseline",

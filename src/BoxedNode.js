@@ -35,7 +35,7 @@ if (typeof DtdDiagram != "undefined") {
         gs.append("rect")
           .attr({
             "data-id": self.id,
-            "class": self.type + "-box",
+            "class": "box",
             width: self.width(),
             height: node_box_height,
             y: - node_box_height / 2,

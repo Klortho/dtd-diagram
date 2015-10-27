@@ -31,17 +31,13 @@ if (typeof DtdDiagram != "undefined") {
 
         // Draw entering nodes
         draw_enter: function() {
-          var self = this,
-              diagram = self.diagram,
-              gs = self.gs;
-
-          gs.append("polygon")
+          this.gs.append("polygon")
             .attr({
               'class': 'choice',
               'points': '0,0 12,-12 24,0 12,12'
             })
           ;
-          self.draw_enter_q();
+          this.draw_enter_q();
         },
       }
     );
