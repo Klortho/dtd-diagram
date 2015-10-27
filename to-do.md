@@ -8,7 +8,7 @@
     * [c] Make AttributeNodes' boxes oval.
     * [c] Change shape of OtherNodes, as well
     * [c] Give each node type a matching background tint
-    * Fix sequence node shape
+    * [c] Fix sequence node shape
     * Use SVG to draw q
     * Use SVG to draw button labels "@" and "<>"
     * diagonals should come right out of their buttons: i.e. source vertical

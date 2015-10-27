@@ -2,7 +2,18 @@
 
 if (typeof DtdDiagram != "undefined") {
   (function() {
-    var Node = DtdDiagram.Node;
+    var Node = DtdDiagram.Node,
+        M = Node.M,
+        v = Node.v,
+        arc = Node.arc,
+        w = 13,
+        s = 8;
+
+
+    var path = M(0, s/2) + v(-s) +
+               arc(w/2, w, 0) +
+               v(s) + 
+               arc(w/2, -w, 0) + "z";
 
     // Constructor. Unlike ElementNode constructor, for these,
     // we recursively create all the child content nodes.
@@ -22,28 +33,12 @@ if (typeof DtdDiagram != "undefined") {
     SeqNode.prototype.constructor = SeqNode;
 
 
-    // Helper function generates a bulbous sequence figure, which is supposed
-    // to look like a stylized vertical ellipsis, with room for 
-    // a quantifier in the center circle.
-    var seq_path_gen = function(cr, d, r) {
-      var yp = (cr * cr - r * r + d * d) / (2 * d);
-      var xp = Math.sqrt(cr * cr - yp * yp),
-          x1 = cr - xp, 
-          x2 = cr + xp;
-      return 'M ' + x1 + ' ' + (-yp) + ' ' +
-        'A ' +  r + ' ' +  r + ' 0   1 1 ' + x2 + ' ' + (-yp) + ' ' +
-        'A ' + cr + ' ' + cr + ' 0   0 1 ' + x2 + ' ' + yp + ' ' +
-        'A ' +  r + ' ' +  r + ' 0   1 1 ' + x1 + ' ' + yp + ' ' +
-        'A ' + cr + ' ' + cr + ' 0   0 1 ' + x1 + ' ' + (-yp) + ' ' +
-        'z';
-    }
-
     jQuery.extend(
       SeqNode.prototype, 
       DtdDiagram.HasQNode,
       {
         width: function() {
-          return 14;
+          return w;
         },
 
         // Draw entering nodes
@@ -51,7 +46,7 @@ if (typeof DtdDiagram != "undefined") {
           this.gs.append("path")
             .attr({
               'class': 'seq',
-              'd': seq_path_gen(7, 6, 7),
+              'd': path,
             })
           ;
           this.draw_enter_q();

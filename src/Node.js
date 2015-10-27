@@ -108,6 +108,24 @@ if (typeof DtdDiagram != "undefined") {
     // D3/SVG drawing
     // --------------
 
+    // some functions to help draw paths
+    Node.M = function(x, y) {
+      return "M " + x + "," + y + " ";
+    };
+    Node.l = function(x, y) {
+      return "l " + x + "," + y + " ";
+    };
+    Node.h = function(d) {
+      return "h " + d + " ";
+    };
+    Node.v = function(d) {
+      return "v " + d + " ";
+    };
+    // circular arc, always drawn clockwise
+    Node.arc = function(r, x, y) {
+      return "a " + r + "," + r + " 0,0,1 " + x + "," + y + " ";
+    };
+
     // Start the update, which means binding the data - the list of Node
     // objects in the tree bound to their `g.node` SVG elements;
     // then creating update, enter, and exit selections and storing 

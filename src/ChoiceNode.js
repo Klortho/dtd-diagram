@@ -2,7 +2,10 @@
 
 if (typeof DtdDiagram != "undefined") {
   (function() {
-    var Node = DtdDiagram.Node;
+    var Node = DtdDiagram.Node,
+        w = 20,
+        points = "0,0 " + (w/2) + "," + (-w/2) + " " + w + ",0 " +
+          (w/2) + "," + (w/2);
 
     // Constructor. Unlike ElementNode constructor, for these,
     // we recursively create all the child content nodes.
@@ -25,16 +28,14 @@ if (typeof DtdDiagram != "undefined") {
       ChoiceNode.prototype, 
       DtdDiagram.HasQNode,
       {
-        width: function() {
-          return 24;
-        },
+        width: function() { return w; },
 
         // Draw entering nodes
         draw_enter: function() {
           this.gs.append("polygon")
             .attr({
               'class': 'choice',
-              'points': '0,0 12,-12 24,0 12,12'
+              'points': points,
             })
           ;
           this.draw_enter_q();
