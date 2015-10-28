@@ -109,8 +109,21 @@ if (typeof DtdDiagram != "undefined") {
     // --------------
 
     // some functions to help draw paths
+    Node.path = function() {
+      var p = "";
+      for (var i = 0; i < arguments.length; ++i) {
+        p += arguments[i] + " ";
+      }
+      return p;
+    }
     Node.M = function(x, y) {
       return "M " + x + "," + y + " ";
+    };
+    Node.m = function(x, y) {
+      return "m " + x + "," + y + " ";
+    };
+    Node.L = function(x, y) {
+      return "L " + x + "," + y + " ";
     };
     Node.l = function(x, y) {
       return "l " + x + "," + y + " ";
@@ -134,6 +147,12 @@ if (typeof DtdDiagram != "undefined") {
     Node.arca = function(r, d, a) {
       return "a " + r + "," + r + " 0,0,1 " + (d * Math.cos(a)) + 
              "," + (d * Math.sin(a)) + " ";
+    };
+    Node.c = function(x1, y1, x2, y2, x, y) {
+      return "c " + x1 + "," + y1 + " " + x2 + "," + y2 + " " + x + "," + y + " ";
+    }
+    Node.C = function(x1, y1, x2, y2, x, y) {
+      return "C " + x1 + "," + y1 + " " + x2 + "," + y2 + " " + x + "," + y + " ";
     }
 
     // Start the update, which means binding the data - the list of Node

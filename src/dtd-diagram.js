@@ -117,6 +117,89 @@ if (typeof jQuery !== "undefined" &&
       var container_dom = diagram.container_dom = container_jq[0];
       var container_d3 = diagram.container_d3 = d3.select(container_dom);
 
+      var svg = diagram.svg = container_d3.append("svg");
+      var defs = svg.append("defs");
+      var filter = defs.append("filter")
+        .attr({
+          "id": "dropshadow",
+          height: "130%",
+        });
+      filter.append("feGaussianBlur")
+        .attr({
+          in: "SourceAlpha",
+          stdDeviation: 3,
+        });
+      filter.append("feOffset")
+        .attr({
+          dx: 2,
+          dy: 2,
+          result: "offsetblur",
+        });
+      filter.append("feComponentTransfer")
+        .append("feFuncA")
+          .attr({
+            type: "linear",
+            slope: 0.5,
+          });
+      var feMerge = filter.append("feMerge");
+      feMerge.append("feMergeNode");
+      feMerge.append("feMergeNode")
+        .attr({
+          in: "SourceGraphic",
+        });
+
+      var gradient;
+      gradient = defs.append("linearGradient")
+        .attr("id", "button-gradient-stops");
+      gradient.append("stop")
+        .attr("offset", 0)
+        .style({
+          "stop-color": "black",
+          "stop-opacity": 0,
+        });
+      gradient.append("stop")
+        .attr("offset", 1)
+        .style({
+          "stop-color": "black",
+          "stop-opacity": 0.5,
+        });
+      defs.append("radialGradient")
+        .attr({
+          id: "button-gradient",
+          cx: 120,
+          cy: 170,
+          r: 100,
+          fx: 120,
+          fy: 170,
+          "xlink:href": "#button-gradient-stops",
+          gradientUnits: "userSpaceOnUse",
+          gradientTransform: "matrix(0,-0.72727275,2,0,-220,170)",
+        });
+      gradient = defs.append("linearGradient")
+        .attr("id", "reflection-gradient-stops");
+      gradient.append("stop")
+        .attr("offset", 0)
+        .style({
+          "stop-color": "white",
+          "stop-opacity": 1,
+        });
+      gradient.append("stop")
+        .attr("offset", 1)
+        .style({
+          "stop-color": "white",
+          "stop-opacity": 0,
+        });
+      defs.append("linearGradient")
+        .attr({
+          id: "reflection-gradient",
+          x1: 120,
+          y1: 10,
+          x2: 120,
+          y2: 50,
+          "xlink:href": "#reflection-gradient-stops",
+          gradientUnits: "userSpaceOnUse",
+        });
+
       // Get the actual options to use, based on the precedence rules. This sets
       // the properties right on the diagram object itself.
       var tag_options = container_jq.data("options") || {};
@@ -125,6 +208,7 @@ if (typeof jQuery !== "undefined" &&
       // If we're using a test file, then we're not going to use a dtd file
       if (diagram.test_file) diagram.dtd_json_file = null;
 
+/*
       // Use jQuery to add the main SVG element that will hold the diagram.
       container_jq.append(
         "<svg>\n" +
@@ -144,6 +228,7 @@ if (typeof jQuery !== "undefined" &&
         "</svg>\n"
       );
       var svg = diagram.svg = container_d3.select("svg");
+*/
 
       // scrollbar margin - if this is big enough, it ensures we'll never get
       // spurious scrollbars when the drawing is at the minimum size. But if it's

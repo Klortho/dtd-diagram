@@ -198,12 +198,16 @@ if (typeof DtdDiagram != "undefined") {
               gs = self.gs,
               button_width = diagram.button_width,
               node_box_height = diagram.node_box_height,
-              width = self.width();
+              width = self.width()
+              m = Node.m,
+              c = Node.c,
+              C = Node.C,
+              L = Node.L
+              path = Node.path;
 
         if (!DtdDiagram.button_painted) {
           var bw = 220,
-              bh = 80,
-              bry = 40;
+              bh = 80;
 
           var button_g = gs.append("g")
             .attr({
@@ -217,7 +221,7 @@ if (typeof DtdDiagram != "undefined") {
               "class": "ButtonBase",
               width: bw,
               height: bh,
-              ry: bry,
+              ry: bh / 2,
               x: 10,
               y: 10,
             });
@@ -226,32 +230,40 @@ if (typeof DtdDiagram != "undefined") {
               "class": "ButtonGlow",
               width: bw,
               height: bh,
-              ry: bry,
+              ry: bh / 2,
               x: 10,
               y: 10,
             });
           button_g.append("text")
             .attr({
               "class": "button-text shadow",
-              x: 121,
-              y: 66,
+              x: bw * 0.55,
+              y: bh * 0.825,
             })
+            .style("font-size", bh * 0.5)
             .text("OFF");
           button_g.append("text")
             .attr({
               "class": "button-text fore",
-              x: 120,
-              y: 64.5,
+              x: bw * 0.545,
+              y: bh * 0.806,
             })
+            .style("font-size", bh * 0.5)
             .text("OFF");
           button_g.append("path")
             .attr({
               "class": "reflection",
-              "d": "m 50,15 140,0 " +
-                   "c 11.08,0 22.51667,10.914 20,20 " +
-                   "C 208.16563,41.622482 201.08,40 190,40 " +
-                   "L 50,40 " +
-                   "C 38.92,40 31.834332,41.622512 30,35 27.483323,25.914 38.92,15 50,15 z",
+              "d": path(
+                     "m", bw * 0.227, bh * 0.188, bw * 0.636, bh * 0,
+                     "c", bw * 0.050, bh * 0, bw * 0.102, bh * 0.136, 
+                          bw * 0.091, bh * 0.25,
+                     "C", bw * 0.946, bh * 0.520, bw * 0.914, bh * 0.5, 
+                          bw * 0.864, bh * 0.5,
+                     "L", bw * 0.227, bh * 0.5,
+                     "C", bw * 0.177, bh * 0.5, bw * 0.145, bh * 0.520, 
+                          bw * 0.136, bh * 0.438, bw * 0.125, bh * 0.324, 
+                          bw * 0.177, bh * 0.188, bw * 0.227, bh * 0.188,
+                     "z"),
             });
 
           DtdDiagram.button_painted = true;

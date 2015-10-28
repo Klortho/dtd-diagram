@@ -103,7 +103,6 @@ g.button:hover rect.ButtonGlow {
   opacity: 0; 
 }
 .button-text {
-  font-size: 40px;
   text-align: center;
   text-anchor: middle;
   stroke: none;
