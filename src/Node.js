@@ -115,6 +115,10 @@ if (typeof DtdDiagram != "undefined") {
     Node.l = function(x, y) {
       return "l " + x + "," + y + " ";
     };
+    // lineto by distance and angle
+    Node.la = function(d, a) {
+      return "l " + (d * Math.cos(a)) + "," + (d * Math.sin(a)) + " ";
+    };
     Node.h = function(d) {
       return "h " + d + " ";
     };
@@ -122,9 +126,15 @@ if (typeof DtdDiagram != "undefined") {
       return "v " + d + " ";
     };
     // circular arc, always drawn clockwise
-    Node.arc = function(r, x, y) {
-      return "a " + r + "," + r + " 0,0,1 " + x + "," + y + " ";
+    Node.arc = function(r, x, y, large_arc) {
+      if (typeof large_arc == "undefined") large_arc = 0;
+      return "a " + r + "," + r + " 0," + large_arc + ",1 " + x + "," + y + " ";
     };
+    // circular arc by distance and angle
+    Node.arca = function(r, d, a) {
+      return "a " + r + "," + r + " 0,0,1 " + (d * Math.cos(a)) + 
+             "," + (d * Math.sin(a)) + " ";
+    }
 
     // Start the update, which means binding the data - the list of Node
     // objects in the tree bound to their `g.node` SVG elements;

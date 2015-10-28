@@ -8,14 +8,44 @@ if (typeof DtdDiagram != "undefined") {
         h = Node.h,
         v = Node.v,
         arc = Node.arc,
-        r = 1,
-        s = 3;
+        la = Node.la,
+        arca = Node.arca;
 
-    var plus = M(-r, -r) + v(-s) + arc(r, 2*r, 0) +
+    // plus sign
+    var r = 1,
+        s = 3,
+        plus = M(-r, -r) + v(-s) + arc(r, 2*r, 0) +
                v(s) + h(s) + arc(r, 0, 2*r) +
                h(-s) + v(s) + arc(r, -2*r, 0) +
                v(-s) + h(-s) + arc(r, 0, -2*r) +
                h(s) + "z";
+
+    // asterisk
+    var r = 1.2,
+        h = 3.5,
+        asterisk = (function() {
+          var g = 1.7 * r,
+              a = -7 * Math.PI / 10,
+              path = M(g * Math.cos(a), g * Math.sin(a));
+          for (var i = 0; i < 5; ++i) {
+            path += la(h, a + Math.PI / 5) +
+                    arca(r, 2 * r, a + 7 * Math.PI / 10) +
+                    la(h, a + 6 * Math.PI / 5);
+            a += 2 * Math.PI / 5;
+          }
+          return path + "z";
+        })();
+
+    // question
+    var r = 2.3,
+        a = Math.PI / 3,
+        sx = -r * Math.sin(a),
+        sy = -r * (1 + Math.cos(a)),
+        d = 2,
+        p = 4,
+        question = M(sx, sy) + arc(r, -sx, -sy, 1) + l(0, d) +
+                   "m 0,3 " + arc(.5, 0.0001, 0, 1) + "z";
+
 
     // These methods are mixed in with the inheriting class' prototype
     DtdDiagram.HasQNode = {
@@ -48,11 +78,13 @@ if (typeof DtdDiagram != "undefined") {
           .text(self.q)
         ;
 
-        self.gs.append("path")
-          .attr({
-            'class': 'q',
-            'd': plus,
-          })
+        self.gs.append("g")
+          .attr("transform", "translate(10,0)")
+          .append("path")
+            .attr({
+              'class': 'q',
+              'd': question,
+            })
         ;
       },
     };

@@ -25,6 +25,8 @@ svg {
 /* element nodes */
 .element .box {
   fill: hsl(207, 43%, 97%);
+}
+.element .box, .element .q {
   stroke: hsl(207, 43%, 49%);
 }
 
@@ -44,6 +46,8 @@ text.button {
 /* attribute nodes */
 .attribute .box {
   fill: hsl(0, 43%, 97%);
+}
+.attribute .box, .attribute .q {
   stroke: hsl(0, 43%, 49%);
 }
 .attribute text {
@@ -53,6 +57,8 @@ text.button {
 /* other nodes */
 .other .box {
   fill: hsl(140, 43%, 97%);
+}
+.other .box, .other .q {
   stroke: hsl(140, 43%, 49%);
 }
 .other text {
@@ -69,10 +75,16 @@ text.button {
 }
 
 
+path.q {
+  stroke-width: 1;
+  stroke-linecap: round;
+  fill: none;
+}
 
-
-text.q {
+.element text.q {
   font: 12pt "courier";
+  stroke: none;
+  display: none;
 }
 
 .link {
