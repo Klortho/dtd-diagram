@@ -174,7 +174,7 @@ if (typeof DtdDiagram != "undefined") {
           ;
 
           self.draw_enter_label();
-          self.draw_enter_q();
+          self.draw_enter_q(diagram.node_text_margin);
 
           // content expand button
           if (self.has_content()) {

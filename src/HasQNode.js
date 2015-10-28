@@ -12,17 +12,29 @@ if (typeof DtdDiagram != "undefined") {
         arca = Node.arca;
 
     // plus sign
-    var r = 1,
-        s = 3,
+    var s = 4,
+        plus = M(-s, 0) + l(2*s, 0) + M(0, -s) + l(0, 2*s);
+      /*
+        r = 1,
         plus = M(-r, -r) + v(-s) + arc(r, 2*r, 0) +
                v(s) + h(s) + arc(r, 0, 2*r) +
                h(-s) + v(s) + arc(r, -2*r, 0) +
                v(-s) + h(-s) + arc(r, 0, -2*r) +
                h(s) + "z";
+      */
 
     // asterisk
-    var r = 1.2,
-        h = 3.5,
+    var h = 4.5,
+        asterisk = (function() {
+          var a = -Math.PI / 2;
+          var path = '';
+          for (var i = 0; i < 5; ++i) {
+            path += M(0, 0) + la(h, a + i * 2 * Math.PI / 5);
+          }
+          return path;
+        })();
+      /*
+        r = 1.2,
         asterisk = (function() {
           var g = 1.7 * r,
               a = -7 * Math.PI / 10,
@@ -35,6 +47,7 @@ if (typeof DtdDiagram != "undefined") {
           }
           return path + "z";
         })();
+      */
 
     // question
     var r = 2.3,
@@ -63,10 +76,11 @@ if (typeof DtdDiagram != "undefined") {
       },
 
       // Draw the text label for `q`
-      draw_enter_q: function() {
+      draw_enter_q: function(offset_x) {
         var self = this;
         if (!self.has_q()) return;
 
+      /*
         self.gs.append("text")
           .attr({
             "class": "q",
@@ -77,13 +91,18 @@ if (typeof DtdDiagram != "undefined") {
           })
           .text(self.q)
         ;
+      */
 
+        var q = self.q,
+            path = q == "*" ? asterisk :
+                   q == "+" ? plus :
+                   question;
         self.gs.append("g")
-          .attr("transform", "translate(10,0)")
+          .attr("transform", "translate(" + offset_x + ",0)")
           .append("path")
             .attr({
               'class': 'q',
-              'd': question,
+              'd': path,
             })
         ;
       },

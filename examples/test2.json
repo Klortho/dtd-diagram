@@ -118,6 +118,7 @@
                 "children": [
                     {
                         "type": "seq",
+                        "q": "+",
                         "children": [
                             {
                                 "type": "element",
@@ -138,9 +139,22 @@
                                 ]
                             },
                             {
-                                "type": "element",
-                                "name": "app",
-                                "q": "*"
+                                "type": "seq",
+                                "q": "*",
+                                "children": [
+                                    {
+                                        "type": "element",
+                                        "name": "app"
+                                    },
+                                    {
+                                        "type": "element",
+                                        "name": "sec"
+                                    },
+                                    {
+                                        "type": "element",
+                                        "name": "note"
+                                    }
+                                ]
                             }
                         ]
                     }
@@ -186,10 +200,15 @@
                 "children": [
                     {
                         "type": "choice",
+                        "q": "?",
                         "children": [
                             {
                                 "type": "element",
                                 "name": "sec"
+                            },
+                            {
+                                "type": "element",
+                                "name": "note"
                             }
                         ]
                     }

@@ -49,7 +49,7 @@ if (typeof DtdDiagram != "undefined") {
               'd': path,
             })
           ;
-          this.draw_enter_q();
+          this.draw_enter_q(w/2);
         },
       }
     );

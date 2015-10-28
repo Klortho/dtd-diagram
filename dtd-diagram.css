@@ -76,15 +76,13 @@ text.button {
 
 
 path.q {
-  stroke-width: 1;
+  stroke-width: 1.5;
   stroke-linecap: round;
   fill: none;
 }
 
 .element text.q {
   font: 12pt "courier";
-  stroke: none;
-  display: none;
 }
 
 .link {

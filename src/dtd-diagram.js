@@ -75,7 +75,7 @@ if (typeof jQuery !== "undefined" &&
       node_text_margin: 10,     // horizontal margin, on both sides
       node_height: 32,
       node_box_height: 25,
-      q_width: 15,
+      q_width: 12,
       button_width: 15,
       diagonal_width: 20,
       scrollbar_margin: 20,

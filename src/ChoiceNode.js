@@ -38,7 +38,7 @@ if (typeof DtdDiagram != "undefined") {
               'points': points,
             })
           ;
-          this.draw_enter_q();
+          this.draw_enter_q(w/2);
         },
       }
     );
