@@ -25,6 +25,72 @@
     <script src="src/Canvas.js"></script>
   </head>
   <body>
+    <div>
+      <svg xmlns="http://www.w3.org/2000/svg" 
+           xmlns:xlink="http://www.w3.org/1999/xlink" 
+           version="1.1" 
+           width="240" 
+           height="100" 
+           role="button" 
+           aria-pressed="false">
+        <defs>
+          <linearGradient id="button-gradient-stops">
+            <stop style="stop-color:#000000;stop-opacity:0" 
+                  offset="0"/>
+            <stop style="stop-color:#000000;stop-opacity:0.5" 
+                  offset="1"/>
+          </linearGradient>
+          <radialGradient id="button-gradient" 
+                          cx="120" 
+                          cy="170" 
+                          r="100" 
+                          fx="120" 
+                          fy="170" 
+                          xlink:href="#button-gradient-stops" 
+                          gradientUnits="userSpaceOnUse" 
+                          gradientTransform="matrix(0,-0.72727275,2,0,-220,170)"/>
+          <linearGradient id="reflection-gradient-stops">
+            <stop style="stop-color:#ffffff;stop-opacity:1" 
+                  offset="0"/>
+            <stop style="stop-color:#ffffff;stop-opacity:0" 
+                  offset="1"/>
+          </linearGradient>
+          <linearGradient id="reflection-gradient" 
+                          x1="120" 
+                          y1="10" 
+                          x2="120" 
+                          y2="50" 
+                          xlink:href="#reflection-gradient-stops" 
+                          gradientUnits="userSpaceOnUse"/>
+        </defs>
+        <g class="button">
+          <rect class="ButtonBase" 
+                width="220" 
+                height="80" 
+                ry="40" 
+                x="10" 
+                y="10" />
+          <rect class="ButtonGlow" 
+                width="220" 
+                height="80" 
+                ry="40" 
+                x="10" 
+                y="10"/>
+          <text class="button-text shadow"
+                x="120" 
+                y="66">OFF</text>
+          <text class="button-text fore"
+                x="120" 
+                y="64.5">OFF</text>
+          <path class="reflection"
+                d="m 50,15 140,0 
+                   c 11.08,0 22.51667,10.914 20,20 
+                   C 208.16563,41.622482 201.08,40 190,40 
+                   L 50,40 
+                   C 38.92,40 31.834332,41.622512 30,35 27.483323,25.914 38.92,15 50,15 z"/>
+        </g>
+      </svg>
+    </div>
     <div id='dtd-diagram' 
          data-options='{
              "dtd_json_file": "examples/test2.json"

@@ -200,6 +200,63 @@ if (typeof DtdDiagram != "undefined") {
               node_box_height = diagram.node_box_height,
               width = self.width();
 
+        if (!DtdDiagram.button_painted) {
+          var bw = 220,
+              bh = 80,
+              bry = 40;
+
+          var button_g = gs.append("g")
+            .attr({
+              "class": "button",
+              transform: "translate(" +
+                (width - button_width) + "," +
+                (y + node_box_height / 4) + ")",
+            });
+          button_g.append("rect")
+            .attr({
+              "class": "ButtonBase",
+              width: bw,
+              height: bh,
+              ry: bry,
+              x: 10,
+              y: 10,
+            });
+          button_g.append("rect")
+            .attr({
+              "class": "ButtonGlow",
+              width: bw,
+              height: bh,
+              ry: bry,
+              x: 10,
+              y: 10,
+            });
+          button_g.append("text")
+            .attr({
+              "class": "button-text shadow",
+              x: 121,
+              y: 66,
+            })
+            .text("OFF");
+          button_g.append("text")
+            .attr({
+              "class": "button-text fore",
+              x: 120,
+              y: 64.5,
+            })
+            .text("OFF");
+          button_g.append("path")
+            .attr({
+              "class": "reflection",
+              "d": "m 50,15 140,0 " +
+                   "c 11.08,0 22.51667,10.914 20,20 " +
+                   "C 208.16563,41.622482 201.08,40 190,40 " +
+                   "L 50,40 " +
+                   "C 38.92,40 31.834332,41.622512 30,35 27.483323,25.914 38.92,15 50,15 z",
+            });
+
+          DtdDiagram.button_painted = true;
+        }
+        /*
           gs.append("text")
             .attr({
               "class": "button",
@@ -221,8 +278,8 @@ if (typeof DtdDiagram != "undefined") {
             })
             .on("click", handler)
           ;
+        */
         },
-
       }
     );
   })();

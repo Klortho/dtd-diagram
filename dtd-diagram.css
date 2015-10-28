@@ -91,3 +91,37 @@ path.q {
   stroke-width: 1.5pt;
 }
 
+/* buttons */
+
+rect.ButtonBase { 
+  fill: red; 
+}
+g.button:hover {
+  cursor: pointer; 
+}
+g.button:hover rect.ButtonGlow {
+  opacity: 0; 
+}
+.button-text {
+  font-size: 40px;
+  text-align: center;
+  text-anchor: middle;
+  stroke: none;
+  font-family: "DejaVu Sans";
+}
+.button-text.fore {
+  fill: white;
+}
+.button-text.shadow {
+  fill: black;
+}
+path.reflection {
+  fill: url(#reflection-gradient);
+}
+
+.button rect {
+  stroke: none;
+}
+.ButtonGlow {
+  fill: url(#button-gradient);
+}
