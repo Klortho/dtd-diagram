@@ -9,8 +9,8 @@
     * [c] Change shape of OtherNodes, as well
     * [c] Give each node type a matching background tint
     * [c] Fix sequence node shape
-    * Use SVG to draw q
-    * Use SVG to draw button labels "@" and "<>"
+    * [c] Use SVG to draw q
+    * [c] Use SVG to draw button labels "@" and "<>"
     * diagonals should come right out of their buttons: i.e. source vertical
       coord should depend on button loc.
     * gradient fills?

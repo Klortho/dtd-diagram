@@ -193,9 +193,9 @@ if (typeof jQuery !== "undefined" &&
         .attr({
           id: "reflection-gradient",
           x1: 120,
-          y1: 10,
+          y1: -10,
           x2: 120,
-          y2: 50,
+          y2: 35,
           "xlink:href": "#reflection-gradient-stops",
           gradientUnits: "userSpaceOnUse",
         });
@@ -259,9 +259,10 @@ if (typeof jQuery !== "undefined" &&
         .attr({"transform": "translate(0, " + (-canvas.top) + ")"});
 
       // Create the flextree layout and set options
+      var node_height = diagram.node_height;
       var engine = diagram.engine = d3.layout.flextree()
         .nodeSize(function(d) {
-          return [diagram.node_height, d.y_size()];
+          return [node_height, d.y_size()];
         })
         .separation(function(a, b) {
           var sep = a.elem_parent == b.elem_parent 
@@ -277,7 +278,13 @@ if (typeof jQuery !== "undefined" &&
       var diagonal = diagram.diagonal = d3.svg.diagonal()
         .source(function(d, i) {
           var s = d.source;
-          return { x: s.x, y: s.y + s.width() };
+          var t = d.target;
+          return { 
+            x: s.x + 
+              ( s.has_content() && d.target.type == "attribute" ? -6 : 
+                s.has_attributes() && d.target.type != "attribute" ? 6 : 0), 
+            y: s.y + s.width() 
+          };
         })
         .projection(function(d) {
           //console.log("diagonal returning [" + d.y + "," + d.x + "]");
@@ -388,13 +395,18 @@ if (typeof jQuery !== "undefined" &&
         .data(links, function(d) { return d.target.id; });
 
       // Enter any new links at the parent's previous position.
+      var fake_node = {
+        x: src_node.x0, 
+        y: src_node.y0, 
+        width: function() { return 0; },
+        has_content: function() { return false; },
+        has_attributes: function() { return false; },
+      };
       var diagonal = diagram.diagonal;
       link.enter().insert("path", "g")
         .attr("class", "link")
         .attr("d", function(d) {
-          var o = {x: src_node.x0, y: src_node.y0, 
-                   width: function() {return 0;}};
-          return diagonal({source: o, target: o});
+          return diagonal({source: fake_node, target: fake_node});
         });
 
       // Transition links to their new position.
@@ -407,9 +419,7 @@ if (typeof jQuery !== "undefined" &&
       link.exit().transition()
         .duration(duration)
         .attr("d", function(d) {
-          var o = {x: src_node.x, y: src_node.y, 
-                   width: function() {return 0;}};
-          return diagonal({source: o, target: o});
+          return diagonal({source: fake_node, target: fake_node});
         })
         .remove();
 

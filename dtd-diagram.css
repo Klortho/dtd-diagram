@@ -94,7 +94,7 @@ path.q {
 /* buttons */
 
 rect.ButtonBase { 
-  fill: red; 
+  fill: hsl(207, 90%, 80%); 
 }
 g.button:hover {
   cursor: pointer; 
@@ -103,8 +103,8 @@ g.button:hover rect.ButtonGlow {
   opacity: 0; 
 }
 .button-text {
-  text-align: center;
   text-anchor: middle;
+  alignment-baseline: central;
   stroke: none;
   font-family: "DejaVu Sans";
 }
