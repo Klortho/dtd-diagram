@@ -1,13 +1,11 @@
+// Define a global class DtdDiagram
+
 if (typeof jQuery !== "undefined" &&
     typeof d3 !== "undefined")
 {
-  // Define a global variable DtdDiagram, which is a function that can be called
-  // with `new`.
-  DtdDiagram = function($) {
+  (function() {
 
-    // Define the constructor function itself, that will be returned at the end of
-    // this IFFE, and become the value of the global variable DtdDiagram.
-    var _DtdDiagram = function(opts) {
+    DtdDiagram = function(opts) {
       var diagram = this;
       DtdDiagram.diagrams.push(diagram);
       diagram.opts = opts || {};
@@ -22,19 +20,19 @@ if (typeof jQuery !== "undefined" &&
           return diagram.update(diagram.root);
         })
         .catch(function(err) {
-          console.error(err);
+          console.error(err.stack);
         })
       ;
     };
 
-    _DtdDiagram.diagrams = [];
-    _DtdDiagram.auto_start = true;
+    DtdDiagram.diagrams = [];
+    DtdDiagram.auto_start = true;
 
     // document_ready is a Promise that resolves when the document is ready.
     // It simplifies making sure everything is syncronized.
-    var document_ready = _DtdDiagram.document_ready =
+    var document_ready = DtdDiagram.document_ready =
       new Promise(function(resolve) {
-        $(document).ready(resolve);
+        jQuery(document).ready(resolve);
       });
 
     // By default, if the user hasn't instantiated an object, then
@@ -51,12 +49,9 @@ if (typeof jQuery !== "undefined" &&
     // - Set them on the @data-options attribute of the <div>
     //   element. Make sure they are in strictly valid JSON format.
     // - Use the defaults
-    _DtdDiagram.default_options = {
+    DtdDiagram.default_options = {
       // DTD JSON file
       dtd_json_file: "dtd.json",
-
-      // Or, use a test file, with the tree hard-coded
-      test_file: null,
 
       // The root element, by default, is specified in the DTD JSON file, but can
       // be overridden
@@ -69,8 +64,8 @@ if (typeof jQuery !== "undefined" &&
       // Some dimensions
       // FIXME: I think a lot of these should not be options. (That doesn't mean
       // they shouldn't be parameterized.)
-      min_canvas_width: 200,
-      min_canvas_height: 200,
+      min_canvas_width: 600,
+      min_canvas_height: 300,
       node_text_margin: 10,     // horizontal margin, on both sides
       node_height: 32,
       node_box_height: 25,
@@ -89,10 +84,11 @@ if (typeof jQuery !== "undefined" &&
 
 
     // Initialize the diagram, by computing and storing the options, creating
-    // the svg element, instantiating and configuring the layout engine
-    _DtdDiagram.prototype.initialize = function() {
+    // the svg element, reading the JSON dtd file, instantiating and configuring 
+    // the layout engine. Returns a Promise that resolves after the JSON dtd
+    // is read.
+    DtdDiagram.prototype.initialize = function() {
       var diagram = this;
-      diagram.error = false;
       diagram.last_id = 0;
 
       // User can pass in a specifier for the div either as an
@@ -100,23 +96,40 @@ if (typeof jQuery !== "undefined" &&
       var opts = diagram.opts,
           container = opts.container || 'dtd-diagram',
           container_jq = diagram.container_jq =
-            typeof container == "string" ? $('#' + container) :
-            container instanceof Element ? $(container) :
+            typeof container == "string" ? jQuery('#' + container) :
+            container instanceof Element ? jQuery(container) :
             container;
 
       // If the expected div is not found, or if the selection somehow
       // matches more than one, then get out now.
       if (container_jq.length != 1) {
-        diagram.error = "Something wrong with the specifier for the diagram's " +
-          "DOM element";
+        console.error("Something wrong with the specifier for the diagram's " +
+          "DOM element");
         return;
       };
 
       // A couple of other ways of referencing the container.
       var container_dom = diagram.container_dom = container_jq[0];
       var container_d3 = diagram.container_d3 = d3.select(container_dom);
-      var svg = diagram.svg = container_d3.append("svg");
 
+      // Get the actual options to use, based on the precedence rules. This sets
+      // the properties right on the diagram object itself.
+      var tag_options = container_jq.data("options") || {};
+      jQuery.extend(true, diagram, DtdDiagram.default_options, tag_options, opts);
+
+      // scrollbar margin - if this is big enough, it ensures we'll never get
+      // spurious scrollbars when the drawing is at the minimum size. But if it's
+      // too big, it messes up the centering. 22 gives plenty of room
+      var min_canvas_width = diagram.min_canvas_width,
+          min_canvas_height = diagram.min_canvas_height,
+          scrollbar_margin = diagram.scrollbar_margin;
+      container_d3.style({
+        'width': (min_canvas_width + scrollbar_margin) + 'px',
+        'height': (min_canvas_height + scrollbar_margin) + 'px'
+      });
+
+      // Initialize the SVG
+      var svg = diagram.svg = container_d3.append("svg");
 
       var defs = svg.append("defs");
       defs.append('defs').html(
@@ -187,28 +200,6 @@ if (typeof jQuery !== "undefined" &&
         '   r="7.5" />'
       );
 
-
-      // Get the actual options to use, based on the precedence rules. This sets
-      // the properties right on the diagram object itself.
-      var tag_options = container_jq.data("options") || {};
-      $.extend(true, diagram, DtdDiagram.default_options, tag_options, opts);
-
-      // If we're using a test file, then we're not going to use a dtd file
-      if (diagram.test_file) diagram.dtd_json_file = null;
-
-
-      // scrollbar margin - if this is big enough, it ensures we'll never get
-      // spurious scrollbars when the drawing is at the minimum size. But if it's
-      // too big, it messes up the centering. 22 gives plenty of room
-      var min_canvas_width = diagram.min_canvas_width,
-          min_canvas_height = diagram.min_canvas_height,
-          scrollbar_margin = diagram.scrollbar_margin;
-      container_d3.style({
-        'width': (min_canvas_width + scrollbar_margin) + 'px',
-        'height': (min_canvas_height + scrollbar_margin) + 'px'
-      });
-
-      // Initialize the SVG
       var canvas = diagram.canvas = new DtdDiagram.Box(
         -min_canvas_height / 2, 
         0, 
@@ -225,7 +216,7 @@ if (typeof jQuery !== "undefined" &&
       diagram.svg_g = svg.append("g")
         .attr({"transform": "translate(0, " + (-canvas.top) + ")"});
 
-      // Create the flextree layout and set options
+      // Create the flextree layout engine and set options
       var node_height = diagram.node_height;
       var engine = diagram.engine = d3.layout.flextree()
         .nodeSize(function(d) {
@@ -262,11 +253,8 @@ if (typeof jQuery !== "undefined" &&
         var dtd_json_file = diagram.dtd_json_file;
         d3.json(dtd_json_file, function(error, dtd_json) {
           if (error) {
-            var msg = "Error reading DTD file '" + dtd_json_file + 
-                "': " + error.statusText;
-            console.error(msg);
-            diagram.error = msg;
-            reject(msg);
+            reject(new Error("Error reading DTD file '" + dtd_json_file + 
+                "': " + error.statusText));
           }
           else {
             diagram.dtd_json = dtd_json;
@@ -278,27 +266,22 @@ if (typeof jQuery !== "undefined" &&
               name: diagram.root_element || dtd_json.root,
               type: 'element',
             }, null);
+            diagram.root.x0 = 0;
+            diagram.root.y0 = 0;
 
             // Initial state: root node expanded
             root.expand();
             resolve();
           }
         });
-      })
-        .then(function() {
-          // x is the vertical, and y the horizontal, coordinate
-          diagram.root.x0 = 0;
-          diagram.root.y0 = 0;
-          return diagram;
-        })
-      ;
+      });
     };
 
     // Utility function to create a Promise out of a D3 transition. The
     // Promise is resolved when all of the selection's transitions have
     // ended. This was adapted from the code in this mailing list answer:
     // https://groups.google.com/d/msg/d3-js/WC_7Xi6VV50/j1HK0vIWI-EJ
-    function transition_promise(t) {
+    var transition_promise = DtdDiagram.transition_promise = function(t) {
       var n = 0;
       return new Promise(function(resolve, reject) {
         if (t.empty()) resolve();
@@ -315,11 +298,11 @@ if (typeof jQuery !== "undefined" &&
     // Main function to update the rendering. This is called once at the 
     // beginning, and once every time a user clicks a button on a node.
     // `src_node` is the node that was clicked.
-    _DtdDiagram.prototype.update = function(src_node) {
+    DtdDiagram.prototype.update = function(src_node) {
       var diagram = this;
       diagram.src_node = src_node;
 
-      // Keep a list of all promises
+      // Keep a list of all promises (lest we forget)
       var promises = [];
 
       // Nodes
@@ -340,13 +323,13 @@ if (typeof jQuery !== "undefined" &&
 
       // Transition all nodes to their new positions and full sizes
       diagram.nodes_update.each(function(n) {
-        n.transition_update();
+        promises.push(n.transition_update());
       });
 
       // Transition exiting nodes to the parent's new position, and
       // zero size.
       diagram.nodes_exit.each(function(n) {
-        n.transition_exit();
+        promises.push(n.transition_exit());
       });
 
 
@@ -356,7 +339,7 @@ if (typeof jQuery !== "undefined" &&
       var links = engine.links(nodes);
 
       // Bind the links to the SVG paths
-      var link = diagram.svg_g.selectAll("path.link")
+      var links_selection = diagram.svg_g.selectAll("path.link")
         .data(links, function(d) { return d.target.id; });
 
       // Enter any new links at the parent's previous position.
@@ -368,7 +351,7 @@ if (typeof jQuery !== "undefined" &&
         has_attributes: function() { return false; },
       };
       var diagonal = diagram.diagonal;
-      link.enter().insert("path", "g")
+      links_selection.enter().insert("path", "g")
         .attr("class", "link")
         .attr("d", function(d) {
           return diagonal({source: fake_node, target: fake_node});
@@ -376,37 +359,38 @@ if (typeof jQuery !== "undefined" &&
 
       // Transition links to their new position.
       var duration = diagram.duration;
-      link.transition()
-        .duration(duration)
-        .attr("d", diagonal);
+      promises.push(transition_promise(
+        links_selection.transition()
+          .duration(duration)
+          .attr("d", diagonal)
+      ));
 
       // Transition exiting links to the parent's new positions.
-      link.exit().transition()
-        .duration(duration)
-        .attr("d", function(d) {
-          return diagonal({source: fake_node, target: fake_node});
-        })
-        .remove();
+      promises.push(transition_promise(
+        links_selection.exit().transition()
+          .duration(duration)
+          .attr("d", function(d) {
+            return diagonal({source: fake_node, target: fake_node});
+          })
+          .remove()
+      ));
 
 
       // Canvas / scrollbars
       // -------------------
 
       // Transition scrollbars and drawing size
-      var Canvas = DtdDiagram.Canvas,
-          p = DtdDiagram.Canvas.scroll_resize(diagram);
-      promises.push(p);
+      var Canvas = DtdDiagram.Canvas;
+      promises.push(DtdDiagram.Canvas.scroll_resize(diagram));
       diagram.canvas = diagram.new_canvas.copy();
-
-
 
       Promise.all(promises).then(
         function(msg) {
-          console.log("Transitions complete: " + msg);
+          //console.log("Transitions complete: " + msg);
           Canvas.finish(diagram);
         },
         function(msg) {
-          console.error("Problem during transistions: " + msg);
+          console.error("Problem during transistions: " + msg.stack);
         }
       );
 
@@ -417,7 +401,7 @@ if (typeof jQuery !== "undefined" &&
       });
     };
 
-    return _DtdDiagram;
-  }(jQuery);
+    return DtdDiagram;
+  })();
 
 }

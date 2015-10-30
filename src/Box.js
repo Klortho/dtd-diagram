@@ -3,8 +3,9 @@
 // moving the box, vertically or horizontally.
 
 if (typeof DtdDiagram != "undefined") {
-  DtdDiagram.Box = function() {
-    var Box = function(top, left, bottom, right) {
+  (function() {
+
+    var Box = DtdDiagram.Box = function(top, left, bottom, right) {
       this.top = top;
       this.left = left;
       this.bottom = bottom;
@@ -36,6 +37,5 @@ if (typeof DtdDiagram != "undefined") {
       this.right += d;
       return this;
     }
-    return Box;
-  }();
+  })();
 }

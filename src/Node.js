@@ -1,13 +1,13 @@
 // DtdDiagram.Node class
 
 if (typeof DtdDiagram != "undefined") {
-  DtdDiagram.Node = function() {
+  (function() {
 
     // Construct a Node from a specification within a content section
     // of some element within the DTD. Always call this form of the constructor,
     // and it will use the type registry to call the subclass constructors.
     // The default constructor copies *name*, *type*, and *q*, but not *children*.
-    var Node = function(diagram, spec, elem_parent) {
+    var Node = DtdDiagram.Node = function(diagram, spec, elem_parent) {
       this.diagram = diagram;
       this.elem_parent = elem_parent;
       this.children = [];
@@ -149,10 +149,8 @@ if (typeof DtdDiagram != "undefined") {
               return "node " + d.type;
             },
             filter: "url(#dropshadow)",
-            transform: function(d) { 
-              return "translate(" + src_node.y0 + "," + src_node.x0 + ") " +
-                     "scale(0.001, 0.001)"; 
-            },
+            transform: "translate(" + src_node.y0 + "," + src_node.x0 + ") " +
+                       "scale(0.001, 0.001)",
           })
         ;
 
@@ -172,18 +170,18 @@ if (typeof DtdDiagram != "undefined") {
       return this.width() + this.diagram.diagonal_width;
     };
 
-
-    // Transition *all* nodes to their new positions and full-sized scale
+    // Transition an (updating or entering) node to its new position and 
+    // full-sized scale
     Node.prototype.transition_update = function() {
       var self = this;
-      self.gs.transition()
-        .duration(self.diagram.duration)
-        .attr("transform", 
-          "translate(" + self.y + "," + self.x + ") " +
-          "scale(1, 1)"
-        )
-      ;
-      return null;
+      return DtdDiagram.transition_promise(
+        self.gs.transition()
+          .duration(self.diagram.duration)
+          .attr("transform", 
+            "translate(" + self.y + "," + self.x + ") " +
+            "scale(1, 1)"
+          )
+      );
     };
 
     // Transition exiting nodes to their parents' positions and zero size,
@@ -192,18 +190,16 @@ if (typeof DtdDiagram != "undefined") {
       var self = this
           src_node = self.diagram.src_node;
 
-      self.gs.transition()
-        .duration(self.diagram.duration)
-        .attr("transform", function(d) { 
-          return "translate(" + src_node.y + "," + src_node.x + ") " +
-                 "scale(0.001, 0.001)"; 
-        })
-        .remove();
-
-      return null;
+      return DtdDiagram.transition_promise(
+        self.gs.transition()
+          .duration(self.diagram.duration)
+          .attr("transform", function(d) { 
+            return "translate(" + src_node.y + "," + src_node.x + ") " +
+                   "scale(0.001, 0.001)"; 
+          })
+          .remove()
+      );
     };
-
-    return Node;
-  }();
+  })();
 }
 

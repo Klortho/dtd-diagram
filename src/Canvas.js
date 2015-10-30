@@ -24,21 +24,9 @@ if (typeof DtdDiagram != "undefined") {
     Canvas.scroll_resize = function(diagram) {
       compute_new_canvas(diagram);
 
-      // Get the function that will scroll the canvas
-      var scroll_canvas = scroll_canvas_generator(diagram);
-
-      // If the canvas is getting larger, first change the size abruptly,
-      // then tween the scrollbars
-      // If the canvas is getting smaller, first tween, then shrink. The
-      // shrink has to occur after all the other animations are done, so
-      // we'll set the `do_last` attribute of the returned Promise.'
       return Promise.all([
-        // This promise takes care of scrolling the canvas
-        new Promise(function(resolve, reject) {
-          if (diagram.embiggenning) resize_canvas(diagram);
-          scroll_canvas();
-          resolve();
-        }),
+        // Scroll the canvas
+        scroll_canvas(diagram),
         // At the same time, transition the svg coordinates
         new Promise(function(resolve, reject) {
           diagram.svg_g.transition()
@@ -207,35 +195,37 @@ if (typeof DtdDiagram != "undefined") {
       };
     }
 
-    // This returns a function that returns a Promise that will scroll the 
-    // canvas, both vertically and horizontally at the same time.
-    function scroll_canvas_generator(diagram) {
+    // This returns a Promise that will scroll the 
+    // canvas, both vertically and horizontally at the same time,
+    // if necessary.
+    function scroll_canvas(diagram) {
       var new_viewport = diagram.new_viewport,
           container_dom = diagram.container_dom;
 
+      // If the diagram is getting larger, we resize it first
+      if (diagram.embiggenning) resize_canvas(diagram);
+
       new_scroll_top = new_viewport.top - diagram.new_canvas.top;
       new_scroll_left = new_viewport.left;
-      console.log("new_scroll _top = " + new_scroll_top + 
-                  ", _left = " + new_scroll_left);
+      //console.log("new_scroll _top = " + new_scroll_top + 
+      //            ", _left = " + new_scroll_left);
 
-      return function() {
-        return new Promise(function(resolve, reject) {
-          if (container_dom.scrollTop != new_scroll_top || 
-              container_dom.scrollLeft != new_scroll_left) 
-          {
-            diagram.container_d3.transition()
-              .duration(diagram.duration)
-              .tween("uniquetweenname1", tweener(new_scroll_top, new_scroll_left))
-              .each("end", function() {
-                resolve("done scroll_canvas to " + new_scroll_top + ", " + new_scroll_left);
-              })
-            ;
-          }
-          else {
-            resolve("scroll_canvas: nothing to do");
-          }
-        });
-      };
+      return new Promise(function(resolve, reject) {
+        if (container_dom.scrollTop != new_scroll_top || 
+            container_dom.scrollLeft != new_scroll_left) 
+        {
+          diagram.container_d3.transition()
+            .duration(diagram.duration)
+            .tween("uniquetweenname1", tweener(new_scroll_top, new_scroll_left))
+            .each("end", function() {
+              resolve("done scroll_canvas to " + new_scroll_top + ", " + new_scroll_left);
+            })
+          ;
+        }
+        else {
+          resolve("scroll_canvas: nothing to do");
+        }
+      });
     }
   })();
 }
