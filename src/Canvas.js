@@ -12,9 +12,9 @@
 //   will cause it to be over the cover box.
 
 if (typeof DtdDiagram != "undefined") {
-  DtdDiagram.Canvas = function() {
+  (function() {
 
-    var Canvas = function() {};
+    var Canvas = DtdDiagram.Canvas = {};
 
     // The main function of this module. It takes the diagram as an argument,
     // computes everything, kicks off the transformation.
@@ -30,7 +30,8 @@ if (typeof DtdDiagram != "undefined") {
       // Get the function that will resize the canvas
       var new_canvas = diagram.new_canvas;
       var resize_canvas = 
-        resize_canvas_generator(diagram.svg, new_canvas.width(), new_canvas.height());
+        resize_canvas_generator(diagram.svg, new_canvas.width(), new_canvas.height(),
+          diagram.container_dom);
 
       // If the canvas is getting larger, first change the size abruptly,
       // then tween the scrollbars
@@ -64,13 +65,12 @@ if (typeof DtdDiagram != "undefined") {
       var Box = DtdDiagram.Box,
           root = diagram.root,
           svg = diagram.svg,
-          dropshadow_margin = diagram.dropshadow_margin
+          dropshadow_margin = diagram.dropshadow_margin,
           min_canvas_height = diagram.min_canvas_height,
-          min_canvas_width = diagram.min_canvas_width
+          min_canvas_width = diagram.min_canvas_width,
           src_node = diagram.src_node,
           container_dom = diagram.container_dom,
           canvas = diagram.canvas;
-
 
       // Determine the new extents of the whole drawing -- this is a Box object.
       var new_drawing = diagram.new_drawing = root.tree_extents();
@@ -182,9 +182,9 @@ if (typeof DtdDiagram != "undefined") {
 
     // This returns a function that changes the svg size (abruptly, 
     // no animation).
-    function resize_canvas_generator(svg, w, h) {
+    function resize_canvas_generator(svg, w, h, container_dom) {
       return function() {
-        //console.log("Setting canvas size to w = " + w + ", h = " + h);
+        console.log("Setting canvas size to w = " + w + ", h = " + h);
         svg.style({
           "width": w,
           "height": h,
@@ -230,11 +230,11 @@ if (typeof DtdDiagram != "undefined") {
           if (container_dom.scrollTop != new_scroll_top || 
               container_dom.scrollLeft != new_scroll_left) 
           {
-            container_d3.transition()
-              .duration(duration)
-              .tween("uniquetweenname1", tweener(nst, nsl))
+            diagram.container_d3.transition()
+              .duration(diagram.duration)
+              .tween("uniquetweenname1", tweener(new_scroll_top, new_scroll_left))
               .each("end", function() {
-                resolve("done scroll_canvas to " + nst + ", " + nsl);
+                resolve("done scroll_canvas to " + new_scroll_top + ", " + new_scroll_left);
               })
             ;
           }
@@ -244,8 +244,6 @@ if (typeof DtdDiagram != "undefined") {
         });
       };
     }
-
-    return Canvas;
-  }();
+  })();
 }
 
