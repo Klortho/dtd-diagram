@@ -69,8 +69,8 @@ if (typeof jQuery !== "undefined" &&
       // Some dimensions
       // FIXME: I think a lot of these should not be options. (That doesn't mean
       // they shouldn't be parameterized.)
-      min_canvas_width: 800,
-      min_canvas_height: 500,
+      min_canvas_width: 200,
+      min_canvas_height: 200,
       node_text_margin: 10,     // horizontal margin, on both sides
       node_height: 32,
       node_box_height: 25,
@@ -393,8 +393,8 @@ if (typeof jQuery !== "undefined" &&
       // -------------------
 
       // Transition scrollbars and drawing size
-      var p = DtdDiagram.Canvas.scroll_resize(diagram);
-      var do_last = p.do_last || null;
+      var Canvas = DtdDiagram.Canvas,
+          p = DtdDiagram.Canvas.scroll_resize(diagram);
       promises.push(p);
       diagram.canvas = diagram.new_canvas.copy();
 
@@ -403,7 +403,7 @@ if (typeof jQuery !== "undefined" &&
       Promise.all(promises).then(
         function(msg) {
           console.log("Transitions complete: " + msg);
-          if (do_last) do_last();
+          Canvas.finish(diagram);
         },
         function(msg) {
           console.error("Problem during transistions: " + msg);

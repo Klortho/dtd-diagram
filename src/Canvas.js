@@ -19,7 +19,7 @@ if (typeof DtdDiagram != "undefined") {
     // The main function of this module. It takes the diagram as an argument,
     // computes everything, kicks off the transformation.
     // This returns a Promise.  The "do_last" attribute of the returned object,
-    // if defined, is function that should be called when all other animations are
+    // if defined, is a function that should be called when all other animations are
     // resolved.
     Canvas.scroll_resize = function(diagram) {
       compute_new_canvas(diagram);
@@ -27,21 +27,15 @@ if (typeof DtdDiagram != "undefined") {
       // Get the function that will scroll the canvas
       var scroll_canvas = scroll_canvas_generator(diagram);
 
-      // Get the function that will resize the canvas
-      var new_canvas = diagram.new_canvas;
-      var resize_canvas = 
-        resize_canvas_generator(diagram.svg, new_canvas.width(), new_canvas.height(),
-          diagram.container_dom);
-
       // If the canvas is getting larger, first change the size abruptly,
       // then tween the scrollbars
       // If the canvas is getting smaller, first tween, then shrink. The
       // shrink has to occur after all the other animations are done, so
       // we'll set the `do_last` attribute of the returned Promise.'
-      var ret = Promise.all([
+      return Promise.all([
         // This promise takes care of scrolling the canvas
         new Promise(function(resolve, reject) {
-          if (diagram.embiggenning) resize_canvas();
+          if (diagram.embiggenning) resize_canvas(diagram);
           scroll_canvas();
           resolve();
         }),
@@ -49,14 +43,17 @@ if (typeof DtdDiagram != "undefined") {
         new Promise(function(resolve, reject) {
           diagram.svg_g.transition()
             .duration(diagram.duration)
-            .attr({"transform": "translate(0, " + (-new_canvas.top) + ")"})
+            .attr({"transform": "translate(0, " + (-diagram.new_canvas.top) + ")"})
             .each("end", function() {
               resolve("done transitioning svg coordinates");
             });
         })
       ]);
-      if (!diagram.embiggenning) ret.do_last = resize_canvas;
-      return ret;
+    }
+
+    // If the drawing is getting smaller, we resize the canvas at the end
+    Canvas.finish = function(diagram) {
+      if (!diagram.embiggenning) resize_canvas(diagram);
     }
 
     // Compute the new parameters for the new canvas and viewport
@@ -64,12 +61,10 @@ if (typeof DtdDiagram != "undefined") {
       // Some local-variable shortcuts
       var Box = DtdDiagram.Box,
           root = diagram.root,
-          svg = diagram.svg,
           dropshadow_margin = diagram.dropshadow_margin,
           min_canvas_height = diagram.min_canvas_height,
           min_canvas_width = diagram.min_canvas_width,
           src_node = diagram.src_node,
-          container_dom = diagram.container_dom,
           canvas = diagram.canvas;
 
       // Determine the new extents of the whole drawing -- this is a Box object.
@@ -131,9 +126,9 @@ if (typeof DtdDiagram != "undefined") {
 
       // Where is the viewport now? We can't rely on the old value, because the
       // user might have been mucking with the scroll bars.
-      var scroll_top = container_dom.scrollTop;
-      var scroll_left = container_dom.scrollLeft;
-      //console.log("scroll _top = " + scroll_top + " _left = " + scroll_left);
+      var container_dom = diagram.container_dom,
+          scroll_top = container_dom.scrollTop,
+          scroll_left = container_dom.scrollLeft;
       var viewport = diagram.viewport = new Box(
           scroll_top + canvas.top,
           scroll_left,
@@ -180,22 +175,21 @@ if (typeof DtdDiagram != "undefined") {
         new_canvas.height() > canvas.height(); 
     };
 
-    // This returns a function that changes the svg size (abruptly, 
-    // no animation).
-    function resize_canvas_generator(svg, w, h, container_dom) {
-      return function() {
-        console.log("Setting canvas size to w = " + w + ", h = " + h);
-        svg.style({
-          "width": w,
-          "height": h,
-        });
-        // The following lines are an ugly hack that seems to be necessary
-        // for webkit browsers, to get them to re-compute the scroll bars
-        // for the container div, once the child has resized.
-        container_dom.style.display = "none";
-        //console.log(container_dom.offsetHeight);
-        container_dom.style.display = "block";
-      };
+    // Resize the canvas
+    function resize_canvas(diagram) {
+      var container_dom = diagram.container_dom,
+          new_canvas = diagram.new_canvas,
+          w = new_canvas.width(),
+          h = new_canvas.height();
+      diagram.svg.style({
+        "width": w,
+        "height": h,
+      });
+      // The following lines are an ugly hack that seems to be necessary
+      // for webkit browsers, to get them to re-compute the scroll bars
+      // for the container div, once the child has resized.
+      container_dom.style.display = "none";
+      container_dom.style.display = "block";
     }
 
     // Here's a "tweener" function, for adjusting the scrollTop and scrollLeft
@@ -217,13 +211,12 @@ if (typeof DtdDiagram != "undefined") {
     // canvas, both vertically and horizontally at the same time.
     function scroll_canvas_generator(diagram) {
       var new_viewport = diagram.new_viewport,
-          new_canvas = diagram.new_canvas,
           container_dom = diagram.container_dom;
 
-      new_scroll_top = new_viewport.top - new_canvas.top;
+      new_scroll_top = new_viewport.top - diagram.new_canvas.top;
       new_scroll_left = new_viewport.left;
-      //console.log("new_scroll _top = " + new_scroll_top + 
-      //            ", _left = " + new_scroll_left);
+      console.log("new_scroll _top = " + new_scroll_top + 
+                  ", _left = " + new_scroll_left);
 
       return function() {
         return new Promise(function(resolve, reject) {
