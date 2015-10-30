@@ -19,13 +19,16 @@ if (typeof DtdDiagram != "undefined") {
     };
 
     // Here's a registry of subclass constructors, and the Node factory
-    Node.subclasses = {};
+    var subclasses = {};
+    Node.register = function(type, cls) {
+      subclasses[type] = cls;
+    }
     Node.factory = function(diagram, spec, elem_parent) {
       if (!spec.type) {
         console.error("Invalid DTD, every node specifier must have a type");
         return null;
       }
-      var subclass = Node.subclasses[spec.type];
+      var subclass = subclasses[spec.type];
       if (!subclass) {
         console.error("Invalid DTD, node type not recognized: " + spec.type);
         return null;

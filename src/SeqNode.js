@@ -26,7 +26,7 @@ if (typeof DtdDiagram != "undefined") {
     };
 
     // Inherit from Node
-    Node.subclasses["seq"] = SeqNode;
+    Node.register("seq", SeqNode);
     SeqNode.prototype = Object.create(Node.prototype);
     SeqNode.prototype.constructor = SeqNode;
 

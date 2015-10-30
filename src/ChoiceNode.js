@@ -20,7 +20,7 @@ if (typeof DtdDiagram != "undefined") {
     };
 
     // Inherit from Node
-    Node.subclasses["choice"] = ChoiceNode;
+    Node.register("choice", ChoiceNode);
     ChoiceNode.prototype = Object.create(Node.prototype);
     ChoiceNode.prototype.constructor = ChoiceNode;
 

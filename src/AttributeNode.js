@@ -11,7 +11,7 @@ if (typeof DtdDiagram != "undefined") {
     };
 
     // Inherit from Node
-    Node.subclasses["attribute"] = AttributeNode;
+    Node.register("attribute", AttributeNode);
     AttributeNode.prototype = Object.create(Node.prototype);
     AttributeNode.prototype.constructor = AttributeNode;
 

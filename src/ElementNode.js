@@ -31,7 +31,7 @@ if (typeof DtdDiagram != "undefined") {
     };
 
     // Inherit from Node
-    Node.subclasses["element"] = ElementNode;
+    Node.register("element", ElementNode);
     ElementNode.prototype = Object.create(Node.prototype);
     ElementNode.prototype.constructor = ElementNode;
 

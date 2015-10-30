@@ -11,7 +11,7 @@ if (typeof DtdDiagram != "undefined") {
     };
 
     // Inherit from Node
-    Node.subclasses["other"] = OtherNode;
+    Node.register("other", OtherNode);
     OtherNode.prototype = Object.create(Node.prototype);
     OtherNode.prototype.constructor = OtherNode;
 
@@ -22,7 +22,6 @@ if (typeof DtdDiagram != "undefined") {
       {
         width: function() {
           var self = this;
-
           if (!("_width" in self)) {
             self._width = 
               self.diagram.node_text_margin * 2 + 
@@ -52,9 +51,6 @@ if (typeof DtdDiagram != "undefined") {
         },
       }
     );
-
-
-
   })();
 }
 
