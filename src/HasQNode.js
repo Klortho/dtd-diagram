@@ -36,6 +36,9 @@ if (typeof DtdDiagram != "undefined") {
 
     // These methods are mixed in with the inheriting class' prototype
     DtdDiagram.HasQNode = {
+      initialize: function() {
+        if (!("q" in this)) this.q = null;
+      },
 
       has_q: function() {
         return !!this.q;

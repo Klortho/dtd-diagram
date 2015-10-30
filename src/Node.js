@@ -7,16 +7,7 @@ if (typeof DtdDiagram != "undefined") {
     // of some element within the DTD. Always call this form of the constructor,
     // and it will use the type registry to call the subclass constructors.
     // The default constructor copies *name*, *type*, and *q*, but not *children*.
-    var Node = DtdDiagram.Node = function(diagram, spec, elem_parent) {
-      this.diagram = diagram;
-      this.elem_parent = elem_parent;
-      this.children = [];
-      for (var k in spec) {
-        if (k != "children") {
-          this[k] = spec[k];
-        }
-      }
-    };
+    var Node = DtdDiagram.Node = function() {};
 
     // Here's a registry of subclass constructors, and the Node factory
     var subclasses = {};
@@ -33,12 +24,27 @@ if (typeof DtdDiagram != "undefined") {
         console.error("Invalid DTD, node type not recognized: " + spec.type);
         return null;
       }
-      return new subclass(diagram, spec, elem_parent);
+
+      var n = new subclass();
+      n.diagram = diagram;
+      n.spec = spec;
+      n.elem_parent = elem_parent;
+      n.children = [];
+      for (var k in spec) {
+        if (k != "children") {
+          n[k] = spec[k];
+        }
+      }
+
+      n.initialize();
+      return n;
     };
 
 
     ////////////////////////////////////////////////
     // Some default object methods
+
+    Node.prototype.initialize = function() {}
 
     Node.prototype.has_content = function() {
       return false;

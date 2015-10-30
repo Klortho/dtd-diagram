@@ -6,9 +6,7 @@ if (typeof DtdDiagram != "undefined") {
         other_box_height = 18;
 
     // Constructor
-    var OtherNode = DtdDiagram.OtherNode = function(diagram, spec, elem_parent) {
-      Node.call(this, diagram, spec, elem_parent);
-    };
+    var OtherNode = DtdDiagram.OtherNode = function() {};
 
     // Inherit from Node
     Node.register("other", OtherNode);

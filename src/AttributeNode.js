@@ -6,9 +6,7 @@ if (typeof DtdDiagram != "undefined") {
         attribute_box_height = 21;
 
     // Constructor
-    var AttributeNode = DtdDiagram.AttributeNode = function(diagram, spec, elem_parent) {
-      Node.call(this, diagram, spec, elem_parent);
-    };
+    var AttributeNode = DtdDiagram.AttributeNode = function() {};
 
     // Inherit from Node
     Node.register("attribute", AttributeNode);

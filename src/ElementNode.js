@@ -2,33 +2,13 @@
 
 if (typeof DtdDiagram != "undefined") {
   (function() {
-    var Node = DtdDiagram.Node;
+    var Node = DtdDiagram.Node,
+        HasLabelNode = DtdDiagram.HasLabelNode,
+        HasQNode = DtdDiagram.HasQNode;
 
 
     // Constructor.
-    var ElementNode = DtdDiagram.ElementNode = function(diagram, spec, elem_parent) {
-      var self = this;
-      Node.call(self, diagram, spec, elem_parent);
-      if (!("q" in self)) self.q = null;
-
-      self.content = null;
-      self.content_expanded = false;
-      self.attributes_expanded = false;
-
-      // Initialize attributes now
-      var decl = self.declaration = diagram.dtd_json.elements[self.name];
-      if (typeof decl != "object") {
-        console.error("Can't find a declaration for element " + self.name +
-          " in the DTD.");
-        decl = self.declaration = null;
-      }
-      var attrs = self.attributes = [];
-      if (decl && decl.attributes) {
-        decl.attributes.forEach(function(attr_spec) {
-          attrs.push(Node.factory(diagram, attr_spec, self));
-        });
-      }
-    };
+    var ElementNode = DtdDiagram.ElementNode = function() {};
 
     // Inherit from Node
     Node.register("element", ElementNode);
@@ -52,9 +32,33 @@ if (typeof DtdDiagram != "undefined") {
     // Define the object methods
     DtdDiagram.extend(
       ElementNode.prototype, 
-      DtdDiagram.HasLabelNode,
-      DtdDiagram.HasQNode,
+      HasLabelNode,
+      HasQNode,
       {
+        initialize: function() {
+          var self = this,
+              diagram = self.diagram;
+          HasQNode.initialize.call(self);
+
+          self.content = null;
+          self.content_expanded = false;
+          self.attributes_expanded = false;
+
+          // Initialize attributes now
+          var decl = self.declaration = diagram.dtd_json.elements[self.name];
+          if (typeof decl != "object") {
+            console.error("Can't find a declaration for element " + self.name +
+              " in the DTD.");
+            decl = self.declaration = null;
+          }
+          var attrs = self.attributes = [];
+          if (decl && decl.attributes) {
+            decl.attributes.forEach(function(attr_spec) {
+              attrs.push(Node.factory(diagram, attr_spec, self));
+            });
+          }
+        },
+
         // Called the first time we need to discover the content children
         // for an ElementNode.
         init_content: function() {
