@@ -24,7 +24,7 @@ if (typeof DtdDiagram != "undefined") {
     ChoiceNode.prototype = Object.create(Node.prototype);
     ChoiceNode.prototype.constructor = ChoiceNode;
 
-    jQuery.extend(
+    DtdDiagram.extend(
       ChoiceNode.prototype, 
       DtdDiagram.HasQNode,
       {

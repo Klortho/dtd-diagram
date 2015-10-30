@@ -1,7 +1,6 @@
 // Define a global class DtdDiagram
 
-if (typeof jQuery !== "undefined" &&
-    typeof d3 !== "undefined")
+if (typeof d3 !== "undefined")
 {
   (function() {
 
@@ -32,7 +31,7 @@ if (typeof jQuery !== "undefined" &&
     // It simplifies making sure everything is syncronized.
     var document_ready = DtdDiagram.document_ready =
       new Promise(function(resolve) {
-        jQuery(document).ready(resolve);
+        document.addEventListener("DOMContentLoaded", resolve);
       });
 
     // By default, if the user hasn't instantiated an object, then
@@ -92,30 +91,27 @@ if (typeof jQuery !== "undefined" &&
       diagram.last_id = 0;
 
       // User can pass in a specifier for the div either as an
-      // id string, a DOM Element, or a jQuery object.
+      // id string or a DOM Element
       var opts = diagram.opts,
-          container = opts.container || 'dtd-diagram',
-          container_jq = diagram.container_jq =
-            typeof container == "string" ? jQuery('#' + container) :
-            container instanceof Element ? jQuery(container) :
-            container;
+          container = opts.container || 'dtd-diagram';
+      var container_dom = diagram.container_dom =
+        typeof container == "string" ? 
+          document.getElementById(container) : container;
 
-      // If the expected div is not found, or if the selection somehow
-      // matches more than one, then get out now.
-      if (container_jq.length != 1) {
+      if (!container_dom) {
         console.error("Something wrong with the specifier for the diagram's " +
           "DOM element");
         return;
       };
 
       // A couple of other ways of referencing the container.
-      var container_dom = diagram.container_dom = container_jq[0];
       var container_d3 = diagram.container_d3 = d3.select(container_dom);
 
       // Get the actual options to use, based on the precedence rules. This sets
       // the properties right on the diagram object itself.
-      var tag_options = container_jq.data("options") || {};
-      jQuery.extend(true, diagram, DtdDiagram.default_options, tag_options, opts);
+      var tag_opts_json = container_dom.getAttribute("data-options");
+      var tag_options = tag_opts_json ? JSON.parse(tag_opts_json) : {};
+      DtdDiagram.extend(diagram, DtdDiagram.default_options, tag_options, opts);
 
       // scrollbar margin - if this is big enough, it ensures we'll never get
       // spurious scrollbars when the drawing is at the minimum size. But if it's
@@ -401,7 +397,18 @@ if (typeof jQuery !== "undefined" &&
       });
     };
 
-    return DtdDiagram;
+    // Simple extend utility function
+    DtdDiagram.extend = function() {
+      var target = arguments[0];
+      for (var i = 1; i < arguments.length; ++i) {
+        var obj = arguments[i];
+        for (var key in obj)
+          if (obj.hasOwnProperty(key)) target[key] = obj[key];
+      }
+      return target;
+    };
+
+
   })();
 
 }

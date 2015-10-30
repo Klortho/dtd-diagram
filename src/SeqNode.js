@@ -31,7 +31,7 @@ if (typeof DtdDiagram != "undefined") {
     SeqNode.prototype.constructor = SeqNode;
 
 
-    jQuery.extend(
+    DtdDiagram.extend(
       SeqNode.prototype, 
       DtdDiagram.HasQNode,
       {

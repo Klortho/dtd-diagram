@@ -16,7 +16,7 @@ if (typeof DtdDiagram != "undefined") {
     OtherNode.prototype.constructor = OtherNode;
 
     // Define the object methods
-    jQuery.extend(
+    DtdDiagram.extend(
       OtherNode.prototype, 
       DtdDiagram.HasLabelNode,
       {

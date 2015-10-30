@@ -54,6 +54,11 @@ if (typeof DtdDiagram != "undefined") {
     };
 
     // Get all the element descendants of this node
+    function merge_array(target, source) {
+      for (var i = 0; i < source.length; ++i) 
+        target.push(source[i]);
+    }
+
     Node.prototype.elem_descendants = function() {
       var d = [];
       this.get_content().forEach(function(k) {
@@ -61,7 +66,7 @@ if (typeof DtdDiagram != "undefined") {
           d.push(k);
         }
         else if (k.type == "choice" || k.type == "seq") {
-          jQuery.merge(d, k.elem_descendants());
+          merge_array(d, k.elem_descendants());
         }
       });
       return d;

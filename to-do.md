@@ -10,8 +10,10 @@
 * Any other options cleanup? Things that shouldn't be options, that can be 
   moved into the class files?
 * Look for FIXMEs
-* Get rid of jQuery
+* [c] Get rid of jQuery
 * Fix links to documentation
+* Get it to work well with JATS -- use that as the demo
+* Test the various ways it can be kicked off - make sure there are no timing issues.
 * productize it 
     - build script to combine and minimize
 

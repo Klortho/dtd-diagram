@@ -50,7 +50,7 @@ if (typeof DtdDiagram != "undefined") {
 
 
     // Define the object methods
-    jQuery.extend(
+    DtdDiagram.extend(
       ElementNode.prototype, 
       DtdDiagram.HasLabelNode,
       DtdDiagram.HasQNode,

@@ -17,7 +17,7 @@ if (typeof DtdDiagram != "undefined") {
 
 
     // Define the object methods
-    jQuery.extend(
+    DtdDiagram.extend(
       AttributeNode.prototype, 
       DtdDiagram.HasLabelNode,
       {
