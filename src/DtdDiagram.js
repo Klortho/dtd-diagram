@@ -61,16 +61,30 @@ if (typeof d3 !== "undefined")
       root_element: null,
 
       // Base URL to use to create links to more documentation.
-      // FIXME: turn this into a URL template, that could be different for attributes 
-      // and elements
-      tag_doc_url: "doc/#p=",
+      tag_doc_base: "doc/#p=",
+
+      // Function to compute the links to documentation. If this returns 
+      // null, no link will be generated (by default, that's the case
+      // for `other` nodes and mml: elements other than mml:math)
+      tag_doc_url: function(node) {
+        var t = node.type,
+            n = node.name;
+
+        if ( t == "other" ||
+             ( t == "element" && n.startsWith("mml:") &&
+               n != "mml:math") ) return null;
+
+        return node.diagram.tag_doc_base +
+          (t == "attribute" ? "attr-" : "elem-") +
+          n.replace(':', '_');
+      },
 
       // Minimum canvas dimensions
-      min_canvas_width: 600,
-      min_canvas_height: 300,
+      min_canvas_width: 800,
+      min_canvas_height: 500,
 
       // Ratio of the separation between groups to the separation between sibling nodes
-      group_separation: 1,
+      group_separation: 1.4,
 
       // Duration of the animation, in milliseconds.
       duration: 500,

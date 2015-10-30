@@ -31,9 +31,9 @@ To configure this to work with one of the JATS DTDs, you could do this:
 
 ```
 cd examples
-dtdanalyzer --xslt ../daz2json.xsl \
-  http://jats.nlm.nih.gov/archiving/1.0/JATS-archivearticle1.dtd \
-  > JATS-archivearticle1.json
+dtdanalyzer --roots article --xslt ../daz2json.xsl \
+  http://jats.nlm.nih.gov/publishing/1.1d3/JATS-journalpublishing1.dtd \
+  > JATS-journalpublishing1.json
 ```
 
 Then, in the HTML file that invokes the diagram, set options to 

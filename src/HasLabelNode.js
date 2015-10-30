@@ -12,20 +12,25 @@ if (typeof DtdDiagram != "undefined") {
         var self = this,
             diagram = self.diagram;
 
-        // Draw the text. 
-        self.gs.append("a")
-          // FIXME: need to use URL templates
-          .attr("xlink:href", diagram.tag_doc_url + "elem-" + self.name)
-          .append("text")
-            .attr({
-              id: self.id,
-              "class": "label",
-              x: Node.node_text_margin + self.q_width(),
-              y: 0,
-              "text-anchor": "baseline",
-              "alignment-baseline": "middle",
-            })
-            .text(self.name)
+        var doc_url = diagram.tag_doc_url(self);
+
+        // Draw the text. If it's an attribute or element node, make
+        // it a hyperlink
+        var container = self.gs;
+        if (doc_url)
+          container = self.gs.append("a")
+            .attr("xlink:href", doc_url);
+
+        container.append("text")
+          .attr({
+            id: self.id,
+            "class": "label",
+            x: Node.node_text_margin + self.q_width(),
+            y: 0,
+            "text-anchor": "baseline",
+            "alignment-baseline": "middle",
+          })
+          .text(self.name)
         ;
       },
 
