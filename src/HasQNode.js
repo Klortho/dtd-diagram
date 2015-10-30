@@ -6,7 +6,8 @@ if (typeof DtdDiagram != "undefined") {
         path = Node.path,
         arc = Node.arc,
         la = Node.la,
-        arca = Node.arca;
+        arca = Node.arca,
+        q_width = 12;
 
     // plus sign
     var s = 4,
@@ -44,12 +45,9 @@ if (typeof DtdDiagram != "undefined") {
         return !!this.q;
       },
 
-      // Default to `q` label anchored in the middle
-      q_anchor: "middle",
-
-      // Width of the `q` label, if there is one
+      // Width of the `q` label, if there is one, or zero, if not
       q_width: function() {
-        return this.has_q() ? this.diagram.q_width : 0;
+        return this.has_q() ? q_width : 0;
       },
 
       // Draw the text label for `q`

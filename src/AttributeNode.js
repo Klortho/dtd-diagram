@@ -17,17 +17,6 @@ if (typeof DtdDiagram != "undefined") {
       Node.methods,
       DtdDiagram.HasLabelNode,
       {
-        width: function() {
-          var self = this;
-
-          if (!("_width" in self)) {
-            self._width = 
-              self.diagram.node_text_margin * 2 + 
-              self.label_width();
-          }
-          return self._width;
-        },
-
         draw_enter: function() {
           var self = this;
 

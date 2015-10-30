@@ -14,7 +14,12 @@
 if (typeof DtdDiagram != "undefined") {
   (function() {
 
-    var Canvas = DtdDiagram.Canvas = {};
+    var Canvas = DtdDiagram.Canvas = {
+      // Constants
+      dropshadow_margin: 5,
+    };
+
+
 
     // The main function of this module. It takes the diagram as an argument,
     // computes everything, kicks off the transformation.
@@ -49,7 +54,6 @@ if (typeof DtdDiagram != "undefined") {
       // Some local-variable shortcuts
       var Box = DtdDiagram.Box,
           root = diagram.root,
-          dropshadow_margin = diagram.dropshadow_margin,
           min_canvas_height = diagram.min_canvas_height,
           min_canvas_width = diagram.min_canvas_width,
           src_node = diagram.src_node,
@@ -57,7 +61,7 @@ if (typeof DtdDiagram != "undefined") {
 
       // Determine the new extents of the whole drawing -- this is a Box object.
       var new_drawing = diagram.new_drawing = root.tree_extents();
-      new_drawing.bottom += dropshadow_margin;
+      new_drawing.bottom += Canvas.dropshadow_margin;
       //new_drawing.log("new_drawing");
 
       // From that, determine the new dimensions of the svg canvas

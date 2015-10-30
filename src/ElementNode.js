@@ -4,7 +4,8 @@ if (typeof DtdDiagram != "undefined") {
   (function() {
     var Node = DtdDiagram.Node,
         HasLabelNode = DtdDiagram.HasLabelNode,
-        HasQNode = DtdDiagram.HasQNode;
+        HasQNode = DtdDiagram.HasQNode,
+        button_width = 15;
 
     // Constructor.
     var ElementNode = DtdDiagram.ElementNode = function() {};
@@ -147,29 +148,18 @@ if (typeof DtdDiagram != "undefined") {
         // Drawing
         // -------
 
-        // anchor for the `q` label, overrides default
-        q_anchor: "start",
-
-        width: function() {
-          var self = this,
-              diagram = self.diagram;
-
-          if (!("_width" in self)) {
-            self._width = 
-              diagram.node_text_margin * 2 + 
-              self.q_width() +
-              (self.has_content() || self.has_attributes() 
-                ? diagram.button_width : 0) +
-              self.label_width();
-          }
-          return self._width;
+        compute_width: function() {
+          return this.q_width() +
+              (this.has_content() || this.has_attributes() 
+                ? button_width : 0) +
+              this.label_width();
         },
 
         // Draw the initial state of the node box, label, etc.
         draw_enter: function() {
           var self = this,
               diagram = self.diagram,
-              node_box_height = diagram.node_box_height;
+              node_box_height = Node.node_box_height;
 
           // Draw the box.
           self.gs.append("rect")
@@ -185,7 +175,7 @@ if (typeof DtdDiagram != "undefined") {
           ;
 
           self.draw_enter_label();
-          self.draw_enter_q(diagram.node_text_margin);
+          self.draw_enter_q(Node.node_text_margin);
 
           // content expand button
           if (self.has_content()) {
@@ -208,8 +198,7 @@ if (typeof DtdDiagram != "undefined") {
           var self = this,
               diagram = self.diagram,
               gs = self.gs,
-              button_width = diagram.button_width,
-              node_box_height = diagram.node_box_height,
+              node_box_height = Node.node_box_height,
               width = self.width();
 
           var button_g = gs.append("g")

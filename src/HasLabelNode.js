@@ -2,6 +2,7 @@
 
 if (typeof DtdDiagram != "undefined") {
   (function() {
+    var Node = DtdDiagram.Node;
 
     // These methods are mixed in with the inheriting class' prototype
     DtdDiagram.HasLabelNode = {
@@ -19,8 +20,7 @@ if (typeof DtdDiagram != "undefined") {
             .attr({
               id: self.id,
               "class": "label",
-              x: diagram.node_text_margin +
-                 (self.q ? diagram.q_width : 0),
+              x: Node.node_text_margin + self.q_width(),
               y: 0,
               "text-anchor": "baseline",
               "alignment-baseline": "middle",
@@ -32,6 +32,7 @@ if (typeof DtdDiagram != "undefined") {
       // Get the displayed width for a label string. This generates a temporary
       // SVG text node, measures its width, and then destroys it. It caches
       // the results in diagram.label_width_cache.
+      // Return value includes 2*node_text_margin.
       label_width: function() {
         var self = this,
             diagram = self.diagram,
@@ -53,11 +54,15 @@ if (typeof DtdDiagram != "undefined") {
               .text(label)
               .style("fill-opacity", 0)
           ;
-          cache[label] = 
+          cache[label] = 2 * Node.node_text_margin +
             document.getElementById("temporary-label").getBBox()["width"];
           text.remove();
         }
         return cache[label];
+      },
+
+      compute_width: function() {
+          return this.label_width();
       },
     };
   })();

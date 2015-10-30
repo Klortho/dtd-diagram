@@ -41,6 +41,9 @@ if (typeof d3 !== "undefined")
         new DtdDiagram();
     });
 
+    // Some constants
+    var scrollbar_margin = 20;
+
     // Default values for all the options. 
     // There are various ways to set the options; in order of 
     // higher-to-lower precedence:
@@ -49,6 +52,7 @@ if (typeof d3 !== "undefined")
     //   element. Make sure they are in strictly valid JSON format.
     // - Use the defaults
     DtdDiagram.default_options = {
+
       // DTD JSON file
       dtd_json_file: "dtd.json",
 
@@ -57,22 +61,13 @@ if (typeof d3 !== "undefined")
       root_element: null,
 
       // Base URL to use to create links to more documentation.
-      // FIXME: turn this into a URL template.
+      // FIXME: turn this into a URL template, that could be different for attributes 
+      // and elements
       tag_doc_url: "doc/#p=",
 
-      // Some dimensions
-      // FIXME: I think a lot of these should not be options. (That doesn't mean
-      // they shouldn't be parameterized.)
+      // Minimum canvas dimensions
       min_canvas_width: 600,
       min_canvas_height: 300,
-      node_text_margin: 10,     // horizontal margin, on both sides
-      node_height: 32,
-      node_box_height: 25,
-      q_width: 12,
-      button_width: 15,
-      diagonal_width: 20,
-      scrollbar_margin: 20,
-      dropshadow_margin: 5,
 
       // Ratio of the separation between groups to the separation between sibling nodes
       group_separation: 1,
@@ -117,8 +112,7 @@ if (typeof d3 !== "undefined")
       // spurious scrollbars when the drawing is at the minimum size. But if it's
       // too big, it messes up the centering. 22 gives plenty of room
       var min_canvas_width = diagram.min_canvas_width,
-          min_canvas_height = diagram.min_canvas_height,
-          scrollbar_margin = diagram.scrollbar_margin;
+          min_canvas_height = diagram.min_canvas_height;
       container_d3.style({
         'width': (min_canvas_width + scrollbar_margin) + 'px',
         'height': (min_canvas_height + scrollbar_margin) + 'px'
@@ -213,10 +207,9 @@ if (typeof d3 !== "undefined")
         .attr({"transform": "translate(0, " + (-canvas.top) + ")"});
 
       // Create the flextree layout engine and set options
-      var node_height = diagram.node_height;
       var engine = diagram.engine = d3.layout.flextree()
         .nodeSize(function(d) {
-          return [node_height, d.y_size()];
+          return [DtdDiagram.Node.node_height, d.y_size()];
         })
         .separation(function(a, b) {
           var sep = a.elem_parent == b.elem_parent 

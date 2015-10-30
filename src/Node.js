@@ -2,7 +2,14 @@
 
 if (typeof DtdDiagram != "undefined") {
   (function() {
-    var Node = DtdDiagram.Node = {};
+
+    var Node = DtdDiagram.Node = {
+      // Some constants used in drawing
+      node_height: 32,
+      node_box_height: 25,
+      diagonal_width: 20,
+      node_text_margin: 10,
+    };
 
     // Registry of subclass constructors
     var subclasses = {};
@@ -142,6 +149,10 @@ if (typeof DtdDiagram != "undefined") {
         return false;
       },
 
+      q_width: function() {
+        return 0;
+      },
+
       get_content: function() {
         return [];
       },
@@ -167,9 +178,9 @@ if (typeof DtdDiagram != "undefined") {
       extents: function() {
         var diagram = this.diagram;
         return new DtdDiagram.Box(
-          this.x - diagram.node_box_height / 2,
+          this.x - Node.node_box_height / 2,
           this.y,
-          this.x + diagram.node_box_height / 2,
+          this.x + Node.node_box_height / 2,
           this.y + this.width()
         );
       },
@@ -187,7 +198,16 @@ if (typeof DtdDiagram != "undefined") {
       // it's total width (the d3.flextree layout uses x for vertical and y for
       // horizontal).
       y_size: function() {
-        return this.width() + this.diagram.diagonal_width;
+        return this.width() + Node.diagonal_width;
+      },
+
+      // Cache node widths. The actual values are computed in subclass methods
+      // compute_width().
+      width: function() {
+        if (!("_width" in this)) {
+          this._width = this.compute_width();
+        }
+        return this._width;
       },
 
       // Transition an (updating or entering) node to its new position and 
