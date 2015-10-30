@@ -1,7 +1,7 @@
 <!-- element content -->
 <!ELEMENT doc (front, body, back?)>
 <!ELEMENT body (head, (sec | note)+, (app,sec,note)*)+>
-<!ELEMENT head (meta|note)*>
+<!ELEMENT head (meta?|note)*>
 <!ELEMENT back (sec|note)?>
 
 <!-- empty -->

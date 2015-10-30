@@ -2,7 +2,6 @@ body {
   color: black;
   background-color: white;
 }
-
 #dtd-diagram, .dtd-diagram {
   display: block;
   overflow: auto;
@@ -10,16 +9,10 @@ body {
   resize: both;
 }
 svg {
-  /* for debugging:
-  background: #EEE;  */
   font: 12px sans-serif;
 }
-
 .node {
   stroke-width: 1.5px;
-}
-.box, .choice, .seq {
-  fill: white;
 }
 
 /* element nodes */
@@ -28,16 +21,6 @@ svg {
 }
 .element .box, .element .q {
   stroke: hsl(207, 43%, 49%);
-}
-
-rect.button {
-  cursor: pointer;
-  fill: none;
-  pointer-events: all;
-  mouse-events: all;
-}
-text.button {
-  font-size: 80%;
 }
 .element text {
   fill: hsl(207, 43%, 49%);
@@ -74,15 +57,10 @@ text.button {
   fill: hsl(0, 0%, 49%);
 }
 
-
 path.q {
   stroke-width: 1.5;
   stroke-linecap: round;
   fill: none;
-}
-
-.element text.q {
-  font: 12pt "courier";
 }
 
 .link {
@@ -93,34 +71,24 @@ path.q {
 
 /* buttons */
 
-rect.ButtonBase { 
-  fill: hsl(207, 90%, 80%); 
-}
-g.button:hover {
-  cursor: pointer; 
-}
-g.button:hover rect.ButtonGlow {
-  opacity: 0; 
-}
-.button-text {
-  text-anchor: middle;
-  alignment-baseline: central;
-  stroke: none;
-  font-family: "DejaVu Sans";
-}
-.button-text.fore {
-  fill: white;
-}
-.button-text.shadow {
-  fill: black;
-}
-path.reflection {
-  fill: url(#reflection-gradient);
-}
-
 .button rect {
-  stroke: none;
+  cursor: pointer;
+  stroke: black;
+  stroke-width: 0.1;
+  pointer-events: all;
+  mouse-events: all;
 }
-.ButtonGlow {
-  fill: url(#button-gradient);
+.button rect.collapsed:hover,
+.button rect.expanded:hover
+{
+  fill: hsl(207, 90%, 90%);
+}
+.button rect.collapsed {
+  fill: url(#collapsed-fill);
+}
+.button rect.expanded {
+  fill: url(#expanded-fill);
+}
+.button path {
+  fill: hsl(207, 43%, 49%);
 }

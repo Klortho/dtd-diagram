@@ -44,7 +44,6 @@ if (typeof jQuery !== "undefined" &&
         new DtdDiagram();
     });
 
-
     // Default values for all the options. 
     // There are various ways to set the options; in order of 
     // higher-to-lower precedence:
@@ -116,89 +115,78 @@ if (typeof jQuery !== "undefined" &&
       // A couple of other ways of referencing the container.
       var container_dom = diagram.container_dom = container_jq[0];
       var container_d3 = diagram.container_d3 = d3.select(container_dom);
-
       var svg = diagram.svg = container_d3.append("svg");
-      var defs = svg.append("defs");
-      var filter = defs.append("filter")
-        .attr({
-          "id": "dropshadow",
-          height: "130%",
-        });
-      filter.append("feGaussianBlur")
-        .attr({
-          in: "SourceAlpha",
-          stdDeviation: 3,
-        });
-      filter.append("feOffset")
-        .attr({
-          dx: 2,
-          dy: 2,
-          result: "offsetblur",
-        });
-      filter.append("feComponentTransfer")
-        .append("feFuncA")
-          .attr({
-            type: "linear",
-            slope: 0.5,
-          });
-      var feMerge = filter.append("feMerge");
-      feMerge.append("feMergeNode");
-      feMerge.append("feMergeNode")
-        .attr({
-          in: "SourceGraphic",
-        });
 
-      var gradient;
-      gradient = defs.append("linearGradient")
-        .attr("id", "button-gradient-stops");
-      gradient.append("stop")
-        .attr("offset", 0)
-        .style({
-          "stop-color": "black",
-          "stop-opacity": 0,
-        });
-      gradient.append("stop")
-        .attr("offset", 1)
-        .style({
-          "stop-color": "black",
-          "stop-opacity": 0.5,
-        });
-      defs.append("radialGradient")
-        .attr({
-          id: "button-gradient",
-          cx: 120,
-          cy: 170,
-          r: 100,
-          fx: 120,
-          fy: 170,
-          "xlink:href": "#button-gradient-stops",
-          gradientUnits: "userSpaceOnUse",
-          gradientTransform: "matrix(0,-0.72727275,2,0,-220,170)",
-        });
-      gradient = defs.append("linearGradient")
-        .attr("id", "reflection-gradient-stops");
-      gradient.append("stop")
-        .attr("offset", 0)
-        .style({
-          "stop-color": "white",
-          "stop-opacity": 1,
-        });
-      gradient.append("stop")
-        .attr("offset", 1)
-        .style({
-          "stop-color": "white",
-          "stop-opacity": 0,
-        });
-      defs.append("linearGradient")
-        .attr({
-          id: "reflection-gradient",
-          x1: 120,
-          y1: -10,
-          x2: 120,
-          y2: 35,
-          "xlink:href": "#reflection-gradient-stops",
-          gradientUnits: "userSpaceOnUse",
-        });
+
+      var defs = svg.append("defs");
+      defs.append('defs').html(
+        '<filter id="dropshadow" height="130%">' +
+          '<feGaussianBlur in="SourceAlpha" stdDeviation="3"/>' +
+          '<feOffset dx="2" dy="2" result="offsetblur"/>' +
+          '<feComponentTransfer>' +
+          '  <feFuncA type="linear" slope=".5"/>' +
+          '</feComponentTransfer>' +
+          '<feMerge>' +
+          '  <feMergeNode/>' +
+          '  <feMergeNode in="SourceGraphic"/>' +
+          '</feMerge>' +
+        '</filter>'
+      );
+      defs.append('defs').html(
+        '<linearGradient id="collapsed-linear-gradient">' +
+        '  <stop style="stop-color:#787878;stop-opacity:0.39215687;"' +
+        '        offset="0"/>' +
+        '  <stop style="stop-color:#000000;stop-opacity:0;"' +
+        '        offset="1"/>' +
+        '</linearGradient>' +
+        '<radialGradient' +
+        '   xlink:href="#collapsed-linear-gradient"' +
+        '   id="collapsed-fill"' +
+        '   gradientUnits="userSpaceOnUse"' +
+        '   gradientTransform="matrix(0.71138316,-0.67243129,1.0234543,1.0827397,-6.6025303,4.7069303)"' +
+        '   cx="10.3125"' +
+        '   cy="9.359375"' +
+        '   fx="10.3125"' +
+        '   fy="9.359375"' +
+        '   r="7.5" />'
+      );
+      defs.append('defs').html(
+        '<linearGradient id="expanded-linear-gradient">' +
+        '  <stop style="stop-color:#787878;stop-opacity:0.58823532;"' +
+        '        offset="0"/>' +
+        '  <stop style="stop-color:#000000;stop-opacity:0;"' +
+        '        offset="1"/>' +
+        '</linearGradient>' +
+        '<radialGradient' +
+        '   xlink:href="#expanded-linear-gradient"' +
+        '   id="expanded-fill"' +
+        '   gradientUnits="userSpaceOnUse"' +
+        '   gradientTransform="matrix(0.60291662,-0.63555279,0.73595623,0.69816422,-4.6918189,8.0214032)"' +
+        '   cx="12.196308"' +
+        '   cy="3.283603"' +
+        '   fx="12.196308"' +
+        '   fy="3.283603"' +
+        '   r="7.5" />'
+      );
+      defs.append('defs').html(
+        '<linearGradient id="hover-linear-gradient">' +
+        '  <stop style="stop-color:#ffffff;stop-opacity:0.58823532;"' +
+        '        offset="0"/>' +
+        '  <stop style="stop-color:#000000;stop-opacity:0;"' +
+        '        offset="1"/>' +
+        '</linearGradient>' +
+        '<radialGradient ' +
+        '   xlink:href="#hover-linear-gradient"' +
+        '   id="hover-gradient"' +
+        '   gradientUnits="userSpaceOnUse"' +
+        '   gradientTransform="matrix(0.98751557,-0.85565774,1.0673114,1.2317852,-10.470545,8.953672)"' +
+        '   cx="12.196308"' +
+        '   cy="3.283603"' +
+        '   fx="12.196308"' +
+        '   fy="3.283603"' +
+        '   r="7.5" />'
+      );
+
 
       // Get the actual options to use, based on the precedence rules. This sets
       // the properties right on the diagram object itself.
@@ -208,27 +196,6 @@ if (typeof jQuery !== "undefined" &&
       // If we're using a test file, then we're not going to use a dtd file
       if (diagram.test_file) diagram.dtd_json_file = null;
 
-/*
-      // Use jQuery to add the main SVG element that will hold the diagram.
-      container_jq.append(
-        "<svg>\n" +
-        "  <defs>\n" +
-        "    <filter id=\"dropshadow\" height=\"130%\">\n" +
-        "      <feGaussianBlur in=\"SourceAlpha\" stdDeviation=\"3\"/> \n" +
-        "      <feOffset dx=\"2\" dy=\"2\" result=\"offsetblur\"/>\n" +
-        "      <feComponentTransfer>\n" +
-        "        <feFuncA type=\"linear\" slope=\".5\"/>\n" +
-        "      </feComponentTransfer>\n" +
-        "      <feMerge> \n" +
-        "        <feMergeNode/>\n" +
-        "        <feMergeNode in=\"SourceGraphic\"/> \n" +
-        "      </feMerge>\n" +
-        "    </filter>\n" +
-        "  </defs>\n" +
-        "</svg>\n"
-      );
-      var svg = diagram.svg = container_d3.select("svg");
-*/
 
       // scrollbar margin - if this is big enough, it ensures we'll never get
       // spurious scrollbars when the drawing is at the minimum size. But if it's
@@ -267,7 +234,6 @@ if (typeof jQuery !== "undefined" &&
         .separation(function(a, b) {
           var sep = a.elem_parent == b.elem_parent 
             ? 1 : diagram.group_separation
-          //console.log("In separation, returning " + sep);
           return sep;
         })
       ;
@@ -287,7 +253,6 @@ if (typeof jQuery !== "undefined" &&
           };
         })
         .projection(function(d) {
-          //console.log("diagonal returning [" + d.y + "," + d.x + "]");
           return [d.y, d.x];
         })
       ;

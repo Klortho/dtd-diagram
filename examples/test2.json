@@ -225,7 +225,8 @@
                         "children": [
                             {
                                 "type": "element",
-                                "name": "meta"
+                                "name": "meta",
+                                "q": "?"
                             },
                             {
                                 "type": "element",

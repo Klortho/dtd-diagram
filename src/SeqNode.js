@@ -3,16 +3,14 @@
 if (typeof DtdDiagram != "undefined") {
   (function() {
     var Node = DtdDiagram.Node,
-        M = Node.M,
-        v = Node.v,
+        path = Node.path,
         arc = Node.arc,
         w = 13,
         s = 8;
 
-
-    var path = M(0, s/2) + v(-s) +
+    var p = path("M", 0, s/2, "v", -s) +
                arc(w/2, w, 0) +
-               v(s) + 
+               path("v", s) + 
                arc(w/2, -w, 0) + "z";
 
     // Constructor. Unlike ElementNode constructor, for these,
@@ -46,7 +44,7 @@ if (typeof DtdDiagram != "undefined") {
           this.gs.append("path")
             .attr({
               'class': 'seq',
-              'd': path,
+              'd': p,
             })
           ;
           this.draw_enter_q(w/2);
