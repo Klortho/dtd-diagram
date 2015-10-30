@@ -8,17 +8,16 @@ if (typeof DtdDiagram != "undefined") {
         points = "0,0 " + (w/2) + "," + (-w/2) + " " + w + ",0 " +
           (w/2) + "," + (w/2);
 
-    // Constructor. Unlike ElementNode constructor, for these,
-    // we recursively create all the child content nodes.
+    // Constructor. 
     var ChoiceNode = DtdDiagram.ChoiceNode = function() {};
 
-    // Inherit from Node
+    // Register this type
     Node.register("choice", ChoiceNode);
-    ChoiceNode.prototype = Object.create(Node.prototype);
-    ChoiceNode.prototype.constructor = ChoiceNode;
 
+    // Object methods
     DtdDiagram.extend(
       ChoiceNode.prototype, 
+      Node.methods,
       HasQNode,
       {
         initialize: function() {

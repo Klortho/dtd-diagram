@@ -8,15 +8,13 @@ if (typeof DtdDiagram != "undefined") {
     // Constructor
     var AttributeNode = DtdDiagram.AttributeNode = function() {};
 
-    // Inherit from Node
+    // Register this type
     Node.register("attribute", AttributeNode);
-    AttributeNode.prototype = Object.create(Node.prototype);
-    AttributeNode.prototype.constructor = AttributeNode;
 
-
-    // Define the object methods
+    // Object methods
     DtdDiagram.extend(
       AttributeNode.prototype, 
+      Node.methods,
       DtdDiagram.HasLabelNode,
       {
         width: function() {

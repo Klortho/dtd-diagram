@@ -2,18 +2,18 @@
 
 if (typeof DtdDiagram != "undefined") {
   (function() {
+    var Node = DtdDiagram.Node = {};
 
-    // Construct a Node from a specification within a content section
-    // of some element within the DTD. Always call this form of the constructor,
-    // and it will use the type registry to call the subclass constructors.
-    // The default constructor copies *name*, *type*, and *q*, but not *children*.
-    var Node = DtdDiagram.Node = function() {};
-
-    // Here's a registry of subclass constructors, and the Node factory
+    // Registry of subclass constructors
     var subclasses = {};
     Node.register = function(type, cls) {
       subclasses[type] = cls;
     }
+
+    // The factory constructs a Node from a specification within a content section
+    // of some element within the DTD. This uses the type registry to call the 
+    // subclass constructors.
+
     Node.factory = function(diagram, spec, elem_parent) {
       if (!spec.type) {
         console.error("Invalid DTD, every node specifier must have a type");
@@ -26,6 +26,8 @@ if (typeof DtdDiagram != "undefined") {
       }
 
       var n = new subclass();
+
+      // Copy *name*, *type*, and *q*, but not *children*.
       n.diagram = diagram;
       n.spec = spec;
       n.elem_parent = elem_parent;
@@ -40,89 +42,7 @@ if (typeof DtdDiagram != "undefined") {
       return n;
     };
 
-
-    ////////////////////////////////////////////////
-    // Some default object methods
-
-    Node.prototype.initialize = function() {}
-
-    Node.prototype.has_content = function() {
-      return false;
-    };
-
-    Node.prototype.has_attributes = function() {
-      return false;
-    };
-
-    Node.prototype.has_q = function() {
-      return false;
-    };
-
-    Node.prototype.get_content = function() {
-      return [];
-    };
-
-    // Get all the element descendants of this node
-    function merge_array(target, source) {
-      for (var i = 0; i < source.length; ++i) 
-        target.push(source[i]);
-    }
-
-    Node.prototype.elem_descendants = function() {
-      var d = [];
-      this.get_content().forEach(function(k) {
-        if (k.type == "element") {
-          d.push(k);
-        }
-        else if (k.type == "choice" || k.type == "seq") {
-          merge_array(d, k.elem_descendants());
-        }
-      });
-      return d;
-    };
-
-
-    // Geometry / layout related
-    // -------------------------
-
-    Node.prototype.extents = function() {
-      var diagram = this.diagram;
-      return new DtdDiagram.Box(
-        this.x - diagram.node_box_height / 2,
-        this.y,
-        this.x + diagram.node_box_height / 2,
-        this.y + this.width()
-      );
-    };
-
-    // Tree-reduce function: returns the min/max extents
-    // of an accumulator (previous extents), a given node (n) and all
-    // of that node's kids.
-    function _tree_reduce(acc, n) {
-      //acc.log("_tree_reduce:acc");
-      var ke = (n.children || [])   // kids extents
-        .reduce(_tree_reduce, acc);  
-      var ne = n.extents();
-
-      return new DtdDiagram.Box(
-        d3.min([ke.top,    ne.top]),
-        d3.min([ke.left,   ne.left]),
-        d3.max([ke.bottom, ne.bottom]),
-        d3.max([ke.right,  ne.right])
-      );
-    }
-
-    // Determine the extents of a (sub)tree, returning a Box object.
-    Node.prototype.tree_extents = function() {
-      return (this.children || [])
-        .reduce(_tree_reduce, this.extents());
-    };
-
-
-    // D3/SVG drawing
-    // --------------
-
-    // some functions to help draw paths
+    // Some functions to help draw SVG paths
     Node.path = function() {
       var p = "";
       for (var i = 0; i < arguments.length; ++i) {
@@ -140,9 +60,10 @@ if (typeof DtdDiagram != "undefined") {
       return "a " + r + "," + r + " 0," + large_arc + ",1 " + x + "," + y + " ";
     };
 
-    // Start the update, which means binding the data - the list of Node
+    // Start the update, after the user has clicked on a button. First thing is
+    // to bind the data - the list of Node
     // objects in the tree bound to their `g.node` SVG elements;
-    // then creating update, enter, and exit selections and storing 
+    // then create update, enter, and exit selections and store
     // those in diagram.
     Node.start_update = function(diagram, nodes) {
       var src_node = diagram.src_node;
@@ -177,43 +98,130 @@ if (typeof DtdDiagram != "undefined") {
       diagram.nodes_exit = nodes_update.exit();
     };
 
-    // Get a Node's y_size, which is used by the layout engine. This is really
-    // it's total width (the d3.flextree layout uses x for vertical and y for
-    // horizontal).
-    Node.prototype.y_size = function() {
-      return this.width() + this.diagram.diagonal_width;
-    };
 
-    // Transition an (updating or entering) node to its new position and 
-    // full-sized scale
-    Node.prototype.transition_update = function() {
-      var self = this;
-      return DtdDiagram.transition_promise(
-        self.gs.transition()
-          .duration(self.diagram.duration)
-          .attr("transform", 
-            "translate(" + self.y + "," + self.x + ") " +
-            "scale(1, 1)"
-          )
+    // Some private utility functions
+
+    function merge_array(target, source) {
+      for (var i = 0; i < source.length; ++i) 
+        target.push(source[i]);
+    }
+
+    // Tree-reduce function: returns the min/max extents
+    // of an accumulator (previous extents), a given node (n) and all
+    // of that node's kids.
+    function _tree_reduce(acc, n) {
+      //acc.log("_tree_reduce:acc");
+      var ke = (n.children || [])   // kids extents
+        .reduce(_tree_reduce, acc);  
+      var ne = n.extents();
+
+      return new DtdDiagram.Box(
+        d3.min([ke.top,    ne.top]),
+        d3.min([ke.left,   ne.left]),
+        d3.max([ke.bottom, ne.bottom]),
+        d3.max([ke.right,  ne.right])
       );
+    }
+
+    ////////////////////////////////////////////////
+    // Object methods
+
+    Node.methods = {
+
+      initialize: function() {},
+
+      has_content: function() {
+        return false;
+      },
+
+      has_attributes: function() {
+        return false;
+      },
+
+      has_q: function() {
+        return false;
+      },
+
+      get_content: function() {
+        return [];
+      },
+
+      // Get all the element descendants of this node
+
+      elem_descendants: function() {
+        var d = [];
+        this.get_content().forEach(function(k) {
+          if (k.type == "element") {
+            d.push(k);
+          }
+          else if (k.type == "choice" || k.type == "seq") {
+            merge_array(d, k.elem_descendants());
+          }
+        });
+        return d;
+      },
+
+      // Geometry / layout related
+      // -------------------------
+
+      extents: function() {
+        var diagram = this.diagram;
+        return new DtdDiagram.Box(
+          this.x - diagram.node_box_height / 2,
+          this.y,
+          this.x + diagram.node_box_height / 2,
+          this.y + this.width()
+        );
+      },
+
+      // Determine the extents of a (sub)tree, returning a Box object.
+      tree_extents: function() {
+        return (this.children || [])
+          .reduce(_tree_reduce, this.extents());
+      },
+
+      // D3/SVG drawing
+      // --------------
+
+      // Get a Node's y_size, which is used by the layout engine. This is really
+      // it's total width (the d3.flextree layout uses x for vertical and y for
+      // horizontal).
+      y_size: function() {
+        return this.width() + this.diagram.diagonal_width;
+      },
+
+      // Transition an (updating or entering) node to its new position and 
+      // full-sized scale
+      transition_update: function() {
+        var self = this;
+        return DtdDiagram.transition_promise(
+          self.gs.transition()
+            .duration(self.diagram.duration)
+            .attr("transform", 
+              "translate(" + self.y + "," + self.x + ") " +
+              "scale(1, 1)"
+            )
+        );
+      },
+
+      // Transition exiting nodes to their parents' positions and zero size,
+      // then remove them.
+      transition_exit: function() {
+        var self = this
+            src_node = self.diagram.src_node;
+
+        return DtdDiagram.transition_promise(
+          self.gs.transition()
+            .duration(self.diagram.duration)
+            .attr("transform", function(d) { 
+              return "translate(" + src_node.y + "," + src_node.x + ") " +
+                     "scale(0.001, 0.001)"; 
+            })
+            .remove()
+        );
+      },
     };
 
-    // Transition exiting nodes to their parents' positions and zero size,
-    // then remove them.
-    Node.prototype.transition_exit = function() {
-      var self = this
-          src_node = self.diagram.src_node;
-
-      return DtdDiagram.transition_promise(
-        self.gs.transition()
-          .duration(self.diagram.duration)
-          .attr("transform", function(d) { 
-            return "translate(" + src_node.y + "," + src_node.x + ") " +
-                   "scale(0.001, 0.001)"; 
-          })
-          .remove()
-      );
-    };
   })();
 }
 

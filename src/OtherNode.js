@@ -8,14 +8,13 @@ if (typeof DtdDiagram != "undefined") {
     // Constructor
     var OtherNode = DtdDiagram.OtherNode = function() {};
 
-    // Inherit from Node
+    // Register this type
     Node.register("other", OtherNode);
-    OtherNode.prototype = Object.create(Node.prototype);
-    OtherNode.prototype.constructor = OtherNode;
 
-    // Define the object methods
+    // Object methods
     DtdDiagram.extend(
       OtherNode.prototype, 
+      Node.methods,
       DtdDiagram.HasLabelNode,
       {
         width: function() {

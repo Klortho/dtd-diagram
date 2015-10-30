@@ -1,5 +1,5 @@
 // DtdDiagram.Canvas class
-// This defines a single class method, scroll_resize, that handles resizing the
+// The main class method, scroll_resize, handles resizing the
 // main drawing object and scrolling the viewport.
 
 // To do auto-resizing and auto-scrolling, here is the algorithm:

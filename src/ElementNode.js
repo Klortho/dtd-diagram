@@ -6,15 +6,11 @@ if (typeof DtdDiagram != "undefined") {
         HasLabelNode = DtdDiagram.HasLabelNode,
         HasQNode = DtdDiagram.HasQNode;
 
-
     // Constructor.
     var ElementNode = DtdDiagram.ElementNode = function() {};
 
-    // Inherit from Node
+    // Register this type
     Node.register("element", ElementNode);
-    ElementNode.prototype = Object.create(Node.prototype);
-    ElementNode.prototype.constructor = ElementNode;
-
 
     // Class methods
 
@@ -28,10 +24,11 @@ if (typeof DtdDiagram != "undefined") {
       src_node.diagram.update(src_node);
     };
 
+    // Object methods
 
-    // Define the object methods
     DtdDiagram.extend(
       ElementNode.prototype, 
+      Node.methods,
       HasLabelNode,
       HasQNode,
       {

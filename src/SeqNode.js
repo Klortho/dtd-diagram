@@ -14,18 +14,16 @@ if (typeof DtdDiagram != "undefined") {
                path("v", s) + 
                arc(w/2, -w, 0) + "z";
 
-    // Constructor. Unlike ElementNode constructor, for these,
-    // we recursively create all the child content nodes.
+    // Constructor.
     var SeqNode = DtdDiagram.SeqNode = function() {};
 
-    // Inherit from Node
+    // Register this type
     Node.register("seq", SeqNode);
-    SeqNode.prototype = Object.create(Node.prototype);
-    SeqNode.prototype.constructor = SeqNode;
 
-
+    // Object methods
     DtdDiagram.extend(
       SeqNode.prototype, 
+      Node.methods,
       HasQNode,
       {
         initialize: function() {
