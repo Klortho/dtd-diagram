@@ -88,6 +88,10 @@ if (typeof d3 !== "undefined")
 
       // Duration of the animation, in milliseconds.
       duration: 500,
+
+      // Event callback function for when the user clicks a rebase button.
+      // This allows us to update the fragment identifier
+      rebase_handler: null,
     };
 
 
@@ -265,19 +269,39 @@ if (typeof d3 !== "undefined")
             // Create the new tree. Unlike all subsequent nodes, the root  
             // is hand-crafted, rather than being copied from an element 
             // spec in the DTD
-            var root = diagram.root = DtdDiagram.Node.factory(diagram, {
-              name: diagram.root_element || dtd_json.root,
-              type: 'element',
-            }, null);
-            diagram.root.x0 = 0;
-            diagram.root.y0 = 0;
-
-            // Initial state: root node expanded
-            root.expand();
-            resolve();
+            try {
+              diagram.initialize_root();
+              resolve();
+            }
+            catch(e) {
+              reject(e);
+            }
           }
         });
       });
+    };
+
+    // Helper function, used in two places to create a Node for the
+    // root from scratch (from a fake dtd spec).
+    DtdDiagram.prototype.initialize_root = function() {
+      var diagram = this,
+          rname = diagram.root_element;
+
+      if (rname && !diagram.dtd_json.elements[rname]) {
+        diagram.root = null;
+        throw new Error("Can't find a declaration for element " + rname +
+          " in the DTD.");
+      }
+
+      var root = diagram.root = DtdDiagram.Node.factory(diagram, {
+        name: rname || diagram.dtd_json.root,
+        type: 'element',
+      }, null);
+      diagram.root.x0 = 0;
+      diagram.root.y0 = 0;
+
+      // Initial state: root node expanded
+      root.expand();
     };
 
     // Utility function to create a Promise out of a D3 transition. The
@@ -297,6 +321,29 @@ if (typeof d3 !== "undefined")
         }
       }); 
     }
+
+    // Rebase the diagram with a new root. The argument can either be 
+    // a string (the name of the element) or an ElementNode object, or
+    // null.  If it's null, then we'll be rebased to the root specified
+    // in the dtd.
+    // FIXME: rebasing by string or null is not working.
+    DtdDiagram.prototype.rebase = function(n) {
+      var diagram = this,
+          root;
+
+      if (n == null || typeof n == "string") {
+        diagram.root_element = n;
+        diagram.initialize_root();
+        root = diagram.root;
+      }
+      else {
+        root = diagram.root = n;
+        root.redraw = true;
+        root.q = null;
+        delete root["_width"]; 
+      }
+      diagram.update(n);
+    };
 
     // Main function to update the rendering. This is called once at the 
     // beginning, and once every time a user clicks a button on a node.
@@ -414,8 +461,5 @@ if (typeof d3 !== "undefined")
       }
       return target;
     };
-
-
   })();
-
 }

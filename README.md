@@ -5,21 +5,20 @@ Near & Far diagrams. See this [Key to the Near & Far
 Diagrams](http://jatspan.org/niso/publishing-1.1d3/#p=nfd) and the
 following pages, for examples of what Near & Far diagrams look like.
 
-See a demo [here](http://klortho.github.io/dtd-diagram/examples/).
+See a demo [here](http://klortho.github.io/dtd-diagram/).
 
 To run from your own machine:
 
 * Clone the repo under a directory that is served by a web server.
 * Run `./setup` to fetch some dependencies (this is really only needed if
   you are using IE)
-* Bring up examples/index.html in a browser.
+* Bring up index.html in a browser, served from an HTTP server.
 
 
 To generate JSON versions of DTDs:
 
 * Run `./setup.sh`, if you haven't already,
-* Install 
-  [DtdAnalyzer](http://dtd.nlm.nih.gov/ncbi/dtdanalyzer/)
+* Install [DtdAnalyzer](http://dtd.nlm.nih.gov/ncbi/dtdanalyzer/)
 * Generate the JSON. For example, for the test DTD
 
     ```
@@ -39,51 +38,15 @@ dtdanalyzer --roots article --xslt ../daz2json.xsl \
 Then, in the HTML file that invokes the diagram, set options to 
 load the correct DTD JSON file, and to
 cause documentation hyperlinks to go to the right place.
-(see *examples/jats-1.1d3.html*):
+(see the index.html page for an example):
 
 ```
 <div id='dtd-diagram'
      data-options='{
          "dtd_json_file": "JATS-journalpublishing1.json",
-         "tag_doc_url": "http://jatspan.org/niso/publishing-1.1d3/#p="
+         "tag_doc_base": "http://jatspan.org/niso/publishing-1.1d3/#p="
      }'></div>
 ```
-
-
-
-# To do
-
-* "mixed" content models
-* Implement attributes
-* Work on exit transitions
-* Change the style of the expander buttons depending on whether or not
-  they are expanded. Could I use some kind of actual button style there?
-* Get d3-flextree onto [jsdelivr 
-  CDN](https://www.jsdelivr.com/free-open-source-cdn/javascript-cdn), then update
-  the files here.
-* Automate build process to combine modules
-* After I get it completely working, change the default index.html page to render 
-  the JATS DTD, for demo purposes. 
-
-## Other
-
-* Work on the sample DTD to make sure it covers all cases
-* Add a "re-root" link somewhere on each node. Clicking that causes the whole
-  tree to be redrawn, with that node now at the root.
-* Add "fork me on github" banner, page titles, etc.
-* Tiny bug: when shrinking, sometimes the scroll value
-  will not change. Right now, this means the canvas will get resized right
-  away. (It waits until scrolling is done, but not until the end of the 
-  animation.) So, the boxes that start out outside the
-  new canvas size will be suddenly clipped at the start of the animation.
-    - To fix this, we'd need to turn at least one animation into a promise,
-      and wait for that. We could use that instead of the scrolling promise,
-      since they should all be done at the same time. But, a more robust
-      way would be to have all animations be promises, and then do a 
-      Promise.all() at the end.
-
-
-
 
 
 
@@ -97,7 +60,6 @@ pre-existing `<div>` element with `id` value "dtd-diagram". For example:
   ...
   <link rel="stylesheet" type="text/css" href="dtd-diagram.css">
   <script src='es6-promise.js'></script>
-  <script src='jquery.min.js'></script>
   <script src="d3.min.js"></script>
   <script src="d3-flextree.js"></script>
   <script src="dtd-diagram.js"></script>
@@ -113,8 +75,8 @@ pre-existing `<div>` element with `id` value "dtd-diagram". For example:
 By default, if you include the JavaScript in your HTML page, then a DtdDiagram
 will be instantiated at document ready, using all the default options.
 If you want to prevent this behavior, then set auto_start to false, before
-document ready. This will let you control when a diagram is created, based on, 
-for example, user events. For example:
+document ready. This will let you control when a diagram is created, based on
+(for example) user events. For example:
 
 ```html
 <head>
