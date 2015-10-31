@@ -81,7 +81,7 @@ if (typeof d3 !== "undefined")
 
       // Minimum canvas dimensions
       min_canvas_width: 800,
-      min_canvas_height: 500,
+      min_canvas_height: 400,
 
       // Ratio of the separation between groups to the separation between sibling nodes
       group_separation: 1.4,

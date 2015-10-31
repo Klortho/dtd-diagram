@@ -1,0 +1,39 @@
+{
+  "name": "dtd-diagram",
+  "version": "0.1.0",
+  "description": "DTD dynamic diagram utility",
+  "main": "DtdDiagram",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Klortho/dtd-diagram.git"
+  },
+  "keywords": [
+    "d3",
+    "dtd",
+    "xml"
+  ],
+  "author": "Chris Maloney <voldrani@gmail.com>",
+  "license": "WTFPL",
+  "bugs": {
+    "url": "https://github.com/Klortho/dtd-diagram/issues"
+  },
+  "homepage": "https://github.com/Klortho/dtd-diagram#readme",
+  "devDependencies": {
+    "del": "^2.0.2",
+    "gulp": "^3.9.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-ruby-sass": "^2.0.5",
+    "gulp-uglify": "^1.4.2"
+  },
+  "dependencies": {
+    "es6-promise": "jakearchibald/es6-promise",
+    "d3-flextree": "klortho/d3-flextree"
+  }
+}

@@ -1,30 +1,41 @@
-* [c] Fix links to documentation
-* [c] You should be able to pass in a function to generate documentation hyperlinks
-* [c] Get it to work well with JATS -- use that as the demo
-
-* [c] Add "rebase" feature: a tabbed corner on the upper left
-    * First add the function and test it from the console. How will it work?
-
-
-* [c] Rebasing
-    * [c] In the demo page, make the base node be selectable by a fragment string,
-      when the page first loads
-    * [c] When the user "rebases", cause that to change the fragment
-    * [c] Can I add it now, and add it to the page history?
-    * [c] What to do about q, when rebasing? It needs to be deleted, and the
-      element redrawn.
-
-* [c] If the user gives a bad element name for root, we shouldn't draw anything.
-
-
-* Look for FIXMEs
-* Make colors options
 * Test the various ways it can be kicked off - make sure there are no timing issues.
 - Need build script to combine and minimize
+* Add "fork me on github" banner, page titles, etc.
+
+## Package and deploy
+
+
+### dtd-diagram
+
+* Use the cloudflare CDN for d3 -- don't ever download it
+* Set up a npm package.json file 
+    * I think this is where I can download random dependencies; see
+      the setup file
+
+
+* Set up a gulp build script
+
+
+
+
+
+### d3-flextree
+
+
+
+
+
+* Integrate bower, and get it into the bower registry
+
+
+
+
 * Get d3-flextree onto [jsdelivr 
   CDN](https://www.jsdelivr.com/free-open-source-cdn/javascript-cdn), then update
   the files here.
-* Add "fork me on github" banner, page titles, etc.
+
+
+
 
 ## Bugs
 
@@ -43,3 +54,8 @@
   scrollleft (and probably scrolltop, too) doesn't take into account the new
   size. When I make the drawing wide, and then collapse a node such that it
   gets narrower, the scrollleft doesn't tween to its proper new location.
+
+## To do last
+
+
+* Look for FIXMEs

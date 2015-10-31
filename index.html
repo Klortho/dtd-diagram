@@ -3,26 +3,12 @@
   <head>
   	<title>dtd-diagram</title>
     <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="dtd-diagram.css">
-    <script type='text/javascript' src='lib/es6-promise.js'></script>
-    <script type="text/javascript" src="lib/d3.min.js"></script>
-    <!-- FIXME: right now, this points to my flextree working copy. I need to
-      get flextree onto jsdelivr -->
-    <script src="../d3-flextree/d3-flextree.js"></script>
-
-    <!-- The dtd-diagram library files -->
-    <script src="src/DtdDiagram.js"></script>
-    <script src="src/Box.js"></script>
-    <script src="src/Node.js"></script>
-    <script src="src/HasLabelNode.js"></script>
-    <script src="src/HasQNode.js"></script>
-    <script src="src/ElementNode.js"></script>
-    <script src="src/AttributeNode.js"></script>
-    <script src="src/ChoiceNode.js"></script>
-    <script src="src/SeqNode.js"></script>
-    <script src="src/OtherNode.js"></script>
-    <script src="src/Canvas.js"></script>
-    <script type="text/javascript">
+    <link rel="stylesheet" type="text/css" href="build/dtd-diagram.min.css">
+    <script src='node_modules/es6-promise/dist/es6-promise.js'></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+    <script src="http://localhost:8080/git/klortho/dtd-diagram/node_modules/d3-flextree/d3-flextree.js"></script>
+    <script src="build/dtd-diagram.js"></script>
+    <script>
       // Use the fragment, if present, to identify the root element
       var frag = function() {
         return window.location.hash.substr(1) || null;

@@ -1,5 +1,4 @@
-lib
-OxygenProject.xpr
-dtd-diagram.sublime-project
-dtd-diagram.sublime-workspace
+.sass-cache/
+dtd-diagram.sublime-*
 .DS_Store
+build/

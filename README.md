@@ -197,11 +197,21 @@ Default is 20.
     };
 ```
 
-
-
 # Generating the JSON
 
 Use dtdanalyzer ....
+
+
+
+# Development
+
+Clone the project, `cd` to that directory, and then install all the Node.js 
+dependencies with:
+
+```
+npm install
+```
+
 
 
 # Implementation
