@@ -451,6 +451,18 @@ if (typeof d3 !== "undefined")
       });
     };
 
+    // Utility function to convert a string of "0"s and "1"s to a 
+    // base64 string
+    function binstr_to_base64(binstr) {
+      // FIXME: implement
+      return binstr;
+    }
+
+    // Get the diagram's expand/collapse state as a base64 string
+    DtdDiagram.prototype.state = function() {
+      return this.root.state_binstr();
+    };
+
     // Simple extend utility function
     DtdDiagram.extend = function() {
       var target = arguments[0];
