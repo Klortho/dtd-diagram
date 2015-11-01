@@ -22,7 +22,15 @@ To integrate it with your own DTD, you'll want to clone it and
 initialize a development environment, which includes DtdAnalyzer,
 used to convert DTDs into the JSON files that this tool consumes.
 
-Make sure you have Node.js and npm installed, and then:
+Make sure you have Node.js and npm installed, and then install gulp 
+globally (if you haven't already). This makes the `gulp` command available
+on the command line:
+
+```
+npm install -g gulp
+```
+
+Then clone the repo, and build it:
 
 ```
 git clone https://github.com/Klortho/dtd-diagram.git
@@ -31,17 +39,19 @@ npm install
 gulp
 ```
 
+Check that it worked, by bringing up the project folder in a web browser.
+
+
+
 To generate JSON versions of DTDs, you'll need to set your PATH
 to include the vendor/dtd-analyzer directory, and then,
 for example, for the test DTD:
 
 ```
-cd examples
-dtdanalyzer --roots doc --xslt ../daz2json.xsl test2.dtd > test2.json 
+dtdanalyzer --roots doc --xslt daz2json.xsl test/test2.dtd > test2.json 
 ```
 
-To work with one of the JATS DTDs, you could do this (from the main
-project directory):
+To work with one of the JATS DTDs, you could do this:
 
 ```
 dtdanalyzer --roots article --xslt daz2json.xsl \

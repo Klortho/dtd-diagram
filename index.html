@@ -3,11 +3,11 @@
   <head>
   	<title>dtd-diagram</title>
     <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="build/dtd-diagram.min.css">
-    <script src='node_modules/es6-promise/dist/es6-promise.js'></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
-    <script src="http://localhost:8080/git/klortho/dtd-diagram/node_modules/d3-flextree/d3-flextree.js"></script>
-    <script src="build/dtd-diagram.js"></script>
+    <link rel="stylesheet" type="text/css" href="dist/dtd-diagram.min.css">
+    <script src='vendor/es6-promise/dist/es6-promise.min.js'></script>
+    <script src="vendor/d3/d3.min.js"></script>
+    <script src="vendor/d3-flextree/dist/d3-flextree.min.js"></script>
+    <script src="dist/dtd-diagram.js"></script>
     <script>
       // Use the fragment, if present, to identify the root element
       var frag = function() {
@@ -31,7 +31,7 @@
   <body>
     <div id='dtd-diagram' 
          data-options='{
-             "dtd_json_file": "examples/JATS-journalpublishing1.json",
+             "dtd_json_file": "test/JATS-journalpublishing1.json",
              "tag_doc_base": "http://jatspan.org/niso/publishing-1.1d3/#p="
          }'></div>
   </body>

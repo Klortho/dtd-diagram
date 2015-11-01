@@ -6,10 +6,11 @@
   <head>
   	<title>dtd-diagram</title>
     <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="../dtd-diagram.css">
-    <script type='text/javascript' src='../lib/es6-promise.js'></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
-    <script type="text/javascript" src="../dtd-diagram.js"></script>
+    <link rel="stylesheet" type="text/css" href="../dist/dtd-diagram.min.css">
+    <script src='../vendor/es6-promise/dist/es6-promise.min.js'></script>
+    <script src="../vendor/d3/d3.min.js"></script>
+    <script src="../vendor/d3-flextree/dist/d3-flextree.min.js"></script>
+    <script src="../dist/dtd-diagram.js"></script>
   </head>
 
   <body>
@@ -27,13 +28,20 @@
     <script type='text/javascript'>
       new DtdDiagram({
           container: "front",
+          min_canvas_width: 500,
+          min_canvas_height: 200,
       });
       new DtdDiagram({
-          container: $('#body'),
+          container: 'body',
           root_element: "body",
+          min_canvas_width: 500,
+          min_canvas_height: 200,
       });
       new DtdDiagram({
           container: document.getElementById("back"),
+          root_element: "back",
+          min_canvas_width: 500,
+          min_canvas_height: 200,
       });
     </script>
   </body>
