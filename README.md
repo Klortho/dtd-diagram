@@ -7,30 +7,44 @@ following pages, for examples of what Near & Far diagrams look like.
 
 See a demo [here](http://klortho.github.io/dtd-diagram/).
 
-To run from your own machine:
+To run from your own machine, you can use Bower, and add this as
+a dependency:
 
-* Clone the repo under a directory that is served by a web server.
-* Run `./setup` to fetch some dependencies (this is really only needed if
-  you are using IE)
-* Bring up index.html in a browser, served from an HTTP server.
+```
+bower install dtd-diagram --save
+```
 
+Or, you download it and its dependencies manually:
 
-To generate JSON versions of DTDs:
+TBD
 
-* Run `./setup.sh`, if you haven't already,
-* Install [DtdAnalyzer](http://dtd.nlm.nih.gov/ncbi/dtdanalyzer/)
-* Generate the JSON. For example, for the test DTD
+To integrate it with your own DTD, you'll want to clone it and
+initialize a development environment, which includes DtdAnalyzer,
+used to convert DTDs into the JSON files that this tool consumes.
 
-    ```
-    cd examples
-    dtdanalyzer --roots doc --xslt ../daz2json.xsl test2.dtd > test2.json 
-    ```
+Make sure you have Node.js and npm installed, and then:
 
-To configure this to work with one of the JATS DTDs, you could do this:
+```
+git clone https://github.com/Klortho/dtd-diagram.git
+cd dtd-diagram
+npm install
+gulp
+```
+
+To generate JSON versions of DTDs, you'll need to set your PATH
+to include the vendor/dtd-analyzer directory, and then,
+for example, for the test DTD:
 
 ```
 cd examples
-dtdanalyzer --roots article --xslt ../daz2json.xsl \
+dtdanalyzer --roots doc --xslt ../daz2json.xsl test2.dtd > test2.json 
+```
+
+To work with one of the JATS DTDs, you could do this (from the main
+project directory):
+
+```
+dtdanalyzer --roots article --xslt daz2json.xsl \
   http://jats.nlm.nih.gov/publishing/1.1d3/JATS-journalpublishing1.dtd \
   > JATS-journalpublishing1.json
 ```

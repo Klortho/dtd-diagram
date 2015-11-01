@@ -1,4 +1,6 @@
 .sass-cache/
 dtd-diagram.sublime-*
 .DS_Store
-build/
+dist/
+vendor/
+node_modules/

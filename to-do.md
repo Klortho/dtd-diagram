@@ -1,8 +1,24 @@
 * Test the various ways it can be kicked off - make sure there are no timing issues.
 - Need build script to combine and minimize
 * Add "fork me on github" banner, page titles, etc.
+* Automatic testing with mocha.
+
+
 
 ## Package and deploy
+
+Focus!!  The objective is to get something done that I can integrate
+with jatsdoc.
+
+### d3-flextree
+
+* [c] Integrate bower
+* [c] Get it into the bower registry
+* [c] Get d3-flextree onto [jsdelivr 
+  CDN](https://www.jsdelivr.com/free-open-source-cdn/javascript-cdn), then update
+  the files here.
+* [c] Test using bower to include d3-flextree in some *other* project
+
 
 
 ### dtd-diagram
@@ -11,30 +27,8 @@
 * Set up a npm package.json file 
     * I think this is where I can download random dependencies; see
       the setup file
-
-
+* Set up a bower.json file for web assets.
 * Set up a gulp build script
-
-
-
-
-
-### d3-flextree
-
-
-
-
-
-* Integrate bower, and get it into the bower registry
-
-
-
-
-* Get d3-flextree onto [jsdelivr 
-  CDN](https://www.jsdelivr.com/free-open-source-cdn/javascript-cdn), then update
-  the files here.
-
-
 
 
 ## Bugs
@@ -55,7 +49,3 @@
   size. When I make the drawing wide, and then collapse a node such that it
   gets narrower, the scrollleft doesn't tween to its proper new location.
 
-## To do last
-
-
-* Look for FIXMEs

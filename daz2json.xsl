@@ -4,7 +4,7 @@
   exclude-result-prefixes="xs"
   version="2.0">
   
-  <xsl:import href="lib/xml2json-2.0.xsl"/>
+  <xsl:import href="vendor/dtd-analyzer/xslt/xml2json-2.0.xsl"/>
   <xsl:output method="text"/>
   
   <xsl:param name="dtd-annotation"><foo/></xsl:param>

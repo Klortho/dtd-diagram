@@ -1,0 +1,31 @@
+{
+  "name": "dtd-diagram",
+  "description": "Animated tree diagrams for XML DTDs",
+  "main": "dtd-diagram.js",
+  "authors": [
+    "Chris Maloney <voldrani@gmail.com>"
+  ],
+  "license": "WTFPL",
+  "keywords": [
+    "visualization",
+    "2d",
+    "tree",
+    "d3",
+    "plugin"
+  ],
+  "homepage": "https://github.com/Klortho/dtd-diagram#readme",
+  "moduleType": [],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "vendor",
+    "test"
+  ],
+  "devDependencies": {
+    "dtd-analyzer": "ncbi/DtdAnalyzer#v0.5"
+  },
+  "dependencies": {
+    "es6-promise": "jakearchibald/es6-promise",
+    "d3-flextree": "1.0.1"
+  }
+}
