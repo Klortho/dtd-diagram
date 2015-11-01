@@ -3,11 +3,23 @@
   <head>
   	<title>dtd-diagram</title>
     <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="dist/dtd-diagram.min.css">
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.0.2/es6-promise.min.js'></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
-    <script src="http://chrismaloney.org/d3-flextree/dist/d3-flextree.min.js"></script>
-    <script src="dist/dtd-diagram.js"></script>
+    <link rel="stylesheet" type="text/css" href="../dist/dtd-diagram.min.css">
+    <script src='../vendor/es6-promise/dist/es6-promise.min.js'></script>
+    <script src="../vendor/d3/d3.min.js"></script>
+    <script src="../vendor/d3-flextree/dist/d3-flextree.min.js"></script>
+
+    <script src='../src/DtdDiagram.js'></script>
+    <script src="../src/Box.js"></script>
+    <script src="../src/Node.js"></script>
+    <script src="../src/HasLabelNode.js"></script>
+    <script src="../src/HasQNode.js"></script>
+    <script src="../src/ElementNode.js"></script>
+    <script src="../src/AttributeNode.js"></script>
+    <script src="../src/ChoiceNode.js"></script>
+    <script src="../src/SeqNode.js"></script>
+    <script src="../src/OtherNode.js"></script>
+    <script src="../src/Canvas.js"></script>
+
     <script>
       // Use the fragment, if present, to identify the root element
       var frag = function() {
@@ -32,7 +44,7 @@
     <h1>dtd-diagram</h1>
     <div id='dtd-diagram' 
          data-options='{
-             "dtd_json_file": "test/JATS-journalpublishing1.json",
+             "dtd_json_file": "JATS-journalpublishing1.json",
              "tag_doc_base": "http://jatspan.org/niso/publishing-1.1d3/#p="
          }'></div>
 
