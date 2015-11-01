@@ -41,8 +41,6 @@ gulp
 
 Check that it worked, by bringing up the project folder in a web browser.
 
-
-
 To generate JSON versions of DTDs, you'll need to set your PATH
 to include the vendor/dtd-analyzer directory, and then,
 for example, for the test DTD:
@@ -98,7 +96,7 @@ pre-existing `<div>` element with `id` value "dtd-diagram". For example:
 
 By default, if you include the JavaScript in your HTML page, then a DtdDiagram
 will be instantiated at document ready, using all the default options.
-If you want to prevent this behavior, then set auto_start to false, before
+If you want to prevent this behavior, then set `auto_start` to `false`, before
 document ready. This will let you control when a diagram is created, based on
 (for example) user events. For example:
 
@@ -136,7 +134,7 @@ to easily override default options. For example,
 </script>
 ```
 
-Set options on the `<div>` element, in the `data-options` attribute, in
+You can also set options on the `<div>` element, in the `data-options` attribute, in
 valid JSON format.
 
 ```html
@@ -162,78 +160,39 @@ higher-to-lower precedence:
 
 The DTD JSON file; default is "dtd.json".
 
-
 **root_element**
 
 The root element, by default, is read from the DTD file, but can
-be overridden. Default is null.
+be overridden. Default is null. 
+
+**tag_doc_base**
+
+Used as the base URL for links from the element and attribute nodes
+to documentation. Default is "doc/#p=".
 
 **tag_doc_url**
 
-Default is "doc/#p=".
+By default, this is not used. You can set this to a function that takes
+a Node object as an argument, and returns a string with the URL of
+the documentation page.
 
-**node_width**
+**min_canvas_width**, **min_canvas_height**
 
-FIXME: this will change to font-size and left- and right- padding.
-Or -- can these all be css settings?
+Initial value for the diagram's size.
 
-Nominal width of a node. Default is 210.
+**group_separation**
 
-**node_height**
+Ratio of the separation between groups to the separation between sibling nodes.
+By default, this is 1.4.
 
-FIXME: same as above.
+**duration**
 
-Default is 32.
+Duration of the animation, in milliseconds. Default is 500.
 
-**choice_seq_node_width**
+**rebase_handler**
 
-FIXME: same as above.
-
-Default is 18.
-
-**diagonal_width**
-
-FIXME: same as above.
-
-Default is 20.
-
-
-```
-      // Minimum size of the drawing in terms of tree-node rows and
-      // columns. "rows" is a nominal concept. The actual # of nodes 
-      // you see vertically depends on spacing between 
-      // non-sibs, etc.
-      min_num_columns: 4,
-      min_num_rows: 10,
-
-      // Dimensions of the rectangles used to draw the nodes
-      node_box_height: 25,
-      node_expander_width: 10,
-
-      scrollbar_margin: 20,
-      dropshadow_margin: 5,
-
-      // Ratio of the separation between groups to the separation between sibling nodes
-      group_separation: 1.4,
-
-      // Duration of the animation, in milliseconds.
-      duration: 500,
-    };
-```
-
-# Generating the JSON
-
-Use dtdanalyzer ....
-
-
-
-# Development
-
-Clone the project, `cd` to that directory, and then install all the Node.js 
-dependencies with:
-
-```
-npm install
+You can set this to a callback function that will be invoked whenever the user
+rebases the diagram.
 ```
 
 
@@ -275,168 +234,12 @@ See for example:
   the sub-hierarchy with surname and given-names
 
 
-
-
-### Node classes
-
-The base Node class is "abstract". We could do some fancy inheritance or
-mix-ins, but to keep thing simple, the inheritance is:
-
-- Node
-    - SimpleNode - "attribute" and "other"
-    - ElementNode - "element"
-    - ChoiceSeqNode - "choice", "seq"
-
-
-#### Node methods
-
-* has_content() - returns true if this Node has content children
-* has_attributes() - returns true if this Node has attribute children
-* get_content() - returns an array of content children. If this node
-  has no content children, returns an empty array.
-* elem_descendants()
-
-
-
-#### Common properties
-
-* name - (SimpleNode and ElementNode only)
-* type - one of "element", "attribute", "choice", "seq", or "other"
-* q - (ElementNode and ChoiceSeqNode only) - from the DTD, either 
-  null, '?', '*', or '+'
-
-* diagram - the diagram to which this Node belongs
-* elem_parent - the nearest ancestor Node of type `element`. For every Node
-  except the root of the tree, this is a valid ElementNode object. For the
-  root, this is *null*.  This is used
-  by the `separation` function -- all nodes with the same `elem_parent`
-  are considered part of the nuclear family, and spaced close together. It's
-  also used to determine the starting location of the Nodes that are
-  "entering" in the animation.
-
-* children - always a valid (possibly zero-length) array. 
-  This is used by the layout engine, and reflects the actual, visible
-  children of the Node. For ElementNodes, this is an aggregation of content 
-  and/or attributes, depending on which are expanded. For ChoiceSeqNodes,
-  this is always set to the content children.
-
-* width - computed by aggregating the widths of the parts. Doesn't include the
-  diagonal -- this is used to compute the y coordinate for the "source" of the
-  diagonal.
-* y_size - width of the node, including everything (used by the layout engine)
-* x0, y0 - holds the old position. This is used as the starting point
-  for transitioning (when creating new child nodes, for example). x0 is
-  the vertical coordinat, y0 the horizontal
-* id - added when binding the data, and ensures that the same
-  data nodes are bound to the same SVG elements each time. The value here
-  is also used as the id attribute of the `text` element that renders the
-  `name`, and the data-id attributes of the other SVG elements associated
-  with this Node.
-
-* depth - added by the flextree layout engine
-* x, y - added by the flextree layout engine
-* parent - added by the flextree layout engine
-
-
-#### SimpleNode properties
-
-#### ElementNode properties:
-
-* declaration - the element declaration object from the DTD. If there's a problem
-  with the DTD, this might be null
-* content - an array of content Node children.
-  This is initially null, and is retrieved lazily.
-  After it's been "retrieved", it's always an array; if the element has
-  no content children, it will be an empty array.
-* attributes - an array of attribute SimpleNode children.
-  This will always be a (possibly zero-length) valid array.
-* content_expanded - boolean, for element Nodes only: keeps track of the 
-  expand/collapse state of content
-* attributes_expanded - boolean, for element Nodes only: keeps track of the 
-  expand/collapse state of attributes
-
-
-#### ChoiceSeqNode properties
-
-
-
-### DtdDiagram class
-
-Class attributes:
-
-* diagrams - list of all the DtdDiagram objects
-* auto_start - set this to `false` before document ready to prevent it from
-  auto-instantiating a DtdDiagram.
-* document_ready - a Promise that's resolved with document is ready.
-* default_options
-
-The instance attributes are the following.
-
-Active option values
-
-* dtd_json_file
-* test_file
-* root_element
-* tag_doc_url
-* min_canvas_width
-* min_canvas_height
-* node_text_margin
-* node_height
-* node_box_height
-* choice_seq_node_width
-* q_width
-* button_width
-* diagonal_width
-* scrollbar_margin
-* dropshadow_margin
-* group_separation
-* duration
-
-Other
-
-* container_d3 - D3 reference to the containing `div`
-* container_dom
-* container_jq
-* diagonal - the D3 diagonal generator
-* dtd_json - json object from reading dtd_json_file. null if we're using test_file.
-* engine - the d3.flextree layout engine
-* error - either `false` or a string error message
-* last_id - used to set unique IDs on each node
-* opts - the options passed into the constructor (these are merged with options
-  specified elsewhere)
-* root - the root Node
-* svg - D3 reference to the `svg` element
-* svg_g - D3 reference to the `g` element child of `svg`.
-* label_width_cache - key/value store for computed label widths
-
-Attributes used during update:
-
-* src_node - the node that the user clicked on, used when we're doing 
-  transitions
-* nodes - list of all Nodes in the tree
-* nodes_update - D3 update selection
-* nodes_enter
-* nodes_exit
-
-* new_drawing
-* canvas
-* new_canvas
-* viewport
-* new_viewport
-* embiggenning - true if the drawing is getting larger; false otherwise
-
-
-
-
-
 # Credits / references
 
 * Liam Quinn, W3C. See his paper, [Diagramming XML:
   Exploring Concepts, Constraints and 
   Affordances](http://www.balisage.net/Proceedings/vol15/html/Quin01/BalisageVol15-Quin01.html), 2015.
 * D3, see [this example](http://bl.ocks.org/mbostock/4339083).
-
-
 
 
 # License
