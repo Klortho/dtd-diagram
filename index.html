@@ -3,11 +3,40 @@
   <head>
   	<title>dtd-diagram</title>
     <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="dist/dtd-diagram.min.css">
     <script src='https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.0.2/es6-promise.min.js'></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
     <script src="http://chrismaloney.org/d3-flextree/dist/d3-flextree.min.js"></script>
-    <script src="dist/dtd-diagram.js"></script>
+
+    <!--
+      If you're working on the stylesheet src/dtd-diagram.scss, you'll have to 
+      run `gulp watch` to auto-regenerate this product file:
+    -->
+      <link rel="stylesheet" href="dist/dtd-diagram.min.css">
+    <!--
+      To use the product JS file, if you're working on the source, use
+      `gulp watch`:
+      <script src="dist/dtd-diagram.js"></script>
+    -->
+    <!--
+      Or, use the source files (this list is created by `gulp inject`):
+    -->
+    <!-- inject:js -->
+    <script src="src/DtdDiagram.js"></script>
+    <script src="src/Box.js"></script>
+    <script src="src/Node.js"></script>
+    <script src="src/HasLabelNode.js"></script>
+    <script src="src/HasQNode.js"></script>
+    <script src="src/ElementNode.js"></script>
+    <script src="src/AttributeNode.js"></script>
+    <script src="src/ChoiceSeqNode.js"></script>
+    <script src="src/ChoiceNode.js"></script>
+    <script src="src/SeqNode.js"></script>
+    <script src="src/OtherNode.js"></script>
+    <script src="src/Canvas.js"></script>
+    <script src="src/Compressor.js"></script>
+    <!-- endinject -->
+
+
     <script>
       // Use the fragment, if present, to identify the root element, state, etc.
       var frag;
