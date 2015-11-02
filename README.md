@@ -75,6 +75,14 @@ cause documentation hyperlinks to go to the right place.
      }'></div>
 ```
 
+To work on the JavaScript modules, and have gulp watch for changes, and 
+automatically build the combined, minified files, start a watcher in a terminal
+with:
+
+```
+gulp watch
+```
+
 # API
 
 The simplest way to use this is to load the code in a page that has a 

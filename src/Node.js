@@ -117,8 +117,8 @@
   // of that node's kids.
   function _tree_reduce(acc, n) {
     //acc.log("_tree_reduce:acc");
-    var ke = (n.children || [])   // kids extents
-      .reduce(_tree_reduce, acc);  
+    // kids extents
+    var ke = n.get_children().reduce(_tree_reduce, acc);  
     var ne = n.extents();
 
     return new DtdDiagram.Box(
@@ -152,23 +152,55 @@
       return 0;
     },
 
+    // Returns an array of the current children of the Node, in the
+    // current state of the tree. If it has none, returns the empty array.
+    get_children: function() {
+      return this.children || [];
+    },
+
+    // Returns an array of the content children of the Node. This will
+    // cause ElementNodes to be initialized - their children instantiated
+    // from the DTD spec.
     get_content: function() {
       return [];
     },
 
-    // Get all the element descendants of this node
-    elem_descendants: function() {
-      var d = [];
-      this.get_content().forEach(function(k) {
-        if (k.type == "element") {
-          d.push(k);
-        }
-        else if (k.type == "choice" || k.type == "seq") {
-          merge_array(d, k.elem_descendants());
-        }
-      });
-      return d;
+    // Get all the elements in this subtree, including self if this
+    // is an ElementNode. Does not expand anything - returns the list
+    // in the current state of the tree
+    element_list: function() {
+      return this.get_children().reduce(
+        function(prev, n) {
+          return prev.concat(n.element_list());
+        },
+        this.type == "element" ? [this] : []
+      );
     },
+
+    // Get the state of this subtree, as a string of "0"s and "1"s.
+    state: function() {
+      return "" + this.state_children();
+    },
+
+    state_children: function() {
+      return this.get_children().reduce(
+        function(prev, n) { return prev + n.state(); }, ""
+      );
+    },
+
+    set_state: function(b, bi) {
+      if (bi >= b.length) return bi;
+      return this.set_state_children(b, bi);
+    },
+
+    set_state_children: function(b, bi) {
+      var kids = this.get_children();
+      for (var ki = 0; ki < kids.length && bi < b.length; ++ki) {
+        bi = kids[ki].set_state(b, bi);
+      }
+      return bi;
+    },
+
 
     // Geometry / layout related
     // -------------------------
@@ -185,7 +217,7 @@
 
     // Determine the extents of a (sub)tree, returning a Box object.
     tree_extents: function() {
-      return (this.children || [])
+      return this.get_children()
         .reduce(_tree_reduce, this.extents());
     },
 

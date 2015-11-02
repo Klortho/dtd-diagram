@@ -11,14 +11,18 @@
     <script>
       // Use the fragment, if present, to identify the root element
       var frag = function() {
-        return window.location.hash.substr(1) || null;
+        return window.location.hash.substr(1) || "";
       }
       var new_diagram = function() {
+        var init_state = frag().split("!");
         diagram = new DtdDiagram({
-          root_element: frag(),
-          rebase_handler: function(n) {
-            window.history.pushState(null, null, "#" + n.name);
+          root_element: init_state[0] || null,
+          event_handler: function(evt, n) {
+            var d = n.diagram;
+            window.history.pushState(null, null, 
+              "#" + d.root.name + "!" + d.state());
           },
+          initial_state: init_state[1] || null,
         });
       };
       new_diagram();

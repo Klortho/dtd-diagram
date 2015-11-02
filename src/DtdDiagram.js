@@ -89,9 +89,14 @@ if (typeof d3 !== "undefined")
       // Duration of the animation, in milliseconds.
       duration: 500,
 
-      // Event callback function for when the user clicks a rebase button.
+      // Event callback function for when the user clicks any of the buttons.
       // This allows us to update the fragment identifier
-      rebase_handler: null,
+      event_handler: null,
+
+      // Initial expand/collapse state of the entire tree, as a compressed
+      // base64 string. Default is "S" => "01", meaning the attributes will be
+      // collapsed, and the content expanded.
+      initial_state: "S",
     };
 
 
@@ -301,7 +306,8 @@ if (typeof d3 !== "undefined")
       diagram.root.y0 = 0;
 
       // Initial state: root node expanded
-      root.expand();
+      diagram.set_state(diagram.initial_state || "S");
+      //root.expand();
     };
 
     // Utility function to create a Promise out of a D3 transition. The
@@ -451,16 +457,16 @@ if (typeof d3 !== "undefined")
       });
     };
 
-    // Utility function to convert a string of "0"s and "1"s to a 
-    // base64 string
-    function binstr_to_base64(binstr) {
-      // FIXME: implement
-      return binstr;
-    }
-
     // Get the diagram's expand/collapse state as a base64 string
     DtdDiagram.prototype.state = function() {
-      return this.root.state_binstr();
+      var s = this.root.state();
+      return DtdDiagram.Compressor.compress(s);
+    };
+
+    // Set the diagram's state
+    DtdDiagram.prototype.set_state = function(s) {
+      var binstr = DtdDiagram.Compressor.decompress(s);
+      this.root.set_state(binstr);
     };
 
     // Simple extend utility function

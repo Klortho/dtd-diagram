@@ -17,23 +17,26 @@
   ElementNode.content_click_handler = function(n) {
     n.toggle_content();
     n.diagram.update(n);
+    if (typeof n.diagram.event_handler == "function")
+      n.diagram.event_handler("content-click", n);
   };
 
   ElementNode.attributes_click_handler = function(n) {
     n.toggle_attributes();
     n.diagram.update(n);
+    if (typeof n.diagram.event_handler == "function")
+      n.diagram.event_handler("attributes-click", n);
   };
 
-  ElementNode.rebase_click_handler = function(n) {
-    if (typeof n.diagram.rebase_handler == "function")
-      n.diagram.rebase_handler(n);
-    
+  ElementNode.rebase_click_handler = function(n) {    
     // If it's totally collapsed, go ahead and expand it
     if (!n.content_expanded && !n.attributes_expanded) {
       n.expand_content();
       n.expand_attributes();
     }
     n.diagram.rebase(n);
+    if (typeof n.diagram.event_handler == "function")
+      n.diagram.event_handler("rebase", n);
   }
 
   // Object methods
@@ -84,14 +87,16 @@
       },
 
       // Get the array of content children (as opposed to attribute children)
-      // or the empty array, if there are none.
+      // or the empty array, if there are none. Causes children to be
+      // instantiated from the dtd spec, if they haven't been before.
       get_content: function() {
         if (this.content == null) this.init_content();
         return this.content;
       },
 
       // Returns true if there are any content children 
-      // (as opposed to attributes). 
+      // (as opposed to attributes). Causes children to be instantiated,
+      // if they haven't been before.
       has_content: function() {
         if (this.content == null) this.init_content();
         return this.content.length > 0;
@@ -110,17 +115,26 @@
         this.set_children();
       },
 
+      collapse_content: function() {
+        this.content_expanded = false;
+        this.set_children();
+      },
+
       expand_content: function() {
         this.content_expanded = true;
         this.set_children();
       },
-
 
       toggle_attributes: function() {
         this.attributes_expanded = !this.attributes_expanded;
         this.set_children();
       },
 
+      collapse_attributes: function() {
+        this.attributes_expanded = false;
+        this.set_children();
+      },
+      
       expand_attributes: function() {
         this.attributes_expanded = true;
         this.set_children();
@@ -288,20 +302,26 @@
         Node.methods.transition_update.call(this);
       },
 
-      // The state of the subtree at this element, as a string of "0"s 
-      // and "1"s
-      state_binstr: function() {
-        var result =
-          this.elem_descendants().reduce(
-            function(prev, n) {
-              console.log("prev = %o; n = %o", prev, n);
-              return prev + n.state_binstr();
-            }, 
-            (this.attributes_expanded ? "1" : "0") +
-              (this.content_expanded ? "1" : "0")
-          );
-        console.log("result = " + result);
-        return result;
+      // The state of this ElementNode, as a string of three "0"s 
+      // and "1"s. 
+      state: function() {
+        return (this.attributes_expanded ? "1" : "0") +
+               (this.content_expanded ? "1" : "0") +
+               this.state_children();
+      },
+
+      // Set the expand/collapse state of this node and all it's children.
+      // Returns the new bi index value
+      set_state: function(b, bi) {
+        if (typeof bi == "undefined") bi = 0;
+        if (bi < 0 || bi >= b.length) return bi;
+        console.log("setting state of " + this.name + " to " + b.substr(bi, 2));
+
+        this.attributes_expanded = (b.charAt(bi) == "1");
+        this.content_expanded = (b.charAt(bi+1) == "1");
+        this.set_children();
+
+        return this.set_state_children(b, bi+2);
       },
     }
   );
