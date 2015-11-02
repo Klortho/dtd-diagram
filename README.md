@@ -243,6 +243,10 @@ See for example:
   note the sub-sequence starting with contrib-group
 * [&lt;name>](http://jatspan.org/niso/publishing-1.1d3/#p=nfd-name) - note
   the sub-hierarchy with surname and given-names
+  
+
+
+
 
 
 # Credits / references

@@ -3,6 +3,7 @@ var gulp = require('gulp');
 var bower = require('gulp-bower');
 var concat = require('gulp-concat');
 var del = require('del');
+var gh_pages = require('gulp-gh-pages');
 var inject = require('gulp-inject');
 var mocha = require('gulp-mocha');
 var plumber = require('gulp-plumber');
@@ -58,7 +59,8 @@ gulp.task('concat', function() {
 
 // I'm writing this as a separate task from concat, because writing the
 // sourcemap comment at the end of the non-minified dtd-diagram.js seems
-// to break uglify
+// to break uglify. This way, we can have the sourcemap in both the
+// concatenated, non-minified product, and the minified product.
 gulp.task('uglify', function() {
   return gulp.src(js_sources)
     .pipe(plumber())
@@ -77,15 +79,6 @@ gulp.task('sass', function() {
     .pipe(gulp.dest(dist));
 });
 
-gulp.task('index', function () {
-  var target = gulp.src('./src/index.html');
-  // It's not necessary to read the files (will speed up things), we're only after their paths: 
-  var sources = gulp.src(['./src/**/*.js', './src/**/*.css'], {read: false});
- 
-  return target.pipe(inject(sources))
-    .pipe(gulp.dest('./src'));
-});
-
 // This injects script tags into index.html (for now, my .scss is pure CSS)
 gulp.task('inject', function () {
   return  gulp.src('./index.html')
@@ -100,6 +93,8 @@ gulp.task('inject', function () {
 });
 
 
+// The following are not run by default
+
 // Run `gulp watch` to set up a service that watches for changes, and 
 // automagically regenerates the product files
 gulp.task('watch', function() {
@@ -107,11 +102,25 @@ gulp.task('watch', function() {
   gulp.watch(sass_src, ['sass']);
 });
 
+// Deploy to gh-pages.
+gulp.task('deploy', function() {
+  return gulp.src('./dist/**/*')
+    .pipe(gh_pages());
+});
+
 gulp.task('clean', function () {
   return del([
-    'dist'
+    'dist', 
+    '.publish',
+    '.sass-cache',
   ]);
 });
 
-
+// This should set you back to a state right after `clone`:
+gulp.task('clean-all', ['clean'], function() {
+  return del([
+    'node_modules',
+    'vendor',
+  ]);
+});
 

@@ -4,3 +4,4 @@ dtd-diagram.sublime-*
 dist/
 vendor/
 node_modules/
+.publish/
