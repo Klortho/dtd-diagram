@@ -13,7 +13,8 @@
     * Right now:
         * dist/ is not in master
         * I have a `gulp deploy` task set up, that pushes dist/ to gh-pages,
-          locally and remote.
+          locally and remote. But ***I don't understand how it works***, and
+          I don't think I have it set up correctly.
         * It is not ideal, because doesn't satisfy all the nice-to-haves above.
     * Whatever I come up with here should be back-ported to d3-flextree.
 
