@@ -107,6 +107,7 @@ if (typeof d3 !== "undefined")
     DtdDiagram.prototype.initialize = function() {
       var diagram = this;
       diagram.last_id = 0;
+      diagram.nodes = [];
 
       // User can pass in a specifier for the div either as an
       // id string or a DOM Element
@@ -356,6 +357,8 @@ if (typeof d3 !== "undefined")
     // `src_node` is the node that was clicked.
     DtdDiagram.prototype.update = function(src_node) {
       var diagram = this;
+      if (typeof src_node != "object")
+        src_node = diagram.nodes[src_node] || diagram.root;
       diagram.src_node = src_node;
 
       // Keep a list of all promises (lest we forget)
@@ -465,6 +468,7 @@ if (typeof d3 !== "undefined")
 
     // Set the diagram's state
     DtdDiagram.prototype.set_state = function(s) {
+      if (typeof s == "undefined" || !s) s = this.initial_state || "S";
       var binstr = DtdDiagram.Compressor.decompress(s);
       this.root.set_state(binstr);
     };

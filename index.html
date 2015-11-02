@@ -9,26 +9,52 @@
     <script src="http://chrismaloney.org/d3-flextree/dist/d3-flextree.min.js"></script>
     <script src="dist/dtd-diagram.js"></script>
     <script>
-      // Use the fragment, if present, to identify the root element
-      var frag = function() {
-        return window.location.hash.substr(1) || "";
+      // Use the fragment, if present, to identify the root element, state, etc.
+      var frag;
+      function parse_frag() {
+        var f = window.location.hash.substr(1) || "";
+        var segs = f.split("!");
+        frag = {
+          root: segs[0] || null,
+          state: segs[1] || null,
+        }
       }
-      var new_diagram = function() {
-        var init_state = frag().split("!");
+
+      var diagram;
+      function make_diagram() {
+        parse_frag();
         diagram = new DtdDiagram({
-          root_element: init_state[0] || null,
-          event_handler: function(evt, n) {
-            var d = n.diagram;
-            window.history.pushState(null, null, 
-              "#" + d.root.name + "!" + d.state());
+          root_element: frag.root,
+          initial_state: frag.state,
+          event_handler: function(action, n) {
+            var state = diagram.last_state = {
+              action: action,
+              node_id: n.id,
+            };
+            window.history.pushState(
+              state,
+              null, 
+              "#" + diagram.root.name + "!" + diagram.state()
+            );
           },
-          initial_state: init_state[1] || null,
         });
       };
-      new_diagram();
-      window.onpopstate = function() {
-        d3.select('#dtd-diagram').html("");
-        new_diagram();
+
+      make_diagram();
+
+      window.onpopstate = function(evt) {
+        console.log("popstate: %o", evt.state);
+        var state = diagram.last_state || null;
+        if (!state || !state.action || state.action == "rebase") {
+          d3.select('#dtd-diagram').html("");
+          make_diagram();
+        }
+        else {
+          parse_frag();
+          diagram.set_state(frag.state);
+          diagram.update(state.node_id);
+        }
+        diagram.last_state = evt.state;
       };
     </script>
   </head>

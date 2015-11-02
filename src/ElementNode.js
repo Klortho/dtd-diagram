@@ -314,13 +314,11 @@
       // Returns the new bi index value
       set_state: function(b, bi) {
         if (typeof bi == "undefined") bi = 0;
-        if (bi < 0 || bi >= b.length) return bi;
-        console.log("setting state of " + this.name + " to " + b.substr(bi, 2));
-
         this.attributes_expanded = (b.charAt(bi) == "1");
         this.content_expanded = (b.charAt(bi+1) == "1");
+        console.log("setting state of " + this.name + " to " + 
+          this.attributes_expanded + ", " + this.content_expanded);
         this.set_children();
-
         return this.set_state_children(b, bi+2);
       },
     }

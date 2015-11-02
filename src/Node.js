@@ -32,6 +32,8 @@
     }
 
     var n = new subclass();
+    n.id = diagram.last_id++;
+    diagram.nodes[n.id] = n;
 
     // Copy *name*, *type*, and *q*, but not *children*.
     n.diagram = diagram;
@@ -77,7 +79,7 @@
     var nodes_update = diagram.nodes_update = 
       diagram.svg_g.selectAll("g.node")
         .data(nodes, function(d) { 
-          return d.id || (d.id = ++diagram.last_id); 
+          return d.id; 
         })
       ;
 
@@ -189,13 +191,12 @@
     },
 
     set_state: function(b, bi) {
-      if (bi >= b.length) return bi;
       return this.set_state_children(b, bi);
     },
 
     set_state_children: function(b, bi) {
       var kids = this.get_children();
-      for (var ki = 0; ki < kids.length && bi < b.length; ++ki) {
+      for (var ki = 0; ki < kids.length; ++ki) {
         bi = kids[ki].set_state(b, bi);
       }
       return bi;
