@@ -117,8 +117,8 @@ if (typeof d3 !== "undefined")
           ds = {};
           var ps = kv[1].split('!');
           ds.root_name = ps[0];
-          if (ps.length > 1) ds["ec-state"] = ps[1];
-          if (ps.length > 2) ds["src-node"] = ps[2];
+          if (ps.length > 1) ds.ec_state = ps[1];
+          if (ps.length > 2) ds.src_node_addr = ps[2];
           return ds;
         }
       });
@@ -205,18 +205,6 @@ if (typeof d3 !== "undefined")
         }
         diagram.last_state = evt.state;
       };
-
-      // Set the current history state
-
-      history.replaceState(DtdDiagram.extend(
-        {}, history.state, { 
-          [diagram.container_id]: {
-            uid: diagram.uid,
-            root_id: diagram.root_node.id,
-            src_node_id: diagram.src_node.id,
-          }
-        }
-      ));
 
 
       // scrollbar margin - if this is big enough, it ensures we'll never get
@@ -374,9 +362,8 @@ if (typeof d3 !== "undefined")
       });
     };
 
-    // Helper function, used in two places to create the root_node
-    // from scratch (from a fake dtd spec) from the root_name (which is
-    // either a string or null)
+    // This creates the root_node from the root_name, for a new tree of
+    // nodes, and then expands it, per the ec_state.
     DtdDiagram.prototype.initialize_root = function() {
       var diagram = this,
           root_name = diagram.root_name;
@@ -394,9 +381,8 @@ if (typeof d3 !== "undefined")
       diagram.root_node.x0 = 0;
       diagram.root_node.y0 = 0;
 
-      // Initial state: root node expanded
-      diagram.set_state(diagram.ec_state || "S");
-      //root.expand();
+      // Set the initial expand/collapse state
+      diagram.set_state(diagram.ec_state);
     };
 
     // Utility function to create a Promise out of a D3 transition. The

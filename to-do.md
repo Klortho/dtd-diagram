@@ -103,8 +103,8 @@ The state object looks like this:
   these.
 
 * Read the dtd json, then create the tree of nodes
-    * initialize_root() - root_node, from a fake spec
-    * expand per the ec_state
+    * initialize_root() - root_node, from a fake spec, and then
+      expand per the ec_state
     * set the src_node property from the address
 
 * Call history.replaceState, to set a state object for this history item.
@@ -129,15 +129,14 @@ get to that display. That's undesirable.
         * q.s. param, if there is one
         * Initial value from construction
     * If the state object uid matches, ***no need to reinstantiate the tree***.
-        * Set the ec_state
-        * Set the root and the src_node based 
-          on the ids in the state object
+        * Set the root_node and src_node, from the ids in the state object
+        * Expand per the ec_state
     * Otherwise:
         * Figure out what new root_name and src_node_name are, from:
             * q.s. param, if there is one; or
             * Initial values used in the initial construction (see above)
-        * Create a new tree of nodes, starting with initialize_root(), 
-        * expand per the ec_state
+        * initialize_root() - root_node, from a fake spec, and then
+          expand per the ec_state
         * set the src_node property from the address
 
 ***Any user event***
