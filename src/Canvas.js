@@ -52,14 +52,14 @@
   var compute_new_canvas = function(diagram) {
     // Some local-variable shortcuts
     var Box = DtdDiagram.Box,
-        root = diagram.root,
+        root_node = diagram.root_node,
         min_canvas_height = diagram.min_canvas_height,
         min_canvas_width = diagram.min_canvas_width,
         src_node = diagram.src_node,
         canvas = diagram.canvas;
 
     // Determine the new extents of the whole drawing -- this is a Box object.
-    var new_drawing = diagram.new_drawing = root.tree_extents();
+    var new_drawing = diagram.new_drawing = root_node.tree_extents();
     new_drawing.bottom += Canvas.dropshadow_margin;
     //new_drawing.log("new_drawing");
 

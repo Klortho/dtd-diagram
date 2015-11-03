@@ -4,10 +4,10 @@ if (typeof d3 !== "undefined")
 {
   (function() {
 
-    DtdDiagram = function(opts) {
+    DtdDiagram = function(constructor_opts) {
       var diagram = this;
       DtdDiagram.diagrams.push(diagram);
-      diagram.opts = opts || {};
+      diagram.constructor_opts = constructor_opts || {};
 
       // Defer everything else, including options handling, until document
       // ready.
@@ -16,7 +16,8 @@ if (typeof d3 !== "undefined")
           return diagram.initialize();
         })
         .then(function() {
-          return diagram.update(diagram.root);
+          // FIXME: implement src_node
+          return diagram.update(diagram.root_node);
         })
         .catch(function(err) {
           console.error(err.stack);
@@ -58,7 +59,15 @@ if (typeof d3 !== "undefined")
 
       // The root element, by default, is specified in the DTD JSON file, but can
       // be overridden
-      root_element: null,
+      root_name: null,
+
+      // Initial expand/collapse state of the entire tree, as a compressed
+      // base64 string. Default is "S" => "01", meaning the root node's attributes 
+      // will be collapsed, and the content expanded.
+      ec_state: "S",
+
+      // Initial source node address
+      src_node_addr: "",
 
       // Base URL to use to create links to more documentation.
       tag_doc_base: "doc/#p=",
@@ -92,12 +101,29 @@ if (typeof d3 !== "undefined")
       // Event callback function for when the user clicks any of the buttons.
       // This allows us to update the fragment identifier
       event_handler: null,
-
-      // Initial expand/collapse state of the entire tree, as a compressed
-      // base64 string. Default is "S" => "01", meaning the attributes will be
-      // collapsed, and the content expanded.
-      initial_state: "S",
     };
+
+    // Parse the current location query string, and return an object for
+    // the diagram with the given container id. 
+    // Example: ?d1=article!AF1b!7uI
+    DtdDiagram.prototype.get_query_string_opts = function() {
+      var diagram = this;
+      var qs = window.location.search;
+      if (!qs || qs.charAt(0) == '?') return;
+      qs.substr(1).split('&').map(function(kvstr) { 
+        // kvstr => 'd1=article!AF1b!7uI'
+        var kv = kvstr.split('=');
+        if (kv.length == 2 && kv[0] == diagram.container_id) {
+          ds = {};
+          var ps = kv[1].split('!');
+          ds.root_name = ps[0];
+          if (ps.length > 1) ds["ec-state"] = ps[1];
+          if (ps.length > 2) ds["src-node"] = ps[2];
+          return ds;
+        }
+      });
+      return null;
+    }
 
 
     // Initialize the diagram, by computing and storing the options, creating
@@ -111,26 +137,87 @@ if (typeof d3 !== "undefined")
 
       // User can pass in a specifier for the div either as an
       // id string or a DOM Element
-      var opts = diagram.opts,
-          container = opts.container || 'dtd-diagram';
-      var container_dom = diagram.container_dom =
-        typeof container == "string" ? 
-          document.getElementById(container) : container;
+      var constructor_opts = diagram.constructor_opts,
+          container_id,
+          container_dom;
+
+      if (typeof constructor_opts.container == "object") {
+        container_dom = constructor_opts.container;
+        container_id = container_dom.getAttribute("id");
+      }
+      else {
+        container_id = constructor_opts.container || 'dtd-diagram';
+        container_dom = document.getElementById(container_id);
+      }
 
       if (!container_dom) {
-        console.error("Something wrong with the specifier for the diagram's " +
-          "DOM element");
+        console.error("DtdDiagram error: no container element with ID " +
+          container + " was found");
         return;
       };
+      diagram.container_id = container_id;
+      diagram.container_dom = container_dom;
 
-      // A couple of other ways of referencing the container.
+      // Create the D3 selection for the container
       var container_d3 = diagram.container_d3 = d3.select(container_dom);
 
-      // Get the actual options to use, based on the precedence rules. This sets
-      // the properties right on the diagram object itself.
+      // Parse the query string, looking for state information for this
+      // diagram
+      var qs_opts = diagram.get_query_string_opts();
+
+      // Set a unique id for this diagram, to validate history state objects
+      diagram.uid = Math.floor(Math.random() * 1000000000000);
+
+      // Get the options specified on the @data-options attribute
       var tag_opts_json = container_dom.getAttribute("data-options");
       var tag_options = tag_opts_json ? JSON.parse(tag_opts_json) : {};
-      DtdDiagram.extend(diagram, DtdDiagram.default_options, tag_options, opts);
+
+      // Combine defaults with tag options
+      var opts = {};
+      DtdDiagram.extend(opts, DtdDiagram.default_options, tag_options);
+
+      // Save the "reset state" for this diagram's root_name, ec_state, and src_node.
+      // The reset state is the state that
+      // it reverts to when the tree is reinstantiated with no other state
+      // information. This does not use the query-string values.
+      diagram.reset_state = {
+        root_name: constructor_opts.root_name || opts.root_name,
+        ec_state: constructor_opts.ec_state || opts.ec_state,
+        src_node_addr: constructor_opts.src_node_addr || opts.src_node_addr,
+      };
+
+      // Finally, set the properties on the diagram object itself.
+      DtdDiagram.extend(diagram, opts, qs_opts, constructor_opts);
+
+      // Bind to the popstate event
+      window.onpopstate = function(evt) {
+        console.log("popstate: %o", evt.state);
+        var state = diagram.last_state || null;
+        if (!state || !state.action || state.action == "rebase") {
+          d3.select('#dtd-diagram').html("");
+          make_diagram();
+        }
+        else {
+          parse_frag();
+          diagram.set_state(frag.state);
+          // FIXME: need to look up the correct src_node
+          diagram.update(state.node_id);
+        }
+        diagram.last_state = evt.state;
+      };
+
+      // Set the current history state
+
+      history.replaceState(DtdDiagram.extend(
+        {}, history.state, { 
+          [diagram.container_id]: {
+            uid: diagram.uid,
+            root_id: diagram.root_node.id,
+            src_node_id: diagram.src_node.id,
+          }
+        }
+      ));
+
 
       // scrollbar margin - if this is big enough, it ensures we'll never get
       // spurious scrollbars when the drawing is at the minimum size. But if it's
@@ -287,27 +374,28 @@ if (typeof d3 !== "undefined")
       });
     };
 
-    // Helper function, used in two places to create a Node for the
-    // root from scratch (from a fake dtd spec).
+    // Helper function, used in two places to create the root_node
+    // from scratch (from a fake dtd spec) from the root_name (which is
+    // either a string or null)
     DtdDiagram.prototype.initialize_root = function() {
       var diagram = this,
-          rname = diagram.root_element;
+          root_name = diagram.root_name;
 
-      if (rname && !diagram.dtd_json.elements[rname]) {
-        diagram.root = null;
-        throw new Error("Can't find a declaration for element " + rname +
+      if (root_name && !diagram.dtd_json.elements[root_name]) {
+        diagram.root_name = null;
+        throw new Error("Can't find a declaration for element " + root_name +
           " in the DTD.");
       }
 
-      var root = diagram.root = DtdDiagram.Node.factory(diagram, {
-        name: rname || diagram.dtd_json.root,
+      var root_node = diagram.root_node = DtdDiagram.Node.factory(diagram, {
+        name: root_name || diagram.dtd_json.root,
         type: 'element',
       }, null);
-      diagram.root.x0 = 0;
-      diagram.root.y0 = 0;
+      diagram.root_node.x0 = 0;
+      diagram.root_node.y0 = 0;
 
       // Initial state: root node expanded
-      diagram.set_state(diagram.initial_state || "S");
+      diagram.set_state(diagram.ec_state || "S");
       //root.expand();
     };
 
@@ -336,29 +424,29 @@ if (typeof d3 !== "undefined")
     // FIXME: rebasing by string or null is not working.
     DtdDiagram.prototype.rebase = function(n) {
       var diagram = this,
-          root;
+          root_name,
+          root_node;
 
       if (n == null || typeof n == "string") {
-        diagram.root_element = n;
+        diagram.root_name = n;
         diagram.initialize_root();
-        root = diagram.root;
+        root_node = diagram.root_node;
       }
       else {
-        root = diagram.root = n;
-        root.redraw = true;
-        root.q = null;
-        delete root["_width"]; 
+        diagram.root_name = n.name;
+        root_node = diagram.root_node = n;
+        root_node.redraw = true;
+        root_node.q = null;
+        delete root_node["_width"]; 
       }
-      diagram.update(n);
+      diagram.update(root_node);
     };
 
     // Main function to update the rendering. This is called once at the 
     // beginning, and once every time a user clicks a button on a node.
-    // `src_node` is the node that was clicked.
+    // `src_node` is the node object that was clicked.
     DtdDiagram.prototype.update = function(src_node) {
       var diagram = this;
-      if (typeof src_node != "object")
-        src_node = diagram.nodes[src_node] || diagram.root;
       diagram.src_node = src_node;
 
       // Keep a list of all promises (lest we forget)
@@ -369,7 +457,7 @@ if (typeof d3 !== "undefined")
 
       // Compute the new tree layout
       var engine = diagram.engine;
-      var nodes = engine.nodes(diagram.root);
+      var nodes = engine.nodes(diagram.root_node);
 
       // Instantiate the SVG <g> for each entering node, and set
       // the nodes_update, nodes_enter, and nodes_exit selections
@@ -462,15 +550,15 @@ if (typeof d3 !== "undefined")
 
     // Get the diagram's expand/collapse state as a base64 string
     DtdDiagram.prototype.state = function() {
-      var s = this.root.state();
+      var s = this.root_node.state();
       return DtdDiagram.Compressor.compress(s);
     };
 
     // Set the diagram's state
     DtdDiagram.prototype.set_state = function(s) {
-      if (typeof s == "undefined" || !s) s = this.initial_state || "S";
+      if (typeof s == "undefined" || !s) s = this.ec_state || "S";
       var binstr = DtdDiagram.Compressor.decompress(s);
-      this.root.set_state(binstr);
+      this.root_node.set_state(binstr);
     };
 
     // Simple extend utility function
@@ -483,5 +571,7 @@ if (typeof d3 !== "undefined")
       }
       return target;
     };
+
+
   })();
 }

@@ -63,7 +63,7 @@
             window.history.pushState(
               state,
               null, 
-              "#" + diagram.root.name + "!" + diagram.state()
+              "#" + diagram.root_name + "!" + diagram.state()
             );
           },
         });
@@ -71,20 +71,6 @@
 
       make_diagram();
 
-      window.onpopstate = function(evt) {
-        console.log("popstate: %o", evt.state);
-        var state = diagram.last_state || null;
-        if (!state || !state.action || state.action == "rebase") {
-          d3.select('#dtd-diagram').html("");
-          make_diagram();
-        }
-        else {
-          parse_frag();
-          diagram.set_state(frag.state);
-          diagram.update(state.node_id);
-        }
-        diagram.last_state = evt.state;
-      };
     </script>
   </head>
   <body>

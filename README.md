@@ -245,7 +245,11 @@ See for example:
   the sub-hierarchy with surname and given-names
   
 
+### The diagram object
 
+Properties:
+
+* root_name - the *name* of the element that's currently at the root of the tree
 
 
 
