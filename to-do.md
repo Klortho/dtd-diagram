@@ -28,127 +28,123 @@ Read this [excellent intro](https://developer.mozilla.org/en-US/docs/Web/API/His
 ### Goals
 
 * Diagrams are bookmarkable
-* Back and forward buttons work seamlessly.
+* Back and forward buttons work seamlessly, in that the diagram gracefully animates
+  into its previous (next) state, with the update, enter, exit selections correct
 * This functionality should be in the main library, not in the index.html, and
   should be on by default
+* Provide function setters to let user override how state info gets put into, and
+  retrieved from, the URL
+
 
 ### Data models
 
-The state is defined by these, for each diagram:
+#### Globals
 
-* Stored in the query string param for this diagram. These can't use node id's,
-  since they might differ each time we reload the page:
-    * root_name: name of the root node
-    * ec_state: complete expand/collapse state of the tree based at the root node
-    * src_node_addr: [nice to have] the "address" of the src_node, as an array
-      of numbers. Each number gives the child # of a succeeding generation
+DtdDiagram.diagrams - change this to a hash, whose keys are the container-div
+ids.
 
-* Not saved between browser sessions, stored in the history state object, 
-  with a key that matches the container id:
-    * uid: generated when the diagram is instantiated, with 
-      Math.floor(Math.random() * 1000000000000)
-    * root_id - the `id` of the root node
-    * src_node_id - the `id` of the src_node
+#### In-memory tree
 
-Query string looks like this:
+For each diagram, there is an in-memory tree of nodes that has the following
+properties:
+
+* The original root node never changes, no matter what the actual displayed 
+  root node is at any given time. orig_root = original root; current_root =
+  current displayed root
+* The address of every node never changes. The address of the original root
+  node is [0], and the address of every child of any node is the array formed
+  by adding that child's index to its parent's address array.
+* Once a node is created in memory, it's never destroyed, even if it's not
+  displayed at some given time; unless the whole diagram is destroyed.
+
+The diagram will store:
+
+* A hash object cross referencing the addresses to the nodes. The original
+  root can be retrieved from this, with index corresponding to [0]
+
+
+#### URL
+
+The URL will be maintained such that, if somebody brings it up in a pristine
+browser, they'll see the same diagrams, in the same ec-states, and
+with the same displayed root node and same src_node.  What will not be preserved
+are:
+
+* The original root node of the diagram that was active when the URL was
+  created.
+* The addresses of the nodes -- these will be based on this new original root 
+  node.
+
+So, the query string will look like this example:
 
     ?d1=article!AF1b!7uI&d2=front!Aix!8i
 
-giving the state data for two diagrams, `d1` and `d2`. For `d1`, for example:
+giving the state data for two diagrams, `d1` and `d2`, *relative to their
+current_roots at the time the URL was generated*. For `d1`:
 
-* root_name = article
-* ec_state = AF1b
-* src_node_addr = 7uI
+* current_root_name = article - the name of the current_root
+* ec_state = AF1b - ec_state, starting at current_root
+* src_node_addr = 7uI - address relative to current_root.
 
-The state object looks like this:
 
-```json
-{
-  "d1": { 
-    "uid": 537613275460,
-    "root_id": 12,
-    "src_node_id": 18
-  },
-  "d2": { ... }
-}
-```
+
+#### The state object
+
+In the history state object, each diagram has a key that matches 
+the container id:
+
+* orig_root_name - name of the original root
+* current_root_addr - address of the current root, relative to the original_root
+* ec_state - ec_state, starting at the current_root
+* src_node_addr - address of the source node, relative to the current_root!
+
 
 ### Events
 
 ***When a new DtdDiagram is instantiated***
 
-* [c] Read the q.s., looking for state for this diagram
-* Instantiate a diagram. 
-    * [c] Initialize a random uid for this diagram
-    * [c] For root, ec_state, and src_node, first compute the "reset_state", and
-      save that on the diagram object. These are the values that
-      are used when we have to reinstantiate the tree during a popstate
-      event. In high-to-low precedence:
-        * constructor option
-        * @data-options attribute on the container <div>
-        * Default
+* [c] Get state info, if present:
+    * If there's history.state object, use that
+    * Else no history.state, check the URL. In addition to what's given explicitly:
+        * orig_root_name = current_root_name
+        * current_root_addr = "0"
 
-    * [c] Set the actual diagram's root, ec_state, and src_node from:
-        * constructor option
-        * q.s. param
-        * @data-options attribute on the container <div>
-        * Default
+* [c] Instantiate a diagram.
+    * First merge opts <- defaults <- @data-options <- state <- constructor opts
 
-    * [c] Set all the other option values on the diagram according to:
-        * constructor option
-        * @data-options attribute on the container <div>
-        * Default
+* [c] Read the dtd json, then create the tree of nodes
+    * [c] Instantiate orig_root_node, based on its name
+    * [c] Instantiate nodes up to the current_root
+    * [c] Set ec_state from current_root
+    * [tbd] Set the src_node property from its address
 
-* [c] Register the popstate handler - this is a global, there's only one of
-  these.
+* [c] If there was no history.state for this diagram, call history.replaceState
 
-* Read the dtd json, then create the tree of nodes
-    * initialize_root() - root_node, from a fake spec, and then
-      expand per the ec_state
-    * set the src_node property from the address
-
-* Call history.replaceState, to set a state object for this history item.
-  Need to merge this -- there might be other diagrams' states already in
-  the state variable
 
 ***When we get a popstate event***
 
-If the state object matches, then we'll seamlessly
-transition to the new state. Otherwise (for example, after the user has refreshed
-the page) we have no choice but to reinitialize
-the whole tree. This will make transitions jumpy. It *would* be possible, through 
-very fancy manipulations, to store everything we need in the URL, but that would
-have the drawback that a given tree display (i.e. a given root node name and ec-state)
-would no longer have a unique q.s. string value -- there would be multiple ways to
-get to that display. That's undesirable.
-
-* Parse the URL query string into an object
-* Get the state object
 * For each diagram:
-    * Figure out what the new ec_state will be, from:
-        * q.s. param, if there is one
-        * Initial value from construction
-    * If the state object uid matches, ***no need to reinstantiate the tree***.
-        * Set the root_node and src_node, from the ids in the state object
-        * Expand per the ec_state
-    * Otherwise:
-        * Figure out what new root_name and src_node_name are, from:
-            * q.s. param, if there is one; or
-            * Initial values used in the initial construction (see above)
-        * initialize_root() - root_node, from a fake spec, and then
-          expand per the ec_state
-        * set the src_node property from the address
+    * Get the state object -- no need to try to read the URL. If there's any error in
+      any of the following, just abort, without calling update.
+        * Check orig_root_name -- if it doesn't match, abort.
+        * Instantiate (if necessary) nodes up to the current_root
+        * Set the ec_state from there
+        * Set the src_node property
+        * update()
+
 
 ***Any user event***
 
-* The src_node is the node the user clicked on
-* If rebase, then update the root node; expand its content if it's completely
-  collapsed
-* If expand/collapse button, update expand/collapse state
-* Compute the new q.s. param, and merge this into the other diagrams', to 
-  create the new URL
+* [c] The src_node is the node the user clicked on; 
+  update the src_node_addr
+* [c] If rebase:
+    * update current_root_node, current_root_addr
+    * expand its content if it's completely collapsed
+* [c] Update diagram.ec_state
 * history.pushState()
-* diagram.update()
+    - Still need to compute the new URLs
+* [c] diagram.update()
+
 
 ### New option
 

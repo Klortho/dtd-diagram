@@ -7,9 +7,11 @@
     initialize: function() {
       var self = this;
       DtdDiagram.HasQNode.initialize.call(self);
+      var kid_num = 0;
       (self.spec.children || []).forEach(function(kid_spec) {
         self.children.push(
-          DtdDiagram.Node.factory(self.diagram, kid_spec, self.elem_parent));
+          DtdDiagram.Node.factory(self.diagram, kid_spec, self.elem_parent,
+                                  self.id + "," + kid_num++));
       });
     },
 

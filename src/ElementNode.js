@@ -32,7 +32,6 @@
     // If it's totally collapsed, go ahead and expand it
     if (!n.content_expanded && !n.attributes_expanded) {
       n.expand_content();
-      n.expand_attributes();
     }
     n.diagram.rebase(n);
     if (typeof n.diagram.event_handler == "function")
@@ -64,9 +63,11 @@
           decl = self.declaration = null;
         }
         var attrs = self.attributes = [];
+        var kid_num = 0;
         if (decl && decl.attributes) {
           decl.attributes.forEach(function(attr_spec) {
-            attrs.push(Node.factory(diagram, attr_spec, self));
+            attrs.push(Node.factory(diagram, attr_spec, self, 
+                                    self.id + "," + kid_num++));
           });
         }
       },
@@ -79,9 +80,11 @@
             decl = self.declaration;
 
         var content = self.content = [];
+        var kid_num = self.attributes.length;
         if (decl && decl.content && decl.content.children) {
           decl.content.children.forEach(function(kid_spec) {
-            content.push(Node.factory(diagram, kid_spec, self));
+            content.push(Node.factory(diagram, kid_spec, self,
+                                      self.id + "," + kid_num++));
           });
         }
       },
@@ -168,6 +171,14 @@
           this.gs.select('.ab rect').attr("class", 
             aexp ? "expanded" : "collapsed");
         }
+      },
+
+      // Get the nth child, according to the address value. It might be an
+      // attribute or a content child
+      get_child: function(n) {
+        var alen = this.attributes.length;
+        if (n < alen) return this.attributes[n];
+        return this.get_content(n - alen);
       },
 
       // Drawing
@@ -312,7 +323,7 @@
 
       // Set the expand/collapse state of this node and all it's children.
       // Returns the new bi index value
-      set_state: function(b, bi) {
+      set_ec_state: function(b, bi) {
         if (typeof bi == "undefined") bi = 0;
         this.attributes_expanded = (b.charAt(bi) == "1");
         this.content_expanded = (b.charAt(bi+1) == "1");

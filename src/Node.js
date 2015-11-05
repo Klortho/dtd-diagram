@@ -20,7 +20,7 @@
   // of some element within the DTD. This uses the type registry to call the 
   // subclass constructors.
 
-  Node.factory = function(diagram, spec, elem_parent) {
+  Node.factory = function(diagram, spec, elem_parent, id) {
     if (!spec.type) {
       console.error("Invalid DTD, every node specifier must have a type");
       return null;
@@ -32,8 +32,7 @@
     }
 
     var n = new subclass();
-    n.id = diagram.last_id++;
-    diagram.nodes[n.id] = n;
+    n.id = id;
 
     // Copy *name*, *type*, and *q*, but not *children*.
     n.diagram = diagram;
@@ -160,6 +159,10 @@
       return this.children || [];
     },
 
+    get_child: function(n) {
+      return this.get_children()[n];
+    },
+
     // Returns an array of the content children of the Node. This will
     // cause ElementNodes to be initialized - their children instantiated
     // from the DTD spec.
@@ -190,14 +193,14 @@
       );
     },
 
-    set_state: function(b, bi) {
+    set_ec_state: function(b, bi) {
       return this.set_state_children(b, bi);
     },
 
     set_state_children: function(b, bi) {
       var kids = this.get_children();
       for (var ki = 0; ki < kids.length; ++ki) {
-        bi = kids[ki].set_state(b, bi);
+        bi = kids[ki].set_ec_state(b, bi);
       }
       return bi;
     },

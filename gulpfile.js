@@ -30,6 +30,7 @@ var js_sources = [
   "/OtherNode.js",
   "/Canvas.js",
   "/Compressor.js",
+  "/StateManager.js",
 ].map(function(s) { return src + "/" + s; });
 
 

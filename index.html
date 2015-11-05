@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <script src='https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.0.2/es6-promise.min.js'></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
-    <script src="http://chrismaloney.org/d3-flextree/dist/d3-flextree.min.js"></script>
+    <script src="./vendor/d3-flextree/dist/d3-flextree.min.js"></script>
 
     <!--
       If you're working on the stylesheet src/dtd-diagram.scss, you'll have to 
@@ -34,44 +34,9 @@
     <script src="src/OtherNode.js"></script>
     <script src="src/Canvas.js"></script>
     <script src="src/Compressor.js"></script>
+    <script src="src/StateManager.js"></script>
     <!-- endinject -->
 
-
-    <script>
-      // Use the fragment, if present, to identify the root element, state, etc.
-      var frag;
-      function parse_frag() {
-        var f = window.location.hash.substr(1) || "";
-        var segs = f.split("!");
-        frag = {
-          root: segs[0] || null,
-          state: segs[1] || null,
-        }
-      }
-
-      var diagram;
-      function make_diagram() {
-        parse_frag();
-        diagram = new DtdDiagram({
-          root_element: frag.root,
-          initial_state: frag.state,
-          event_handler: function(action, n) {
-            var state = diagram.last_state = {
-              action: action,
-              node_id: n.id,
-            };
-            window.history.pushState(
-              state,
-              null, 
-              "#" + diagram.root_name + "!" + diagram.state()
-            );
-          },
-        });
-      };
-
-      make_diagram();
-
-    </script>
   </head>
   <body>
     <h1>dtd-diagram</h1>
