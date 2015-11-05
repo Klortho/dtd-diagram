@@ -36,67 +36,7 @@ Read this [excellent intro](https://developer.mozilla.org/en-US/docs/Web/API/His
   retrieved from, the URL
 
 
-### Data models
 
-#### Globals
-
-DtdDiagram.diagrams - change this to a hash, whose keys are the container-div
-ids.
-
-#### In-memory tree
-
-For each diagram, there is an in-memory tree of nodes that has the following
-properties:
-
-* The original root node never changes, no matter what the actual displayed 
-  root node is at any given time. orig_root = original root; current_root =
-  current displayed root
-* The address of every node never changes. The address of the original root
-  node is [0], and the address of every child of any node is the array formed
-  by adding that child's index to its parent's address array.
-* Once a node is created in memory, it's never destroyed, even if it's not
-  displayed at some given time; unless the whole diagram is destroyed.
-
-The diagram will store:
-
-* A hash object cross referencing the addresses to the nodes. The original
-  root can be retrieved from this, with index corresponding to [0]
-
-
-#### URL
-
-The URL will be maintained such that, if somebody brings it up in a pristine
-browser, they'll see the same diagrams, in the same ec-states, and
-with the same displayed root node and same src_node.  What will not be preserved
-are:
-
-* The original root node of the diagram that was active when the URL was
-  created.
-* The addresses of the nodes -- these will be based on this new original root 
-  node.
-
-So, the query string will look like this example:
-
-    ?d1=article!AF1b!7uI&d2=front!Aix!8i
-
-giving the state data for two diagrams, `d1` and `d2`, *relative to their
-current_roots at the time the URL was generated*. For `d1`:
-
-* current_root_name = article - the name of the current_root
-* ec_state = AF1b - ec_state, starting at current_root
-* src_node_addr = 7uI - address relative to current_root.
-
-
-
-#### The state object
-
-In the history state object, each diagram has a key that matches 
-the container id:
-
-* orig_root_name - name of the original root
-* current_root_addr - address of the current root, relative to the original_root
-* ec_state - ec_state, starting at the current_root
-* src_node_addr - address of the source node, relative to the current_root!
 
 
 ### Events

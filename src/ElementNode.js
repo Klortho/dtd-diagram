@@ -16,14 +16,14 @@
 
   ElementNode.content_click_handler = function(n) {
     n.toggle_content();
-    n.diagram.update(n);
+    n.diagram.update(n, true);
     if (typeof n.diagram.event_handler == "function")
       n.diagram.event_handler("content-click", n);
   };
 
   ElementNode.attributes_click_handler = function(n) {
     n.toggle_attributes();
-    n.diagram.update(n);
+    n.diagram.update(n, true);
     if (typeof n.diagram.event_handler == "function")
       n.diagram.event_handler("attributes-click", n);
   };

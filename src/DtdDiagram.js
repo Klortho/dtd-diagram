@@ -395,13 +395,15 @@ if (typeof d3 !== "undefined")
     // beginning, and once every time a user clicks a button on a node.
     // `src_node` is the node object that was clicked; if it's not provided,
     // then the diagram's current src_node is used.
-    DtdDiagram.prototype.update = function(src_node) {
+    // push, if true, means we should push a new state.
+    DtdDiagram.prototype.update = function(src_node, push) {
       var diagram = this;
       if (typeof src_node == "undefined") src_node = diagram.src_node;
       else diagram.src_node = src_node;
       diagram.update_src_node_addr();
       diagram.ec_state = diagram.get_ec_state();
-      DtdDiagram.StateManager.push_state(diagram);
+      if (typeof push != "undefined" && push) 
+        DtdDiagram.StateManager.push_state(diagram);
 
       // Keep a list of all promises (lest we forget)
       var promises = [];

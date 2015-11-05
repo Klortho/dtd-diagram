@@ -1,4 +1,7 @@
-// StateManager - DtdDiagram methods for managing state
+// StateManager - DtdDiagram methods for managing state. See Implementation.md,
+// "Managing state".
+
+
 
 (function() {
 
@@ -19,21 +22,21 @@
   //  diagram.last_state = evt.state;
   //};
 
+  // This is called during diagram.initialize(), to get the initial state, either
+  // from a state object, if there is one, or from the URL.
+  DtdDiagram.prototype.get_initial_state = function() {
+    var diagram = this;
+    if (history.state) return history.state[diagram.container_id] || null;
+
+    var url_state = StateManager.get_state_url(diagram);
+    if (!url_state) return null;
+
+    url_state.orig_root_name = url_state.current_root_name;
+    url_state.current_root_addr = "0";
+    return url_state;
+  };
+
   var StateManager = DtdDiagram.StateManager = {
-
-    // This is called during diagram.initialize(), to get the initial state, either
-    // from a state object, if there is one, or from the URL.
-    get_initial_state: function(diagram) {
-      if (history.state) return history.state[diagram.container_id] || null;
-
-      var url_state = StateManager.get_state_url(diagram);
-      if (!url_state) return null;
-
-      url_state.orig_root_name = url_state.current_root_name;
-      url_state.current_root_addr = "0";
-      return url_state;
-    },
-
     // Parse the current location query string, and return an object for
     // the diagram with the given container id. Or null.
     // Example: ?d1=article!AF1b!7uI

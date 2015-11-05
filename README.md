@@ -158,6 +158,8 @@ You can get a list of all of the diagrams on a page from `DtdDiagram.diagrams`.
 
 ## Options
 
+FIXME: need to update this list.
+
 There are various ways to set the options; in order of 
 higher-to-lower precedence:
 
@@ -206,51 +208,9 @@ You can set this to a callback function that will be invoked whenever the user
 rebases the diagram.
 ```
 
-
-
 # Implementation
 
-## Managing geometry
-
-The geometry of the display is captured by several separate Box objects, 
-with each box recording top, bottom, left, and right in the SVG
-coordinate system.
-
-The variable names for these use one of "drawing", "canvas", or "viewport".
-If the name does not have a prefix, it means the *previous*
-state, before the click. If it has the prefix "new_", it means the
-state after the click. Here they are:
-
-- `new_drawing`: the current extents of the drawing
-- `canvas`, `new_canvas`: normally, this is the same as the drawing; but if the 
-  drawing is below a minimum canvas size, this will take that minimum size.
-- `viewport`, `new_viewport`: same size as the minimum canvas size, but it moves 
-  around.
-
-
-## Data models
-
-The DTD data and the display tree data are held in a separate data structures. 
-This is necessary, because a given element might appear in several places in the
-DTD, and might be expanded in some places but collapsed in others.
-
-The content model of an element can be quite complex, and is, in general, 
-a hierarchy itself (a sub-tree of the main tree).
-
-See for example:
-
-* [&lt;journal-meta>](http://jatspan.org/niso/publishing-1.1d3/#p=nfd-journal-meta) -
-  note the sub-sequence starting with contrib-group
-* [&lt;name>](http://jatspan.org/niso/publishing-1.1d3/#p=nfd-name) - note
-  the sub-hierarchy with surname and given-names
-  
-
-### The diagram object
-
-Properties:
-
-* root_name - the *name* of the element that's currently at the root of the tree
-
+See [Implementation.md](Implementation.md)
 
 
 # Credits / references
