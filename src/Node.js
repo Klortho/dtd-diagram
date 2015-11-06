@@ -46,6 +46,9 @@
     }
 
     n.initialize();
+    if (typeof diagram.nodes == "undefined") diagram.nodes = {};
+    diagram.nodes[id] = n;
+    
     return n;
   };
 
@@ -235,13 +238,9 @@
       return this.width() + Node.diagonal_width;
     },
 
-    // Cache node widths. The actual values are computed in subclass methods
-    // compute_width().
+    // The width of the node, not including the diagonal
     width: function() {
-      if (!("_width" in this)) {
-        this._width = this.compute_width();
-      }
-      return this._width;
+      return this.compute_width();
     },
 
     // Transition an (updating or entering) node to its new position and 

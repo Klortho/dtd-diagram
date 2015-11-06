@@ -25,15 +25,34 @@
 
 Read this [excellent intro](https://developer.mozilla.org/en-US/docs/Web/API/History_API).
 
-### Goals
+    
 
-* Diagrams are bookmarkable
-* Back and forward buttons work seamlessly, in that the diagram gracefully animates
-  into its previous (next) state, with the update, enter, exit selections correct
-* This functionality should be in the main library, not in the index.html, and
-  should be on by default
-* Provide function setters to let user override how state info gets put into, and
-  retrieved from, the URL
+* Move more things into the StateManager module
+    * Every change to any of the "state properties" should be implemented through a 
+      method defined in StateManager:
+        * orig_root_name
+        * orig_root_node
+        * current_root_addr
+        * current_root_node
+        * ec_state
+        * src_node_addr
+        * src_node
+
+
+* Figure out how to test with a mock browser, for testing window.location and the 
+  history state stuff.
+* diagram.update() shouldn't take an argument. Instead, the caller should first
+  set src_node
+* Need to implement DtdDiagram.set_src_node()
+* [c] get rid of the _width cache on nodes -- it will simplify things, and it is 
+  unnecessary, since we already have the diagram.label_width_cache
+* use WindowBase64 functions for base64 encoding/decoding
+* For compression, use elias gamma encoding, using Uint[8|16|32]Arrays; see
+  http://jsperf.com/elias-gamma-encode
+* Need to set embiggenning for rebase events
+* Need to restore `q`, when transitioning a current root -> child
+* At the end:
+    * figure out how to make url handling pluggable, with function setters
 
 
 

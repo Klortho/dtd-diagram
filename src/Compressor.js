@@ -1,6 +1,7 @@
 // Utility to compress state strings, which are very sparse binary strings
 
-if (typeof DtdDiagram == "undefined") DtdDiagram = {};
+// For testing, so this module can work stand-alone
+if (typeof DtdDiagram == "undefined") DtdDiagram = function() {};
 
 (function() {
   var debug = false;
@@ -14,7 +15,6 @@ if (typeof DtdDiagram == "undefined") DtdDiagram = {};
 
   var c = DtdDiagram.Compressor = {
 
-    // ✓
     compress: function(binstr) {
       dbg("compressing original string: " + binstr);
       var rllc = c.rll_compress(binstr);
@@ -25,7 +25,6 @@ if (typeof DtdDiagram == "undefined") DtdDiagram = {};
       return b64;
     },
 
-    // ✓
     // Convert a string of "0"s and "1"s to a base64 string
     binstr_to_base64: function(binstr) {
       var b = c.cap(binstr),
@@ -38,7 +37,6 @@ if (typeof DtdDiagram == "undefined") DtdDiagram = {};
       return b64;
     },
 
-    // ✓
     // Add a trailing "1", and pad, such that number of binary digits
     // is divisible by 6.
     cap: function(binstr) { 
@@ -47,7 +45,6 @@ if (typeof DtdDiagram == "undefined") DtdDiagram = {};
       return cp;
     },
 
-    // ✓
     // Convert an integer to a binary string, padding with zeros to n
     // digits
     int_to_binary: function(i, n) {
@@ -55,7 +52,6 @@ if (typeof DtdDiagram == "undefined") DtdDiagram = {};
       return "0".repeat(n - b.length) + b;
     },
 
-    // ✓
     // Do the run-length compression, returning another binary string
     rll_compress: function(s) {
       var i = s.indexOf("1");

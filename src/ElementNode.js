@@ -178,7 +178,7 @@
       get_child: function(n) {
         var alen = this.attributes.length;
         if (n < alen) return this.attributes[n];
-        return this.get_content(n - alen);
+        return this.get_content()[n - alen];
       },
 
       // Drawing

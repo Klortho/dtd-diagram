@@ -95,6 +95,7 @@ diagram object.
 * new_canvas - maintained by Canvas, used in transitioning the drawing as a whole
 * new_drawing - maintained by Canvas, used in transitioning the drawing as a whole
 * new_viewport - maintained by Canvas, used in transitioning the drawing as a whole
+* nodes - a hash of all nodes ever instantiated; keys are the ids (addresses)
 * nodes_enter - during updates, this is the D3 "enter" selection
 * nodes_exit - during updates, this is the D3 "exit" selection
 * nodes_update - during updates, this is the D3 "update" selection
