@@ -337,8 +337,6 @@ if (typeof d3 !== "undefined")
         name: name,
         type: 'element',
       }, null, "0");
-      node.x0 = 0;
-      node.y0 = 0;
 
       // Expand everything as needed
       if (!diagram.current_root_addr) {
@@ -389,7 +387,7 @@ if (typeof d3 !== "undefined")
       diagram.set_current_root(n);
       n.redraw = true;
       n.q = null;
-      this.update();
+      this.update(n, true);
     };
 
     // Main function to update the rendering. This is called once at the 
@@ -399,8 +397,9 @@ if (typeof d3 !== "undefined")
     // push, if true, means we should push a new state.
     DtdDiagram.prototype.update = function(src_node, push) {
       var diagram = this;
-      diagram.set_src_node(src_node);
-      diagram.ec_state = diagram.get_ec_state();
+      if (src_node) diagram.set_src_node(src_node);
+      src_node = diagram.src_node;
+
       if (typeof push != "undefined" && push) 
         diagram.push_state();
 

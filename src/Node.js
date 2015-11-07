@@ -33,6 +33,8 @@
 
     var n = new subclass();
     n.id = id;
+    n.x0 = elem_parent ? elem_parent.x0 : 0;
+    n.y0 = elem_parent ? elem_parent.y0 : 0;
 
     // Copy *name*, *type*, and *q*, but not *children*.
     n.diagram = diagram;

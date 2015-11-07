@@ -60,24 +60,9 @@ Read this [excellent intro](https://developer.mozilla.org/en-US/docs/Web/API/His
 
 ### Events
 
-***When a new DtdDiagram is instantiated***
 
-* [c] Get state info, if present:
-    * If there's history.state object, use that
-    * Else no history.state, check the URL. In addition to what's given explicitly:
-        * orig_root_name = current_root_name
-        * current_root_addr = "0"
 
-* [c] Instantiate a diagram.
-    * First merge opts <- defaults <- @data-options <- state <- constructor opts
 
-* [c] Read the dtd json, then create the tree of nodes
-    * [c] Instantiate orig_root_node, based on its name
-    * [c] Instantiate nodes up to the current_root
-    * [c] Set ec_state from current_root
-    * [tbd] Set the src_node property from its address
-
-* [c] If there was no history.state for this diagram, call history.replaceState
 
 
 ***When we get a popstate event***
@@ -92,17 +77,7 @@ Read this [excellent intro](https://developer.mozilla.org/en-US/docs/Web/API/His
         * update()
 
 
-***Any user event***
 
-* [c] The src_node is the node the user clicked on; 
-  update the src_node_addr
-* [c] If rebase:
-    * update current_root_node, current_root_addr
-    * expand its content if it's completely collapsed
-* [c] Update diagram.ec_state
-* history.pushState()
-    - Still need to compute the new URLs
-* [c] diagram.update()
 
 
 ### New option
