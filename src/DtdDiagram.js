@@ -342,25 +342,17 @@ if (typeof d3 !== "undefined")
       if (!diagram.current_root_addr) {
         diagram.current_root_addr = "0";
       }
-      diagram.initialize_tree();
-    };
-
-    DtdDiagram.prototype.initialize_tree = function() {
-      var diagram = this;
-      console.log("initialize_tree");
 
       // Instantiate nodes up to the current_root
       diagram.set_current_root();
-
       // Set ec_state from current_root
       diagram.set_ec_state();
-
       // Set the src_node property from its address
       diagram.set_src_node();
-
-      // Update (if necessary) the history state object
+      // Update the history state object
       diagram.update_state();
     };
+
 
     // Utility function to create a Promise out of a D3 transition. The
     // Promise is resolved when all of the selection's transitions have

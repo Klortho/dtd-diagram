@@ -8,19 +8,37 @@ if (typeof DtdDiagram == "undefined") DtdDiagram = function() {};
 
 
   // Bind to the popstate event
-  window.onpopstate = function(evt) {
-    console.log("popstate: %o", evt.state);
-    var s = evt.state;
-    Object.keys(s).forEach(function(did) {
-      var diagram = DtdDiagram.diagrams_hash[did];
-      if (!diagram) return;
-      console.log("popping for " + did);
-    });
+  if (typeof window !== "undefined") 
+    window.onpopstate = function(evt) {
+      console.log("popstate: %o", evt.state);
+      var s = evt.state;
+      Object.keys(s).forEach(function(did) {
+        var diagram = DtdDiagram.diagrams_hash[did];
+        if (!diagram) return;
+        console.log("popping for " + did);
+        var state = s[did];
 
-  };
+        diagram.set_current_root(state.current_root_addr);
+        diagram.set_ec_state(state.ec_state);
+
+        // If we're going forward, then change src_node first, then animate.
+        // If we're going back, animate, then change src_node
+        if (diagram.state_id < state.state_id) {
+          diagram.set_src_node(state.src_node_addr);
+          diagram.update();
+        }
+        else {
+          diagram.update();
+          diagram.set_src_node(state.src_node_addr);
+        }
+        diagram.state_id = state.state_id;
+      });
+    };
 
   //-----------------------------------------------------------------------
   // DtdDiagram methods
+
+  DtdDiagram.last_state_id = 0;
 
   // This is called during diagram.initialize(), to get the initial state, either
   // from a history state object, if there is one, or from the URL, if it's there.
@@ -64,17 +82,21 @@ if (typeof DtdDiagram == "undefined") DtdDiagram = function() {};
     return url_state;
   };
 
-  // This is called after a new diagram has been instantiated. It check the
-  // history state object, and merges in this diagram's state data.
+  // This is called after a new diagram has been instantiated. It checks the
+  // history state object, and merges in this diagram's state data, then
+  // calls replaceState
   DtdDiagram.prototype.update_state = function() {
     var diagram = this;
     var state = history.state || {};
-    var did = diagram.container_id;
-    state[did] = {
+    var new_state_id = DtdDiagram.last_state_id++;
+    diagram.state_id = new_state_id;
+
+    state[diagram.container_id] = {
       orig_root_name: diagram.orig_root_name,
       current_root_addr: diagram.current_root_addr,
       ec_state: diagram.ec_state,
       src_node_addr: diagram.src_node_addr,
+      state_id: new_state_id,
     };
     // don't update the url, in this case
     history.replaceState(state, null);
@@ -85,11 +107,15 @@ if (typeof DtdDiagram == "undefined") DtdDiagram = function() {};
   DtdDiagram.prototype.push_state = function() {
     var diagram = this;
     var dstate = {};
+    var new_state_id = DtdDiagram.last_state_id++;
+    diagram.state_id = new_state_id;
+
     dstate[diagram.container_id] = {
       orig_root_name: diagram.orig_root_name,
       current_root_addr: diagram.current_root_addr,
       ec_state: diagram.get_ec_state(),
       src_node_addr: diagram.src_node_addr,
+      state_id: new_state_id,
     };
     // Combine this diagram's state with all the others
     var state = DtdDiagram.extend(
@@ -142,10 +168,13 @@ if (typeof DtdDiagram == "undefined") DtdDiagram = function() {};
   };
 
   // Set the diagram's expand/collapse state, based on the current
-  // values of current_root_node and ec_state.
-  DtdDiagram.prototype.set_ec_state = function() {
-    var s = this.ec_state;
-    var binstr = DtdDiagram.Compressor.decompress(s);
+  // values of current_root_node and ec_state. If there is no argument, 
+  // then the current ec_state value will be used.
+  DtdDiagram.prototype.set_ec_state = function(s) {
+    if (typeof s !== "undefined") {
+      this.ec_state = s;
+    }
+    var binstr = DtdDiagram.Compressor.decompress(this.ec_state);
     this.current_root_node.set_ec_state(binstr);
   };
 
@@ -153,7 +182,6 @@ if (typeof DtdDiagram == "undefined") DtdDiagram = function() {};
   // Set the src_node, either from an address (relative to the current root)
   // or from an ElementNode object. If no argument is given, this will use
   // diagram.src_node_addr to set the src_node object.
-
   DtdDiagram.prototype.set_src_node = function(sn) {
     var diagram = this;
 

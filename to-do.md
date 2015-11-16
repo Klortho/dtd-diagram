@@ -1,5 +1,98 @@
 # To do
 
+This toy project has been a catalyst for me learning a lot of new (to me)
+JavaScript technologies. My goal now, though, is to try to wrap it up 
+quickly and move on to some other, more practical projects.
+
+
+## State handling
+
+* use WindowBase64 functions for base64 encoding/decoding
+* For compression, use elias gamma encoding, using Uint[8|16|32]Arrays; see
+  http://jsperf.com/elias-gamma-encode
+* Need to set embiggenning for rebase events
+* Need to restore `q`, when transitioning a current root -> child
+* Figure out how to make url handling pluggable, with function setters
+
+
+### Survey of lifecycle events
+
+***Create a new diagram***
+
+* Make sure it handles these cases:
+    * No state information either in history or URL (I think this should
+      use replacestate to change the URL; right now it doesn't)
+    * State info in URL, not in history
+    * State info in history but not URL
+    * State info in both, that agrees or disagrees
+
+
+***User clicks***
+
+Check these things:
+
+* expand
+* collapse
+* rebase
+
+
+***Forward / back buttons (popstate events)***
+
+* For each diagram:
+    * Get the state object -- no need to try to read the URL. If there's any error in
+      any of the following, just abort, without calling update.
+        * Check orig_root_name -- if it doesn't match, abort.
+        * Instantiate (if necessary) nodes up to the current_root
+        * Set the ec_state from there
+        * Set the src_node property
+        * update()
+
+    * Can I just call initialize_tree? It calls:
+        * diagram.set_current_root();
+            * needs current_root_addr
+        * diagram.set_ec_state();
+            * needs ec_state
+        * diagram.set_src_node();
+            * needs src_node_addr
+        * diagram.update_state();
+    };
+
+
+
+
+
+## Miscellaneous
+
+* Make sure we update to the layout-bug-fixed version of d3-flextree
+* Add a `use_history` option - defaults to true. When false, all of this is turned off.
+
+
+## Testing
+
+* Make sure forward button works
+* Test when you reload a page that's in the middle of a bunch of history, and
+  then press back and forward buttons
+* Test with multiple diagrams
+
+
+## Enhancement: optimize/simplify some drawings
+
+In the JATS DTDs, the content models are often overly complex.
+
+* "choice-of-one" and "seq-of-one" can be removed: see front/notes;
+  combine the 'q's intelligently
+* If seq is the only child, and no q, remove it
+
+
+## Finish up
+
+* Maybe: for an element that takes just #PCDATA, change the content button to a
+  green-tinted "C"
+* Test on other browsers
+    * Resizing the svg doesn't seem to work on FF
+* On the demo page, put, side-by-side, images of the old near-and-far versions
+
+
 ## Project management
 
 * Maybe try some scaffolding tool like Yeoman, to see how they do it.
@@ -21,88 +114,3 @@
 * Whatever I come up with here should be back-ported to d3-flextree.
 
 
-## State handling
-
-Read this [excellent intro](https://developer.mozilla.org/en-US/docs/Web/API/History_API).
-
-    
-
-* Move more things into the StateManager module
-    * Every change to any of the "state properties" should be implemented through a 
-      method defined in StateManager:
-        * orig_root_name
-        * orig_root_node
-        * current_root_addr
-        * current_root_node
-        * ec_state
-        * src_node_addr
-        * src_node
-
-
-* Figure out how to test with a mock browser, for testing window.location and the 
-  history state stuff.
-* diagram.update() shouldn't take an argument. Instead, the caller should first
-  set src_node
-* Need to implement DtdDiagram.set_src_node()
-* [c] get rid of the _width cache on nodes -- it will simplify things, and it is 
-  unnecessary, since we already have the diagram.label_width_cache
-* use WindowBase64 functions for base64 encoding/decoding
-* For compression, use elias gamma encoding, using Uint[8|16|32]Arrays; see
-  http://jsperf.com/elias-gamma-encode
-* Need to set embiggenning for rebase events
-* Need to restore `q`, when transitioning a current root -> child
-* At the end:
-    * figure out how to make url handling pluggable, with function setters
-
-
-
-
-
-### Events
-
-
-
-
-
-
-***When we get a popstate event***
-
-* For each diagram:
-    * Get the state object -- no need to try to read the URL. If there's any error in
-      any of the following, just abort, without calling update.
-        * Check orig_root_name -- if it doesn't match, abort.
-        * Instantiate (if necessary) nodes up to the current_root
-        * Set the ec_state from there
-        * Set the src_node property
-        * update()
-
-
-
-
-
-### New option
-
-* use_history - ***new*** - defaults to true. When false, all of this is turned off.
-
-
-### Testing
-
-* Make sure forward button works
-* Test when you reload a page that's in the middle of a bunch of history, and
-  then press back and forward buttons
-
-
-## Enhancement: optimize/simplify some drawings: 
-
-* "choice-of-one" and "seq-of-one" can be removed: see front/notes;
-  combine the 'q's intelligently
-* If seq is the only child, and no q, remove it
-
-
-## Finish up
-
-* Maybe: for an element that takes just #PCDATA, change the content button to a
-  green-tinted "C"
-* Test on other browsers
-    * Resizing the svg doesn't seem to work on FF
-* On the demo page, put, side-by-side, images of the old near-and-far versions

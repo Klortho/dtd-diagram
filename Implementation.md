@@ -106,6 +106,7 @@ diagram object.
   The Canvas object will make sure that the drawing is transitioned such that this
   node is in the viewport
 * src_node_addr - address of the source node relative to the current root node
+* state_id - used in popstate events to determine if back or forward was pressed.
 * svg - D3 selection for the \<svg> element
 * svg_g - D3 selection for the \<g> element child of the \<svg>
 * tag_doc_base - user option, used to generate links to the documentation
