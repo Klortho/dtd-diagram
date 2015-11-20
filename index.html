@@ -4,14 +4,13 @@
   	<title>dtd-diagram</title>
     <meta charset="utf-8">
     <link rel="stylesheet" type="text/css" href="dtd-diagram.css">
-    <script type='text/javascript' src='lib/es6-promise.js'></script>
-    <script type="text/javascript" src="lib/d3.min.js"></script>
-    <!-- FIXME: right now, this points to my flextree working copy. I need to
-      get flextree onto jsdelivr -->
-    <script src="../d3-flextree/d3-flextree.js"></script>
+    <script src='lib/es6-promise.js'></script>
+    <script src="lib/d3.min.js"></script>
+    <script src="lib/d3-flextree.js"></script>
+
+    <script src='dtd-diagram-demo.js'></script>
 
     <!-- The dtd-diagram library files -->
-    <script src="src/DtdDiagram.js"></script>
     <script src="src/Box.js"></script>
     <script src="src/Node.js"></script>
     <script src="src/HasLabelNode.js"></script>
@@ -24,10 +23,6 @@
     <script src="src/Canvas.js"></script>
   </head>
   <body>
-    <div id='dtd-diagram' 
-         data-options='{
-             "dtd_json_file": "examples/JATS-journalpublishing1.json",
-             "tag_doc_base": "http://jatspan.org/niso/publishing-1.1d3/#p="
-         }'></div>
+    <div id='dtd-diagram'></div>
   </body>
 </html>
