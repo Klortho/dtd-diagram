@@ -7,6 +7,8 @@ body {
   overflow: auto;
   border: 1px solid #333;
   resize: both;
+  width: 500px;
+  height: 500px;
 }
 svg {
   font: 12px sans-serif;

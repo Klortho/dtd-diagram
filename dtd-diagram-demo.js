@@ -1,11 +1,10 @@
 (function() {
+  var diagram;
 
   DtdDiagram = function() {
-    var diagram = this;
-    DtdDiagram.diagrams.push(diagram);
+    diagram = this;
 
-    // Defer everything else, including options handling, until document
-    // ready.
+    // Defer everything else document ready.
     new Promise(function(resolve) {
       document.addEventListener("DOMContentLoaded", resolve);
     })
@@ -20,40 +19,24 @@
       })
     ;
   };
-
-  DtdDiagram.diagrams = [];
-
   new DtdDiagram();
 
   // Some constants
   var scrollbar_margin = 20;
 
-  // Default values for all the options. 
-  // There are various ways to set the options; in order of 
-  // higher-to-lower precedence:
-  // - Pass them as an object to the DtdDiagram constructor function.
-  // - Set them on the @data-options attribute of the <div>
-  //   element. Make sure they are in strictly valid JSON format.
-  // - Use the defaults
-  DtdDiagram.default_options = {
+  // DTD JSON file
+  diagram.dtd_json_file = "dtd.json";
 
-    // DTD JSON file
-    dtd_json_file: "dtd.json",
+  // The root element, by default, is specified in the DTD JSON file, but can
+  // be overridden
+  diagram.root_element = null;
 
-    // The root element, by default, is specified in the DTD JSON file, but can
-    // be overridden
-    root_element: null,
 
-    // Minimum canvas dimensions
-    min_canvas_width: 800,
-    min_canvas_height: 500,
+  // Ratio of the separation between groups to the separation between sibling nodes
+  diagram.group_separation = 1.4;
 
-    // Ratio of the separation between groups to the separation between sibling nodes
-    group_separation: 1.4,
-
-    // Duration of the animation, in milliseconds.
-    duration: 500,
-  };
+  // Duration of the animation, in milliseconds.
+  diagram.duration = 500;
 
 
   // Initialize the diagram, by computing and storing the options, creating
@@ -64,21 +47,9 @@
     var diagram = this;
     diagram.last_id = 0;
 
-    var container_dom = diagram.container_dom =
-      document.getElementById('dtd-diagram');
-    var container_d3 = diagram.container_d3 = d3.select(container_dom);
+    var container_d3 = diagram.container_d3 = 
+      d3.select(document.getElementById('dtd-diagram'));
 
-    DtdDiagram.extend(diagram, DtdDiagram.default_options);
-
-    // scrollbar margin - if this is big enough, it ensures we'll never get
-    // spurious scrollbars when the drawing is at the minimum size. But if it's
-    // too big, it messes up the centering. 22 gives plenty of room
-    var min_canvas_width = diagram.min_canvas_width,
-        min_canvas_height = diagram.min_canvas_height;
-    container_d3.style({
-      'width': (min_canvas_width + scrollbar_margin) + 'px',
-      'height': (min_canvas_height + scrollbar_margin) + 'px'
-    });
 
     // Initialize the SVG
     var svg = diagram.svg = container_d3.append("svg");
@@ -152,21 +123,14 @@
       '   r="7.5" />'
     );
 
-    var canvas = diagram.canvas = new DtdDiagram.Box(
-      -min_canvas_height / 2, 
-      0, 
-      min_canvas_height / 2, 
-      min_canvas_width
-    );
-
     svg.attr({
       xmlns: "http://www.w3.org/2000/svg",
       xlink: "http://www.w3.org/1999/xlink",
-      "width": canvas.width(),
-      "height": canvas.height(),
+      "width": 1000,
+      "height": 1000,
     });
     diagram.svg_g = svg.append("g")
-      .attr({"transform": "translate(0, " + (-canvas.top) + ")"});
+      .attr({"transform": "translate(0, 250)"});
 
     // Create the flextree layout engine and set options
     var engine = diagram.engine = d3.layout.flextree()
@@ -327,18 +291,10 @@
     ));
 
 
-    // Canvas / scrollbars
-    // -------------------
-
-    // Transition scrollbars and drawing size
-    var Canvas = DtdDiagram.Canvas;
-    promises.push(DtdDiagram.Canvas.scroll_resize(diagram));
-    diagram.canvas = diagram.new_canvas.copy();
 
     Promise.all(promises).then(
       function(msg) {
-        //console.log("Transitions complete: " + msg);
-        Canvas.finish(diagram);
+        console.log("Transitions complete: " + msg);
       },
       function(msg) {
         console.error("Problem during transistions: " + msg.stack);
