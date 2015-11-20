@@ -21,22 +21,12 @@
   };
   new DtdDiagram();
 
-  // Some constants
-  var scrollbar_margin = 20;
-
-  // DTD JSON file
-  diagram.dtd_json_file = "dtd.json";
-
-  // The root element, by default, is specified in the DTD JSON file, but can
-  // be overridden
-  diagram.root_element = null;
-
 
   // Ratio of the separation between groups to the separation between sibling nodes
-  diagram.group_separation = 1.4;
+  var group_separation = 1.4;
 
   // Duration of the animation, in milliseconds.
-  diagram.duration = 500;
+  var duration = 500;
 
 
   // Initialize the diagram, by computing and storing the options, creating
@@ -138,8 +128,7 @@
         return [DtdDiagram.Node.node_height, d.y_size()];
       })
       .separation(function(a, b) {
-        var sep = a.elem_parent == b.elem_parent 
-          ? 1 : diagram.group_separation
+        var sep = a.elem_parent == b.elem_parent ? 1 : group_separation
         return sep;
       })
     ;
@@ -165,7 +154,7 @@
 
     // Read the input file, and return the promise
     return new Promise(function(resolve, reject) {
-      var dtd_json_file = diagram.dtd_json_file;
+      var dtd_json_file = "dtd.json";
       d3.json(dtd_json_file, function(error, dtd_json) {
         if (error) {
           reject(new Error("Error reading DTD file '" + dtd_json_file + 
@@ -178,37 +167,20 @@
           // is hand-crafted, rather than being copied from an element 
           // spec in the DTD
           var root = diagram.root = DtdDiagram.Node.factory(diagram, {
-            name: diagram.root_element || dtd_json.root,
+            name: dtd_json.root,
             type: 'element',
           }, null);
           diagram.root.x0 = 0;
           diagram.root.y0 = 0;
 
-          // Initial state: root node expanded
-          root.expand();
+          // Initial state: root node content expanded
+          root.expand_content();
           resolve();
         }
       });
     });
   };
 
-  // Utility function to create a Promise out of a D3 transition. The
-  // Promise is resolved when all of the selection's transitions have
-  // ended. This was adapted from the code in this mailing list answer:
-  // https://groups.google.com/d/msg/d3-js/WC_7Xi6VV50/j1HK0vIWI-EJ
-  var transition_promise = DtdDiagram.transition_promise = function(t) {
-    var n = 0;
-    return new Promise(function(resolve, reject) {
-      if (t.empty()) resolve();
-      else {
-        t.each(function() { ++n; }) 
-          .each("end", function() { 
-            if (!--n) resolve(); 
-          })
-        ;
-      }
-    }); 
-  }
 
   // Main function to update the rendering. This is called once at the 
   // beginning, and once every time a user clicks a button on a node.
@@ -238,13 +210,13 @@
 
     // Transition all nodes to their new positions and full sizes
     diagram.nodes_update.each(function(n) {
-      promises.push(n.transition_update());
+      promises.push(n.transition_update(duration));
     });
 
     // Transition exiting nodes to the parent's new position, and
     // zero size.
     diagram.nodes_exit.each(function(n) {
-      promises.push(n.transition_exit());
+      promises.push(n.transition_exit(duration));
     });
 
 
@@ -273,33 +245,17 @@
       });
 
     // Transition links to their new position.
-    var duration = diagram.duration;
-    promises.push(transition_promise(
-      links_selection.transition()
-        .duration(duration)
-        .attr("d", diagonal)
-    ));
+    links_selection.transition()
+      .duration(duration)
+      .attr("d", diagonal);
 
     // Transition exiting links to the parent's new positions.
-    promises.push(transition_promise(
-      links_selection.exit().transition()
-        .duration(duration)
-        .attr("d", function(d) {
-          return diagonal({source: fake_node, target: fake_node});
-        })
-        .remove()
-    ));
-
-
-
-    Promise.all(promises).then(
-      function(msg) {
-        console.log("Transitions complete: " + msg);
-      },
-      function(msg) {
-        console.error("Problem during transistions: " + msg.stack);
-      }
-    );
+    links_selection.exit().transition()
+      .duration(duration)
+      .attr("d", function(d) {
+        return diagonal({source: fake_node, target: fake_node});
+      })
+      .remove();
 
     // Stash the old positions for transition.
     nodes.forEach(function(d) {

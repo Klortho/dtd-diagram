@@ -113,23 +113,6 @@ if (typeof DtdDiagram != "undefined") {
         target.push(source[i]);
     }
 
-    // Tree-reduce function: returns the min/max extents
-    // of an accumulator (previous extents), a given node (n) and all
-    // of that node's kids.
-    function _tree_reduce(acc, n) {
-      //acc.log("_tree_reduce:acc");
-      var ke = (n.children || [])   // kids extents
-        .reduce(_tree_reduce, acc);  
-      var ne = n.extents();
-
-      return new DtdDiagram.Box(
-        d3.min([ke.top,    ne.top]),
-        d3.min([ke.left,   ne.left]),
-        d3.max([ke.bottom, ne.bottom]),
-        d3.max([ke.right,  ne.right])
-      );
-    }
-
     ////////////////////////////////////////////////
     // Object methods
 
@@ -172,25 +155,6 @@ if (typeof DtdDiagram != "undefined") {
         return d;
       },
 
-      // Geometry / layout related
-      // -------------------------
-
-      extents: function() {
-        var diagram = this.diagram;
-        return new DtdDiagram.Box(
-          this.x - Node.node_box_height / 2,
-          this.y,
-          this.x + Node.node_box_height / 2,
-          this.y + this.width()
-        );
-      },
-
-      // Determine the extents of a (sub)tree, returning a Box object.
-      tree_extents: function() {
-        return (this.children || [])
-          .reduce(_tree_reduce, this.extents());
-      },
-
       // D3/SVG drawing
       // --------------
 
@@ -212,33 +176,29 @@ if (typeof DtdDiagram != "undefined") {
 
       // Transition an (updating or entering) node to its new position and 
       // full-sized scale
-      transition_update: function() {
+      transition_update: function(duration) {
         var self = this;
-        return DtdDiagram.transition_promise(
-          self.gs.transition()
-            .duration(self.diagram.duration)
-            .attr("transform", 
-              "translate(" + self.y + "," + self.x + ") " +
-              "scale(1, 1)"
-            )
-        );
+        self.gs.transition()
+          .duration(duration)
+          .attr("transform", 
+            "translate(" + self.y + "," + self.x + ") " +
+            "scale(1, 1)"
+          );
       },
 
       // Transition exiting nodes to their parents' positions and zero size,
       // then remove them.
-      transition_exit: function() {
+      transition_exit: function(duration) {
         var self = this
             src_node = self.diagram.src_node;
 
-        return DtdDiagram.transition_promise(
-          self.gs.transition()
-            .duration(self.diagram.duration)
-            .attr("transform", function(d) { 
-              return "translate(" + src_node.y + "," + src_node.x + ") " +
-                     "scale(0.001, 0.001)"; 
-            })
-            .remove()
-        );
+        self.gs.transition()
+          .duration(duration)
+          .attr("transform", function(d) { 
+            return "translate(" + src_node.y + "," + src_node.x + ") " +
+                   "scale(0.001, 0.001)"; 
+          })
+          .remove();
       },
     };
 
