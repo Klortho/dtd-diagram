@@ -206,7 +206,6 @@ Duration of the animation, in milliseconds. Default is 500.
 
 You can set this to a callback function that will be invoked whenever the user
 rebases the diagram.
-```
 
 # Implementation
 
