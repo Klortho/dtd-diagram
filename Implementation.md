@@ -1,6 +1,10 @@
-Notes on the implementation of dtd-diagram
+# Implementation of dtd-diagram
 
-# Managing geometry
+Here are some random notes on a few implementation details -- these are not
+intended to be comprehensive.
+
+
+## Managing geometry
 
 The geometry of the display is captured by several separate Box objects, 
 with each box recording top, bottom, left, and right in the SVG
@@ -18,7 +22,7 @@ state after the click. Here they are:
   around.
 
 
-# Data models
+## Data models
 
 The DTD data and the display tree data are held in a separate data structures. 
 This is necessary, because a given element might appear in several places in the
@@ -36,13 +40,13 @@ See for example:
 * [&lt;name>](http://jatspan.org/niso/publishing-1.1d3/#p=nfd-name) - note
   the sub-hierarchy with surname and given-names
 
-## Globals
+### Globals
 
 * DtdDiagram.diagrams_array - an array of all of the diagrams
 * DtdDiagram.diagrams_hash - an object whose keys are the container ids for the
   diagrams
 
-#### In-memory tree
+##### In-memory tree
 
 For each diagram, there is an in-memory tree of nodes that has the following
 properties:
@@ -63,7 +67,7 @@ The diagram will store:
   root can be retrieved from this, with index corresponding to [0]
 
 
-## The diagram object
+### The diagram object
 
 Here's a comprehensive reference list of all of the properties of the
 diagram object.
@@ -114,7 +118,7 @@ diagram object.
 * viewport - maintained by Canvas, used in transitioning the drawing as a whole
 
 
-# Managing state
+## Managing state
 
 This module maintains/uses these diagram object properties:
 
@@ -126,7 +130,7 @@ This module maintains/uses these diagram object properties:
 * src_node_addr - relative to the current_root!!
 * src_node
 
-## History state object
+### History state object
 
 The history.state object has all the information needed to recreate (to the
 extent necessary) the same in-memory tree of nodes, with the same original
@@ -151,7 +155,7 @@ For example:
 }
 ```
 
-## URL state information
+### URL state information
 
 Some, but not all, of the state information is also encoded in the URL.
 The URL will be maintained such that, if somebody loads that URL in a pristine
@@ -174,8 +178,3 @@ current_roots at the time the URL was generated*. For `d1`:
 * current_root_name = "article" - the name of the current_root
 * ec_state = "AF1b" - expand/collapse state, starting at current_root
 * src_node_addr = "7uI" - address of source node relative to current_root.
-
-
-
-
-

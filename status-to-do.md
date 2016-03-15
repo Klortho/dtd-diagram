@@ -1,8 +1,13 @@
-# To do
+# Current status and to-do list
 
-This toy project has been a catalyst for me learning a lot of new (to me)
-JavaScript technologies. My goal now, though, is to try to wrap it up 
-quickly and move on to some other, more practical projects.
+This toy project has been a catalyst for me learning a lot of 
+JavaScript technologies. 
+
+
+## First things first
+
+* This is good enough for now; do a release!!!
+* Integrate with jatdoc 
 
 
 ## State handling
@@ -58,9 +63,6 @@ Check these things:
     };
 
 
-
-
-
 ## Miscellaneous
 
 * Make sure we update to the layout-bug-fixed version of d3-flextree
@@ -95,22 +97,16 @@ In the JATS DTDs, the content models are often overly complex.
 
 ## Project management
 
+* Switch to Grunt!
+* Get a gh-pages target working properly. Right now it doesn't work at all.
 * Maybe try some scaffolding tool like Yeoman, to see how they do it.
 * I want to keep dist/ out of the repo, or, at least, out of whatever branch
   that I'm working on, so that I don't always see it as changed 
   in my `git status`.
-* But the gh-pages demo requires the generated css file (but not the generated 
-  JS -- I'm using gulp-inject to put script tags to the sources in index.html)
 * Presumably npm and bower registries will require all the
   product files to be in *some* branch, and probably master
 * And, it would be nice for first-time visitors to be able to grab the latest
   working version from the master branch.
-* Right now:
-    * dist/ is not in master
-    * I have a `gulp deploy` task set up, that pushes dist/ to gh-pages,
-      locally and remote. But ***I don't understand how it works***, and
-      I don't think I have it set up correctly.
-    * It is not ideal, because doesn't satisfy all the nice-to-haves above.
 * Whatever I come up with here should be back-ported to d3-flextree.
 
 

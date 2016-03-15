@@ -37,7 +37,7 @@ var js_sources = [
 var sass_src = src + '/*.scss';
 
 
-gulp.task('default', 
+gulp.task('default',
   ['bower', 'test', 'concat', 'uglify', 'sass', 'inject']);
 
 gulp.task('bower', function() {
@@ -85,7 +85,7 @@ gulp.task('inject', function () {
   return  gulp.src('./index.html')
     .pipe(inject(
       gulp.src(
-        js_sources, 
+        js_sources,
         { read: false }
       ),
       { relative: true }
@@ -96,22 +96,23 @@ gulp.task('inject', function () {
 
 // The following are not run by default
 
-// Run `gulp watch` to set up a service that watches for changes, and 
+// Run `gulp watch` to set up a service that watches for changes, and
 // automagically regenerates the product files
 gulp.task('watch', function() {
   gulp.watch(js_src, ['concat', 'uglify']);
   gulp.watch(sass_src, ['sass']);
 });
 
-// Deploy to gh-pages.
-gulp.task('deploy', function() {
-  return gulp.src('./dist/**/*')
-    .pipe(gh_pages());
-});
+// FIXME: this is not working yet.
+//// Deploy to gh-pages.
+//gulp.task('deploy', function() {
+//  return gulp.src('./dist/**/*')
+//    .pipe(gh_pages());
+//});
 
 gulp.task('clean', function () {
   return del([
-    'dist', 
+    'dist',
     '.publish',
     '.sass-cache',
   ]);

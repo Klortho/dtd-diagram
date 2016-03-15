@@ -19,7 +19,7 @@ following pages, for examples of what Near & Far diagrams look like.
 
 ***[Implementation](Implementation.md)***
 
-***[To do list](to-do.md)***
+***[Current status and to-do list](status-to-do.md)***
 
 
 ## Getting started
