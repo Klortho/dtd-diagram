@@ -7,6 +7,23 @@ Near & Far diagrams. See this [Key to the Near & Far
 Diagrams](http://jatspan.org/niso/publishing-1.1d3/#p=nfd) and the
 following pages, for examples of what Near & Far diagrams look like.
 
+
+## Contents
+
+***This page***
+* [Getting started](#getting-started)
+* [API](#api)
+* [Options](#options)
+* [Credits / references](#credits--references)
+* [License](#license)
+
+***[Implementation](Implementation.md)***
+
+***[To do list](to-do.md)***
+
+
+## Getting started
+
 To run from your own machine, you can use Bower, and add this as
 a dependency:
 
@@ -21,7 +38,6 @@ Or, you download it and its dependencies manually:
 * [es6-promise.min.js](https://cdnjs.cloudflare.com/ajax/libs/es6-promise/3.0.2/es6-promise.min.js)
 * [d3.min.js](https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js)
 * [d3-flextree.js](https://raw.githubusercontent.com/Klortho/d3-flextree/1.0.1/dist/d3-flextree.min.js)
-
 
 To integrate it with your own DTD, you'll want to clone it and
 initialize a development environment, which includes DtdAnalyzer,
@@ -83,7 +99,7 @@ with:
 gulp watch
 ```
 
-# API
+## API
 
 The simplest way to use this is to load the code in a page that has a 
 pre-existing `<div>` element with `id` value "dtd-diagram". For example:
@@ -168,7 +184,6 @@ higher-to-lower precedence:
   element. Make sure they are in strictly valid JSON format.
 - Use the defaults
 
-
 **dtd_json_file**
 
 The DTD JSON file; default is "dtd.json".
@@ -207,7 +222,8 @@ Duration of the animation, in milliseconds. Default is 500.
 You can set this to a callback function that will be invoked whenever the user
 rebases the diagram.
 
-# Implementation
+
+## Implementation
 
 See [Implementation.md](Implementation.md)
 
@@ -220,7 +236,7 @@ See [Implementation.md](Implementation.md)
 * D3, see [this example](http://bl.ocks.org/mbostock/4339083).
 
 
-# License
+## License
 
 <a href='http://www.wtfpl.net/'><img src='https://raw.githubusercontent.com/Klortho/dtd-diagram/28476aa90574bbedef999d8f88b0ead9dac2a819/wtfpl-badge-1.png'/></a>
 
