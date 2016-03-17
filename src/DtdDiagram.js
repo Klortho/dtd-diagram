@@ -36,16 +36,16 @@ if (typeof d3 !== "undefined")
       });
 
     // By default, if the user hasn't instantiated an object, then
-    // we'll make one for him at document.ready.        
+    // we'll make one for him at document.ready.
     document_ready.then(function() {
-      if (DtdDiagram.auto_start && DtdDiagram.diagrams_array.length == 0) 
+      if (DtdDiagram.auto_start && DtdDiagram.diagrams_array.length == 0)
         new DtdDiagram();
     });
 
     // Some constants
     var scrollbar_margin = 20;
 
-    // Default values for all the options. 
+    // Default values for all the options.
     DtdDiagram.default_options = {
 
       // DTD JSON file
@@ -64,7 +64,7 @@ if (typeof d3 !== "undefined")
 
       // Initial expand/collapse state of the tree, starting at the current_root,
       // as a compressed
-      // base64 string. Default is "S" => "01", meaning the root node's attributes 
+      // base64 string. Default is "S" => "01", meaning the root node's attributes
       // will be collapsed, and the content expanded.
       ec_state: "S",
 
@@ -77,7 +77,7 @@ if (typeof d3 !== "undefined")
       // Base URL to use to create links to more documentation.
       tag_doc_base: "doc/#p=",
 
-      // Function to compute the links to documentation. If this returns 
+      // Function to compute the links to documentation. If this returns
       // null, no link will be generated (by default, that's the case
       // for `other` nodes and mml: elements other than mml:math)
       tag_doc_url: function(node) {
@@ -113,7 +113,7 @@ if (typeof d3 !== "undefined")
 
 
     // Initialize the diagram, by computing and storing the options, creating
-    // the svg element, reading the JSON dtd file, instantiating and configuring 
+    // the svg element, reading the JSON dtd file, instantiating and configuring
     // the layout engine. Returns a Promise that resolves after the JSON dtd
     // is read.
     DtdDiagram.prototype.initialize = function() {
@@ -148,8 +148,8 @@ if (typeof d3 !== "undefined")
 
       // Get the initial state, either from the history.state object, or from
       // the URL. The returned value might be null.
-      var initial_state = diagram.get_initial_state();
-      console.log("initial state: %o", initial_state);
+      //var initial_state = diagram.get_initial_state();
+      //console.log("initial state: %o", initial_state);
 
 
       // Get the options specified on the @data-options attribute
@@ -159,7 +159,7 @@ if (typeof d3 !== "undefined")
       // Finally, set the properties on the diagram object itself, according
       // to precedence rules
       DtdDiagram.extend(diagram, DtdDiagram.default_options,
-        tag_options, initial_state, constructor_opts);
+        tag_options, constructor_opts);
 
 
       // scrollbar margin - if this is big enough, it ensures we'll never get
@@ -245,9 +245,9 @@ if (typeof d3 !== "undefined")
       );
 
       var canvas = diagram.canvas = new DtdDiagram.Box(
-        -min_canvas_height / 2, 
-        0, 
-        min_canvas_height / 2, 
+        -min_canvas_height / 2,
+        0,
+        min_canvas_height / 2,
         min_canvas_width
       );
 
@@ -266,24 +266,24 @@ if (typeof d3 !== "undefined")
           return [DtdDiagram.Node.node_height, d.y_size()];
         })
         .separation(function(a, b) {
-          var sep = a.elem_parent == b.elem_parent 
+          var sep = a.elem_parent == b.elem_parent
             ? 1 : diagram.group_separation
           return sep;
         })
       ;
 
-      // Construct a new diagonal generator. `diagonal` is a function that 
+      // Construct a new diagonal generator. `diagonal` is a function that
       // draws the lines between the boxes.
       // See https://github.com/mbostock/d3/wiki/SVG-Shapes#diagonal.
       var diagonal = diagram.diagonal = d3.svg.diagonal()
         .source(function(d, i) {
           var s = d.source;
           var t = d.target;
-          return { 
-            x: s.x + 
-              ( s.has_content() && d.target.type == "attribute" ? -6 : 
-                s.has_attributes() && d.target.type != "attribute" ? 6 : 0), 
-            y: s.y + s.width() 
+          return {
+            x: s.x +
+              ( s.has_content() && d.target.type == "attribute" ? -6 :
+                s.has_attributes() && d.target.type != "attribute" ? 6 : 0),
+            y: s.y + s.width()
           };
         })
         .projection(function(d) {
@@ -296,13 +296,13 @@ if (typeof d3 !== "undefined")
         var dtd_json_file = diagram.dtd_json_file;
         d3.json(dtd_json_file, function(error, dtd_json) {
           if (error) {
-            reject(new Error("Error reading DTD file '" + dtd_json_file + 
+            reject(new Error("Error reading DTD file '" + dtd_json_file +
                 "': " + error.statusText));
           }
           else {
             diagram.dtd_json = dtd_json;
 
-            // Create the new tree. 
+            // Create the new tree.
             try {
               diagram.make_tree();
               resolve();
@@ -332,7 +332,7 @@ if (typeof d3 !== "undefined")
       else {
         name = diagram.orig_root_name = diagram.dtd_json.root;
       }
-  
+
       var node = diagram.orig_root_node = DtdDiagram.Node.factory(diagram, {
         name: name,
         type: 'element',
@@ -350,7 +350,7 @@ if (typeof d3 !== "undefined")
       // Set the src_node property from its address
       diagram.set_src_node();
       // Update the history state object
-      diagram.update_state();
+      //diagram.update_state();
     };
 
 
@@ -363,13 +363,13 @@ if (typeof d3 !== "undefined")
       return new Promise(function(resolve, reject) {
         if (t.empty()) resolve();
         else {
-          t.each(function() { ++n; }) 
-            .each("end", function() { 
-              if (!--n) resolve(); 
+          t.each(function() { ++n; })
+            .each("end", function() {
+              if (!--n) resolve();
             })
           ;
         }
-      }); 
+      });
     }
 
     // Rebase the diagram with a new root. The argument specifies the new
@@ -382,7 +382,7 @@ if (typeof d3 !== "undefined")
       this.update(n, true);
     };
 
-    // Main function to update the rendering. This is called once at the 
+    // Main function to update the rendering. This is called once at the
     // beginning, and once every time a user clicks a button on a node.
     // `src_node` is the node object that was clicked; if it's not provided,
     // then the diagram's current src_node is used.
@@ -392,7 +392,7 @@ if (typeof d3 !== "undefined")
       if (src_node) diagram.set_src_node(src_node);
       src_node = diagram.src_node;
 
-      if (typeof push != "undefined" && push) 
+      if (typeof push != "undefined" && push)
         diagram.push_state();
 
       // Keep a list of all promises (lest we forget)
@@ -437,8 +437,8 @@ if (typeof d3 !== "undefined")
 
       // Enter any new links at the parent's previous position.
       var fake_node = {
-        x: src_node.x0, 
-        y: src_node.y0, 
+        x: src_node.x0,
+        y: src_node.y0,
         width: function() { return 0; },
         has_content: function() { return false; },
         has_attributes: function() { return false; },

@@ -1,6 +1,6 @@
 {
   "name": "dtd-diagram",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Animated tree diagrams for XML DTDs",
   "main": "DtdDiagram",
   "directories": {
