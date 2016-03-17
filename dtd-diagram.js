@@ -4,7 +4,7 @@ if (typeof d3 !== "undefined")
 {
   (function() {
 
-    var DtdDiagram = window.DtdDiagram = function(constructor_opts) {
+    DtdDiagram = function(constructor_opts) {
       var diagram = this;
       DtdDiagram.diagrams_array.push(diagram);
       diagram.constructor_opts = constructor_opts || {};
@@ -148,8 +148,8 @@ if (typeof d3 !== "undefined")
 
       // Get the initial state, either from the history.state object, or from
       // the URL. The returned value might be null.
-      var initial_state = diagram.get_initial_state();
-      console.log("initial state: %o", initial_state);
+      //var initial_state = diagram.get_initial_state();
+      //console.log("initial state: %o", initial_state);
 
 
       // Get the options specified on the @data-options attribute
@@ -159,7 +159,7 @@ if (typeof d3 !== "undefined")
       // Finally, set the properties on the diagram object itself, according
       // to precedence rules
       DtdDiagram.extend(diagram, DtdDiagram.default_options,
-        tag_options, initial_state, constructor_opts);
+        tag_options, constructor_opts);
 
 
       // scrollbar margin - if this is big enough, it ensures we'll never get
@@ -350,7 +350,7 @@ if (typeof d3 !== "undefined")
       // Set the src_node property from its address
       diagram.set_src_node();
       // Update the history state object
-      diagram.update_state();
+      //diagram.update_state();
     };
 
 
@@ -1865,34 +1865,37 @@ if (typeof DtdDiagram == "undefined") DtdDiagram = function() {};
 
 (function() {
 
-
+/*
   // Bind to the popstate event
-  if (typeof window !== "undefined") 
+  if (typeof window !== "undefined")
     window.onpopstate = function(evt) {
       console.log("popstate: %o", evt.state);
       var s = evt.state;
-      Object.keys(s).forEach(function(did) {
-        var diagram = DtdDiagram.diagrams_hash[did];
-        if (!diagram) return;
-        console.log("popping for " + did);
-        var state = s[did];
+      if (s) {
+        Object.keys(s).forEach(function(did) {
+          var diagram = DtdDiagram.diagrams_hash[did];
+          if (!diagram) return;
+          console.log("popping for " + did);
+          var state = s[did];
 
-        diagram.set_current_root(state.current_root_addr);
-        diagram.set_ec_state(state.ec_state);
+          diagram.set_current_root(state.current_root_addr);
+          diagram.set_ec_state(state.ec_state);
 
-        // If we're going forward, then change src_node first, then animate.
-        // If we're going back, animate, then change src_node
-        if (diagram.state_id < state.state_id) {
-          diagram.set_src_node(state.src_node_addr);
-          diagram.update();
-        }
-        else {
-          diagram.update();
-          diagram.set_src_node(state.src_node_addr);
-        }
-        diagram.state_id = state.state_id;
-      });
+          // If we're going forward, then change src_node first, then animate.
+          // If we're going back, animate, then change src_node
+          if (diagram.state_id < state.state_id) {
+            diagram.set_src_node(state.src_node_addr);
+            diagram.update();
+          }
+          else {
+            diagram.update();
+            diagram.set_src_node(state.src_node_addr);
+          }
+          diagram.state_id = state.state_id;
+        });
+      }
     };
+*/
 
   //-----------------------------------------------------------------------
   // DtdDiagram methods
@@ -1903,6 +1906,8 @@ if (typeof DtdDiagram == "undefined") DtdDiagram = function() {};
   // from a history state object, if there is one, or from the URL, if it's there.
   // Otherwise, returns null.
   DtdDiagram.prototype.get_initial_state = function() {
+    return null;
+  /*
     var diagram = this;
     if (history.state) return history.state[diagram.container_id] || null;
 
@@ -1915,8 +1920,10 @@ if (typeof DtdDiagram == "undefined") DtdDiagram = function() {};
       ec_state: url_state.ec_state,
       src_node_addr: url_state.src_node_addr,
     };
+  */
   };
 
+/*
   // Parse the current location query string, and return an object for
   // the diagram with the given container id. Or null.
   // Example: ?d1=article!AF1b!7uI.
@@ -1925,7 +1932,7 @@ if (typeof DtdDiagram == "undefined") DtdDiagram = function() {};
     var qs = window.location.search;
     if (!qs || qs.charAt(0) != '?') return;
     var url_state = null;
-    qs.substr(1).split('&').forEach(function(id_val_str) { 
+    qs.substr(1).split('&').forEach(function(id_val_str) {
       // id_val_str => 'd1=article!AF1b!7uI'
       var id_val = id_val_str.split('=');
       if (id_val.length == 2 && id_val[0] == diagram.container_id) {
@@ -1940,7 +1947,9 @@ if (typeof DtdDiagram == "undefined") DtdDiagram = function() {};
     });
     return url_state;
   };
+*/
 
+/*
   // This is called after a new diagram has been instantiated. It checks the
   // history state object, and merges in this diagram's state data, then
   // calls replaceState
@@ -1960,10 +1969,11 @@ if (typeof DtdDiagram == "undefined") DtdDiagram = function() {};
     // don't update the url, in this case
     history.replaceState(state, null);
   };
-
+*/
 
   // Push state, after a change
   DtdDiagram.prototype.push_state = function() {
+  /*
     var diagram = this;
     var dstate = {};
     var new_state_id = DtdDiagram.last_state_id++;
@@ -1986,14 +1996,15 @@ if (typeof DtdDiagram == "undefined") DtdDiagram = function() {};
     var url = "";
     Object.keys(state).forEach(function(k) {
       var dso = state[k];  // diagram state object
-      var diag = DtdDiagram.diagrams_hash[k]; 
+      var diag = DtdDiagram.diagrams_hash[k];
       if (diag && dso && dso.orig_root_name) {
-        url += (first ? "?" : "&") + k + "=" + diag.current_root_node.name + "!" + 
+        url += (first ? "?" : "&") + k + "=" + diag.current_root_node.name + "!" +
                dso.ec_state + "!" + dso.src_node_addr;
       }
       first = false;
     });
     history.pushState(state, null, url);
+  */
   };
 
 
@@ -2027,7 +2038,7 @@ if (typeof DtdDiagram == "undefined") DtdDiagram = function() {};
   };
 
   // Set the diagram's expand/collapse state, based on the current
-  // values of current_root_node and ec_state. If there is no argument, 
+  // values of current_root_node and ec_state. If there is no argument,
   // then the current ec_state value will be used.
   DtdDiagram.prototype.set_ec_state = function(s) {
     if (typeof s !== "undefined") {
@@ -2046,7 +2057,7 @@ if (typeof DtdDiagram == "undefined") DtdDiagram = function() {};
 
     if (typeof sn == "object") {
       diagram.src_node = sn;
-      diagram.src_node_addr = 
+      diagram.src_node_addr =
         node_relative_addr(diagram.current_root_addr, sn.id);
     }
     else {
@@ -2059,7 +2070,7 @@ if (typeof DtdDiagram == "undefined") DtdDiagram = function() {};
     }
   };
 
-  
+
   //-----------------------------------------------------------------------
   // Utility functions
 
